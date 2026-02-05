@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Presentation Builder
 
-## Getting Started
+Aplikace pro vytváření prezentací podobná PowerPointu, postavená na Next.js, TypeScript a React.
 
-First, run the development server:
+## Funkce
+
+- 📊 **Dashboard** - Přehled všech prezentací
+- ✏️ **Editor** - Vytváření a úprava slideů
+- 🎨 **Elementy** - Text, obrázky, tvary
+- 💾 **Ukládání** - Automatické ukládání do localStorage
+- 🎯 **Drag & Drop** - Přesouvání elementů na slidech
+
+## Technologie
+
+- **Next.js 16** - React framework
+- **TypeScript** - Typování
+- **Zustand** - State management
+- **React DnD** - Drag and drop
+- **Tailwind CSS** - Stylování
+- **Lucide React** - Ikony
+
+## Instalace
+
+```bash
+npm install
+```
+
+## Spuštění
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Aplikace poběží na [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Struktura projektu
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+presentation-builder/
+├── app/
+│   ├── page.tsx          # Dashboard
+│   ├── editor/
+│   │   └── page.tsx       # Editor stránka
+│   └── layout.tsx
+├── components/
+│   ├── EditorCanvas.tsx   # Hlavní plátno pro editaci
+│   ├── SlideElement.tsx   # Element na slide
+│   ├── SlidePanel.tsx     # Panel se slidey
+│   ├── Toolbar.tsx        # Nástroje
+│   └── PropertiesPanel.tsx # Vlastnosti elementu
+├── lib/
+│   ├── types/
+│   │   └── presentation.ts # Typy pro prezentace
+│   └── store/
+│       └── presentationStore.ts # Zustand store
+└── components/
+```
 
-## Learn More
+## Použití
 
-To learn more about Next.js, take a look at the following resources:
+1. **Vytvoření prezentace**: Na dashboardu klikněte na "Vytvořit novou prezentaci"
+2. **Přidání elementů**: V editoru použijte toolbar pro přidání textu, obrázků nebo tvarů
+3. **Úprava elementů**: Klikněte na element a upravte ho v panelu vlastností
+4. **Správa slideů**: V levém panelu můžete přidávat, mazat a duplikovat slidey
+5. **Uložení**: Prezentace se automaticky ukládají do localStorage
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Budoucí vylepšení
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [ ] Export do PDF
+- [ ] Export do PowerPoint
+- [ ] Více typů elementů (grafy, tabulky)
+- [ ] Animace a přechody
+- [ ] Spolupráce v reálném čase
+- [ ] Backend API pro ukládání do cloudu
