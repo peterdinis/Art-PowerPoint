@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { usePresentationStore } from '@/lib/store/presentationStore';
 import { X, ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Loading } from '@/components/ui/loading';
 import { cn } from '@/lib/utils';
 import type { SlideElement } from '@/lib/types/presentation';
 
@@ -121,18 +122,14 @@ export default function PresentationPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-black text-white">
-        <p>Načítavanie...</p>
-      </div>
-    );
+    return <Loading message="Loading presentation" fullScreen size="lg" />;
   }
 
   if (!presentation) {
     return (
-      <div className="flex items-center justify-center h-screen bg-black text-white">
+      <div className="flex items-center justify-center h-screen bg-background">
         <div className="text-center">
-          <p className="mb-4">Prezentácia sa nenašla</p>
+          <p className="mb-4 text-foreground">Presentation not found</p>
           <Button onClick={() => router.push('/')} variant="outline">
             Back to dashboard
           </Button>
@@ -143,9 +140,9 @@ export default function PresentationPage() {
 
   if (presentation.slides.length === 0) {
     return (
-      <div className="flex items-center justify-center h-screen bg-black text-white">
+      <div className="flex items-center justify-center h-screen bg-background">
         <div className="text-center">
-          <p className="mb-4">Prezentácia nemá žiadne slajdy</p>
+          <p className="mb-4 text-foreground">Presentation has no slides</p>
           <Button onClick={() => router.push(`/editor?id=${presentation.id}`)} variant="outline">
             Back to editor
           </Button>
@@ -254,7 +251,7 @@ export default function PresentationPage() {
               size="icon"
               onClick={() => router.push(`/editor?id=${presentation.id}`)}
               className="text-white hover:bg-white/20"
-              title="Zavrieť"
+              title="Close"
             >
               <X className="w-5 h-5" />
             </Button>
