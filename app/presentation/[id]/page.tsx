@@ -288,7 +288,7 @@ function PresentationElement({ element, slideIndex }: { element: SlideElement; s
 
   const getAnimationClass = () => {
     if (!isVisible || animationType === 'none') return '';
-    
+
     switch (animationType) {
       case 'fadeIn':
         return 'animate-fade-in';
@@ -314,10 +314,10 @@ function PresentationElement({ element, slideIndex }: { element: SlideElement; s
 
   const style: React.CSSProperties = {
     position: 'absolute',
-    left: `${(element.position.x / 960) * 50}%`,
-    top: `${(element.position.y / 540) * 50}%`,
-    width: `${(element.size.width / 960) * 50}%`,
-    height: `${(element.size.height / 540) * 50}%`,
+    left: `${(element.position.x / 960) * 100}%`,
+    top: `${(element.position.y / 540) * 100}%`,
+    width: `${(element.size.width / 960) * 100}%`,
+    height: `${(element.size.height / 540) * 100}%`,
     animationDuration: `${duration}ms`,
     ...element.style,
   };
@@ -367,9 +367,8 @@ function PresentationElement({ element, slideIndex }: { element: SlideElement; s
           width: '100%',
           height: '100%',
           backgroundColor: element.style?.backgroundColor || '#3b82f6',
-          border: `${element.style?.borderWidth || 0}px solid ${
-            element.style?.borderColor || '#000000'
-          }`,
+          border: `${element.style?.borderWidth || 0}px solid ${element.style?.borderColor || '#000000'
+            }`,
         };
 
         if (shapeType === 'circle') {
@@ -378,6 +377,8 @@ function PresentationElement({ element, slideIndex }: { element: SlideElement; s
           shapeStyle.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
         } else if (shapeType === 'rounded') {
           shapeStyle.borderRadius = '12px';
+        } else if (shapeType === 'star') {
+          shapeStyle.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
         }
 
         return <div style={shapeStyle} />;

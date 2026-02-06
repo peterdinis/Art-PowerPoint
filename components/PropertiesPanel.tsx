@@ -1,7 +1,7 @@
 'use client';
 
 import { usePresentationStore } from '@/lib/store/presentationStore';
-import { Trash2, Type, Image as ImageIcon, Square, Layers, Video } from 'lucide-react';
+import { Trash2, Type, Image as ImageIcon, Square, Layers, Video, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -59,15 +59,15 @@ export default function PropertiesPanel() {
           <p className="text-sm text-muted-foreground mb-4">
             Vyberte element alebo upravte pozadie slajdu
           </p>
-          
+
           <div className="space-y-4">
             <SlideBackgroundEditor
               currentBackground={currentSlide.background}
               onUpdate={handleSlideBackgroundUpdate}
             />
-            
+
             <Separator />
-            
+
             {/* Slide Notes */}
             <div>
               <Label htmlFor="slide-notes">Poznámky k slajdu</Label>
@@ -328,6 +328,80 @@ export default function PropertiesPanel() {
                 <option value="Garamond">Garamond</option>
               </select>
             </div>
+
+            <div className="grid grid-cols-2 gap-2 mt-4">
+              <div className="flex border rounded-md overflow-hidden">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("h-8 w-full rounded-none", selectedElement.style?.fontWeight === 'bold' && "bg-accent")}
+                  onClick={() => handleUpdate({
+                    style: { ...selectedElement.style, fontWeight: selectedElement.style?.fontWeight === 'bold' ? 'normal' : 'bold' }
+                  })}
+                  title="Tučné"
+                >
+                  <Bold className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("h-8 w-full rounded-none border-l", selectedElement.style?.fontStyle === 'italic' && "bg-accent")}
+                  onClick={() => handleUpdate({
+                    style: { ...selectedElement.style, fontStyle: selectedElement.style?.fontStyle === 'italic' ? 'normal' : 'italic' }
+                  })}
+                  title="Kurzíva"
+                >
+                  <Italic className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("h-8 w-full rounded-none border-l", selectedElement.style?.textDecoration === 'underline' && "bg-accent")}
+                  onClick={() => handleUpdate({
+                    style: { ...selectedElement.style, textDecoration: selectedElement.style?.textDecoration === 'underline' ? 'none' : 'underline' }
+                  })}
+                  title="Podčiarknuté"
+                >
+                  <Underline className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <div className="flex border rounded-md overflow-hidden">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("h-8 w-full rounded-none", (!selectedElement.style?.textAlign || selectedElement.style?.textAlign === 'left') && "bg-accent")}
+                  onClick={() => handleUpdate({
+                    style: { ...selectedElement.style, textAlign: 'left' }
+                  })}
+                  title="Zarovnať vľavo"
+                >
+                  <AlignLeft className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("h-8 w-full rounded-none border-l", selectedElement.style?.textAlign === 'center' && "bg-accent")}
+                  onClick={() => handleUpdate({
+                    style: { ...selectedElement.style, textAlign: 'center' }
+                  })}
+                  title="Zarovnať na stred"
+                >
+                  <AlignCenter className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("h-8 w-full rounded-none border-l", selectedElement.style?.textAlign === 'right' && "bg-accent")}
+                  onClick={() => handleUpdate({
+                    style: { ...selectedElement.style, textAlign: 'right' }
+                  })}
+                  title="Zarovnať vpravo"
+                >
+                  <AlignRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
           </>
         )}
 
@@ -396,6 +470,7 @@ export default function PropertiesPanel() {
                 <option value="triangle">Trojuholník</option>
                 <option value="rectangle">Obdĺžnik</option>
                 <option value="rounded">Zaoblený obdĺžnik</option>
+                <option value="star">Hviezda</option>
               </select>
             </div>
             <div>

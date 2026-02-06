@@ -1,13 +1,13 @@
 'use client';
 
 import { usePresentationStore } from '@/lib/store/presentationStore';
-import { 
-  Type, Image, Square, Circle, Triangle, Video, 
-  AlignLeft, AlignCenter, AlignRight, Bold, Italic, 
-  Underline, Plus, ChevronDown, 
+import {
+  Type, Image, Square, Circle, Triangle, Video,
+  AlignLeft, AlignCenter, AlignRight, Bold, Italic,
+  Underline, Plus, ChevronDown,
   Heading1, Heading2, List, Link2, Code, Quote
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,6 +19,7 @@ import { Card } from '@/components/ui/card';
 
 export default function Toolbar() {
   const { addElement, currentPresentation, currentSlideIndex, selectedElementId, updateElement } = usePresentationStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [videoDialogOpen, setVideoDialogOpen] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
@@ -80,6 +81,23 @@ export default function Toolbar() {
     }
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        addElement({
+          type: 'image',
+          position: { x: 100, y: 100 },
+          size: { width: 400, height: 300 },
+          content: result,
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleAddVideo = () => {
     if (videoUrl) {
       addElement({
@@ -119,6 +137,7 @@ export default function Toolbar() {
       triangle: { width: 200, height: 200 },
       rectangle: { width: 300, height: 150 },
       rounded: { width: 250, height: 150 },
+      star: { width: 200, height: 200 },
     };
 
     addElement({
@@ -136,10 +155,10 @@ export default function Toolbar() {
   };
 
   const handleAddList = (listType: 'ordered' | 'unordered') => {
-    const items = listType === 'ordered' 
+    const items = listType === 'ordered'
       ? '1. Prvý bod\n2. Druhý bod\n3. Tretí bod'
       : '• Prvý bod\n• Druhý bod\n• Tretí bod';
-    
+
     addElement({
       type: 'text',
       position: { x: 100, y: 100 },
@@ -248,6 +267,15 @@ export default function Toolbar() {
             >
               <Square className="w-4 h-4" />
             </Button>
+            <Button
+              onClick={() => handleAddShape('star')}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              title="Pridať hviezdu"
+            >
+              <span className="text-lg leading-none">★</span>
+            </Button>
           </div>
 
           <Separator orientation="vertical" className="h-6" />
@@ -293,9 +321,9 @@ export default function Toolbar() {
                   <span>&lt;&gt; Kód</span>
                 </div>
               </DropdownMenuItem>
-              
+
               <DropdownMenuSeparator />
-              
+
               <DropdownMenuLabel className="text-xs text-muted-foreground">Zoznamy</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => handleAddList('ordered')} className="gap-3">
                 <List className="w-4 h-4" />
@@ -305,9 +333,9 @@ export default function Toolbar() {
                 <List className="w-4 h-4" />
                 <span>Zoznam s odrážkami</span>
               </DropdownMenuItem>
-              
+
               <DropdownMenuSeparator />
-              
+
               <DropdownMenuLabel className="text-xs text-muted-foreground">Mediá</DropdownMenuLabel>
               <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
                 <DialogTrigger asChild>
@@ -356,7 +384,7 @@ export default function Toolbar() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
-              
+
               <Dialog open={videoDialogOpen} onOpenChange={setVideoDialogOpen}>
                 <DialogTrigger asChild>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="gap-3">
@@ -392,9 +420,9 @@ export default function Toolbar() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
-              
+
               <DropdownMenuSeparator />
-              
+
               <DropdownMenuLabel className="text-xs text-muted-foreground">Tvary</DropdownMenuLabel>
               <div className="grid grid-cols-2 gap-1 p-2">
                 <DropdownMenuItem onClick={() => handleAddShape('square')} className="flex-col gap-2 h-auto py-3">
@@ -413,14 +441,18 @@ export default function Toolbar() {
                   <Square className="w-6 h-6 rotate-45" />
                   <span className="text-xs">Obdĺžnik</span>
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleAddShape('star')} className="flex-col gap-2 h-auto py-3">
+                  <span className="text-2xl leading-none">★</span>
+                  <span className="text-xs">Hviezda</span>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleAddShape('rounded')} className="flex-col gap-2 h-auto py-3 col-span-2">
                   <Square className="w-6 h-6 rounded-md" />
                   <span className="text-xs">Zaoblený obdĺžnik</span>
                 </DropdownMenuItem>
               </div>
-              
+
               <DropdownMenuSeparator />
-              
+
               <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
                 <DialogTrigger asChild>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="gap-3">

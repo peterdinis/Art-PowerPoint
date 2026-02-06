@@ -20,7 +20,7 @@ export default function SlideElement({ element, isSelected, onSelect }: SlideEle
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   const [startSize, setStartSize] = useState({ width: 0, height: 0 });
   const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
-  const [isDraggingLocal, setIsDraggingLocal] = useState(false);
+  // const [isDraggingLocal, setIsDraggingLocal] = useState(false); // Removed redundant state
 
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'element',
@@ -28,12 +28,6 @@ export default function SlideElement({ element, isSelected, onSelect }: SlideEle
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
-    begin: () => {
-      setIsDraggingLocal(true);
-    },
-    end: () => {
-      setIsDraggingLocal(false);
-    },
   }));
 
   useEffect(() => {
@@ -135,7 +129,7 @@ export default function SlideElement({ element, isSelected, onSelect }: SlideEle
     top: `${element.position.y}px`,
     width: `${element.size.width}px`,
     height: `${element.size.height}px`,
-    opacity: (isDragging || isDraggingLocal) ? 0.5 : 1,
+    opacity: isDragging ? 0.5 : 1,
     cursor: isResizing ? 'grabbing' : (isSelected ? 'move' : 'pointer'),
     border: isSelected ? '2px solid hsl(var(--primary))' : '2px solid transparent',
     outline: isSelected ? '2px solid hsl(var(--primary) / 0.3)' : 'none',
@@ -188,9 +182,8 @@ export default function SlideElement({ element, isSelected, onSelect }: SlideEle
           width: '100%',
           height: '100%',
           backgroundColor: element.style?.backgroundColor || 'hsl(var(--primary))',
-          border: `${element.style?.borderWidth || 0}px solid ${
-            element.style?.borderColor || 'hsl(var(--border))'
-          }`,
+          border: `${element.style?.borderWidth || 0}px solid ${element.style?.borderColor || 'hsl(var(--border))'
+            }`,
         };
 
         if (shapeType === 'circle') {
@@ -199,6 +192,8 @@ export default function SlideElement({ element, isSelected, onSelect }: SlideEle
           shapeStyle.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
         } else if (shapeType === 'rounded') {
           shapeStyle.borderRadius = '12px';
+        } else if (shapeType === 'star') {
+          shapeStyle.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
         }
 
         return <div style={shapeStyle} />;
@@ -266,9 +261,9 @@ export default function SlideElement({ element, isSelected, onSelect }: SlideEle
       className="select-none"
     >
       {renderContent()}
-      
+
       {/* Resize Handles */}
-      {isSelected && !isDragging && !isDraggingLocal && (
+      {isSelected && !isDragging && (
         <>
           <ResizeHandle position="nw" cursor="nw-resize" />
           <ResizeHandle position="ne" cursor="ne-resize" />
