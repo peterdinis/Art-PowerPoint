@@ -1,371 +1,209 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Plus, Search, Filter, Grid3x3, List, Calendar, FileText, Trash2, MoreVertical, TrendingUp, Clock, Star } from 'lucide-react';
-import { usePresentationStore } from '@/lib/store/presentationStore';
-import { useEffect, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import DashboardSidebar from '@/components/DashboardSidebar';
-import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import { ArrowRight, Layers, Zap, Layout, Share2, Presentation, CheckCircle2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
-type ViewMode = 'grid' | 'list';
-type SortOption = 'recent' | 'oldest' | 'name' | 'slides';
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.3,
+        },
+    },
+};
 
-export default function Home() {
-  const router = useRouter();
-  const { presentations, loadPresentations, createPresentation, deletePresentation } = usePresentationStore();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [sortBy, setSortBy] = useState<SortOption>('recent');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+        y: 0,
+        opacity: 1,
+        transition: { type: 'spring', stiffness: 100 },
+    },
+};
 
-  useEffect(() => {
-    loadPresentations();
-  }, [loadPresentations]);
-
-  const filteredAndSorted = useMemo(() => {
-    let filtered = presentations.filter(p =>
-      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'recent':
-          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-        case 'oldest':
-          return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
-        case 'name':
-          return a.title.localeCompare(b.title);
-        case 'slides':
-          return b.slides.length - a.slides.length;
-        default:
-          return 0;
-      }
-    });
-
-    return filtered;
-  }, [presentations, searchQuery, sortBy]);
-
-  const stats = useMemo(() => {
-    const totalSlides = presentations.reduce((sum, p) => sum + p.slides.length, 0);
-    const recentCount = presentations.filter(p => {
-      const daysSinceUpdate = (Date.now() - new Date(p.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
-      return daysSinceUpdate <= 7;
-    }).length;
-    return {
-      total: presentations.length,
-      totalSlides,
-      recent: recentCount,
-      avgSlides: presentations.length > 0 ? Math.round(totalSlides / presentations.length) : 0,
-    };
-  }, [presentations]);
-
-  const handleCreateNew = () => {
-    const title = prompt('Zadajte názov prezentácie:');
-    if (title) {
-      const description = prompt('Zadajte popis (voliteľné):') || undefined;
-      const newId = createPresentation(title, description);
-      router.push(`/editor?id=${newId}`);
-    }
-  };
-
-  const handleDelete = (id: string) => {
-    if (showDeleteConfirm === id) {
-      deletePresentation(id);
-      setShowDeleteConfirm(null);
-    } else {
-      setShowDeleteConfirm(id);
-      setTimeout(() => setShowDeleteConfirm(null), 3000);
-    }
-  };
-
-  const formatDate = (date: Date) => {
-    const d = new Date(date);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - d.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) return 'Dnes';
-    if (diffDays === 1) return 'Včera';
-    if (diffDays < 7) return `Pred ${diffDays} dňami`;
-    return d.toLocaleDateString('sk-SK', { day: 'numeric', month: 'short', year: 'numeric' });
-  };
-
-  return (
-    <div className="min-h-screen bg-background">
-      <div className="flex">
-        {/* Sidebar */}
-        <DashboardSidebar />
-
-        {/* Main Content */}
-        <div className="flex-1 lg:pl-64">
-          <div className="container mx-auto px-4 py-6 lg:py-8 max-w-7xl">
-            {/* Header */}
-            <div className="mb-6 lg:mb-8">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                <div>
-                  <h1 className="text-3xl lg:text-4xl font-bold mb-2">Prezentácie</h1>
-                  <p className="text-muted-foreground">
-                    Vytvárajte a spravujte svoje profesionálne prezentácie
-                  </p>
+export default function LandingPage() {
+    return (
+        <div className="min-h-screen bg-background flex flex-col overflow-hidden">
+            {/* Navbar */}
+            <header className="border-b sticky top-0 bg-background/80 backdrop-blur-md z-50">
+                <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+                    <div className="flex items-center gap-2 font-bold text-xl">
+                        <div className="p-1.5 bg-primary rounded-lg text-primary-foreground">
+                            <Presentation className="w-5 h-5" />
+                        </div>
+                        <span>SlideMaster</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <Link href="/dashboard">
+                            <Button>Prejsť do aplikácie</Button>
+                        </Link>
+                    </div>
                 </div>
-                <Button onClick={handleCreateNew} size="lg" className="w-full sm:w-auto">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Nová prezentácia
-                </Button>
-              </div>
+            </header>
 
-              {/* Statistics */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Celkom prezentácií</CardTitle>
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.total}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Celkom slajdov</CardTitle>
-                    <Grid3x3 className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalSlides}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Nedávno upravené</CardTitle>
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.recent}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Priemer slajdov</CardTitle>
-                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.avgSlides}</div>
-                  </CardContent>
-                </Card>
-              </div>
+            <main className="flex-1">
+                {/* Hero Section */}
+                <section className="relative py-20 lg:py-32 overflow-hidden">
+                    <div className="absolute inset-0 bg-grid-slate-200/20 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:[mask-image:linear-gradient(0deg,black,rgba(0,0,0,0.6))]" />
+                    <div className="container relative z-10 px-4 mx-auto text-center">
+                        <motion.div
+                            initial="hidden"
+                            animate="visible"
+                            variants={containerVariants}
+                            className="max-w-4xl mx-auto"
+                        >
+                            <motion.div variants={itemVariants} className="flex justify-center mb-6">
+                                <Badge variant="secondary" className="px-4 py-1.5 text-sm rounded-full border border-primary/20 bg-primary/5 text-primary">
+                                    ✨ Nová generácia prezentácií
+                                </Badge>
+                            </motion.div>
 
-              {/* Search and Filters */}
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <div className="flex-1 relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        type="text"
-                        placeholder="Hľadať prezentácie..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Filter className="w-4 h-4 text-muted-foreground" />
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="outline">
-                            {sortBy === 'recent' && 'Najnovšie'}
-                            {sortBy === 'oldest' && 'Najstaršie'}
-                            {sortBy === 'name' && 'Podľa názvu'}
-                            {sortBy === 'slides' && 'Podľa slajdov'}
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem onClick={() => setSortBy('recent')}>Najnovšie</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setSortBy('oldest')}>Najstaršie</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setSortBy('name')}>Podľa názvu</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setSortBy('slides')}>Podľa počtu slajdov</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
-                      <Button
-                        variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                        size="icon"
-                        onClick={() => setViewMode('grid')}
-                      >
-                        <Grid3x3 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant={viewMode === 'list' ? 'default' : 'ghost'}
-                        size="icon"
-                        onClick={() => setViewMode('list')}
-                      >
-                        <List className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                            <motion.h1 variants={itemVariants} className="text-5xl lg:text-7xl font-extrabold tracking-tight mb-8 bg-gradient-to-r from-gray-900 via-primary to-gray-900 dark:from-white dark:via-primary dark:to-white bg-clip-text text-transparent pb-2">
+                                Vytvárajte ohromujúce prezentácie <span className="text-primary block mt-2">v priebehu sekúnd.</span>
+                            </motion.h1>
 
-            {/* Presentations */}
-            {filteredAndSorted.length === 0 && presentations.length > 0 ? (
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center py-12">
-                    <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground text-lg mb-2">
-                      Žiadne prezentácie sa nenašli
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Skúste zmeniť vyhľadávací dotaz
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : filteredAndSorted.length === 0 ? (
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center py-16">
-                    <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
-                      <FileText className="w-12 h-12 text-muted-foreground" />
-                    </div>
-                    <h3 className="text-2xl font-semibold mb-2">
-                      Zatiaľ nemáte žiadne prezentácie
-                    </h3>
-                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                      Začnite vytváraním svojej prvej prezentácie. Je to jednoduché a rýchle!
-                    </p>
-                    <Button onClick={handleCreateNew} size="lg">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Vytvoriť prvú prezentáciu
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
-                {/* Create New Card */}
-                <Card 
-                  className="cursor-pointer hover:border-primary transition-colors border-dashed"
-                  onClick={handleCreateNew}
-                >
-                  <CardContent className="flex flex-col items-center justify-center h-64 p-6">
-                    <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-                      <Plus className="w-8 h-8 text-muted-foreground" />
-                    </div>
-                    <p className="font-semibold text-center">Vytvoriť novú prezentáciu</p>
-                  </CardContent>
-                </Card>
+                            <motion.p variants={itemVariants} className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+                                Moderný editor prezentácií s intuitívnym ovládaním, plynulými animáciami a profesionálnymi nástrojmi. Zabudnite na PowerPoint.
+                            </motion.p>
 
-                {/* Presentation Cards */}
-                {filteredAndSorted.map((presentation) => (
-                  <Card key={presentation.id} className="group hover:shadow-lg transition-shadow">
-                    <Link href={`/editor?id=${presentation.id}`} className="block">
-                      <div className="h-40 bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center relative overflow-hidden">
-                        <div className="text-5xl font-bold opacity-20 text-primary">
-                          {presentation.slides.length}
+                            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                                <Link href="/dashboard">
+                                    <Button size="lg" className="h-14 px-8 text-lg gap-2 rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all hover:scale-105">
+                                        Začať tvoriť zadarmo
+                                        <ArrowRight className="w-5 h-5" />
+                                    </Button>
+                                </Link>
+                                <Link href="#features">
+                                    <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full hover:bg-muted/50 transition-all">
+                                        Zistiť viac
+                                    </Button>
+                                </Link>
+                            </motion.div>
+                        </motion.div>
+                    </div>
+                </section>
+
+                {/* Features Grid */}
+                <section id="features" className="py-20 bg-muted/30">
+                    <div className="container px-4 mx-auto">
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl lg:text-4xl font-bold mb-4">Všetko čo potrebujete</h2>
+                            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                                Naša platforma poskytuje komplexnú sadu nástrojov pre tvorbu moderných a pútavých prezentácií.
+                            </p>
                         </div>
-                        <div className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm text-xs px-2 py-1 rounded">
-                          {presentation.slides.length} slajd{presentation.slides.length !== 1 ? 'ov' : ''}
+
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            <FeatureCard
+                                icon={<Layers className="w-8 h-8 text-blue-500" />}
+                                title="Intuitívny Editor"
+                                description="Drag & Drop rozhranie s inteligentným zarovnávaním a jednoduchou manipuláciou s elementmi."
+                            />
+                            <FeatureCard
+                                icon={<Zap className="w-8 h-8 text-amber-500" />}
+                                title="Plynulé Animácie"
+                                description="Vstavaná podpora pre Framer Motion zabezpečuje profesionálne prechody a efekty."
+                            />
+                            <FeatureCard
+                                icon={<Layout className="w-8 h-8 text-purple-500" />}
+                                title="Smart Layouty"
+                                description="Automatické prispôsobenie obsahu a responzívne šablóny pre perfektný vzhľad."
+                            />
+                            <FeatureCard
+                                icon={<CheckCircle2 className="w-8 h-8 text-emerald-500" />}
+                                title="Shadcn UI"
+                                description="Postavené na najnovších technológiách a modernom dizajnovom systéme pre konzistentný zážitok."
+                            />
+                            <FeatureCard
+                                icon={<Share2 className="w-8 h-8 text-pink-500" />}
+                                title="Jednoduché Zdieľanie"
+                                description="Exportujte svoje prezentácie alebo ich prezentujte priamo v prehliadači jedným klikom."
+                            />
+                            <FeatureCard
+                                icon={<Presentation className="w-8 h-8 text-indigo-500" />}
+                                title="Mód Prezentácie"
+                                description="Fullscreen mód s poznámkami pre prezentujúceho a časovačom."
+                            />
                         </div>
-                      </div>
-                      <CardHeader>
-                        <CardTitle className="line-clamp-1 group-hover:text-primary transition-colors">
-                          {presentation.title}
-                        </CardTitle>
-                        {presentation.description && (
-                          <CardDescription className="line-clamp-2">
-                            {presentation.description}
-                          </CardDescription>
-                        )}
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {formatDate(presentation.updatedAt)}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Link>
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={(e) => { e.preventDefault(); handleDelete(presentation.id); }}>
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Vymazať
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </div>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {filteredAndSorted.map((presentation) => (
-                  <Card key={presentation.id} className="group hover:shadow-md transition-shadow">
-                    <Link href={`/editor?id=${presentation.id}`}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-4">
-                          <div className="w-20 h-20 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <FileText className="w-10 h-10 text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <CardTitle className="line-clamp-1 group-hover:text-primary transition-colors mb-1">
-                              {presentation.title}
-                            </CardTitle>
-                            {presentation.description && (
-                              <CardDescription className="line-clamp-1 mb-2">
-                                {presentation.description}
-                              </CardDescription>
-                            )}
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <Grid3x3 className="w-3 h-3" />
-                                {presentation.slides.length} slajd{presentation.slides.length !== 1 ? 'ov' : ''}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Calendar className="w-3 h-3" />
-                                {formatDate(presentation.updatedAt)}
-                              </span>
+                </section>
+
+                {/* Tech Stack / Trust */}
+                <section className="py-20 border-t">
+                    <div className="container px-4 mx-auto text-center">
+                        <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-8">
+                            Poháňané modernými technológiami
+                        </p>
+                        <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
+                            <div className="flex items-center gap-2 font-bold text-xl">
+                                <span className="bg-black text-white px-2 py-1 rounded text-sm">Next.js</span>
                             </div>
-                          </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreVertical className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={(e) => { e.preventDefault(); handleDelete(presentation.id); }}>
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Vymazať
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                            <div className="flex items-center gap-2 font-bold text-xl">
+                                <span className="text-blue-500">React</span>
+                            </div>
+                            <div className="flex items-center gap-2 font-bold text-xl">
+                                <span className="text-cyan-500">Tailwind CSS</span>
+                            </div>
+                            <div className="flex items-center gap-2 font-bold text-xl">
+                                <span className="text-pink-500">Framer Motion</span>
+                            </div>
+                            <div className="flex items-center gap-2 font-bold text-xl">
+                                <span className="text-black dark:text-white">Shadcn/ui</span>
+                            </div>
                         </div>
-                      </CardContent>
-                    </Link>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
+                    </div>
+                </section>
+
+                {/* CTA Section */}
+                <section className="py-20 lg:py-32 bg-primary text-primary-foreground relative overflow-hidden">
+                    <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
+                    <div className="container px-4 mx-auto text-center relative z-10">
+                        <h2 className="text-4xl lg:text-5xl font-bold mb-6">Pripravení začať?</h2>
+                        <p className="text-xl opacity-90 mb-10 max-w-2xl mx-auto">
+                            Pripojte sa k tisíckam tvorcov a posuňte svoje prezentácie na novú úroveň ešte dnes.
+                        </p>
+                        <Link href="/dashboard">
+                            <Button size="lg" variant="secondary" className="h-14 px-8 text-lg rounded-full font-semibold shadow-2xl hover:scale-105 transition-transform">
+                                Vytvoriť prezentáciu zadarmo
+                            </Button>
+                        </Link>
+                    </div>
+                </section>
+            </main>
+
+            {/* Footer */}
+            <footer className="py-8 border-t bg-muted/50">
+                <div className="container px-4 mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+                    <p>© 2026 SlideMaster. Všetky práva vyhradené.</p>
+                    <div className="flex gap-6">
+                        <Link href="#" className="hover:text-foreground transition-colors">Podmienky</Link>
+                        <Link href="#" className="hover:text-foreground transition-colors">Súkromie</Link>
+                        <Link href="#" className="hover:text-foreground transition-colors">Kontakt</Link>
+                    </div>
+                </div>
+            </footer>
         </div>
-      </div>
-    </div>
-  );
+    );
+}
+
+function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+    return (
+        <Card className="border-none shadow-lg bg-background/50 backdrop-blur-sm hover:bg-background transition-colors">
+            <CardHeader>
+                <div className="mb-4 p-3 bg-muted rounded-xl w-fit">
+                    {icon}
+                </div>
+                <CardTitle className="text-xl mb-2">{title}</CardTitle>
+                <CardDescription className="text-base leading-relaxed">
+                    {description}
+                </CardDescription>
+            </CardHeader>
+        </Card>
+    );
 }

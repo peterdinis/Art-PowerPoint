@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { 
-  FileText, 
-  Plus, 
-  Settings, 
+import {
+  FileText,
+  Plus,
+  Settings,
   LayoutDashboard,
   Menu,
   TrendingUp,
@@ -76,27 +76,28 @@ export default function DashboardSidebar() {
             Nová prezentácia
           </Button>
         </div>
-        
+
         <nav className="flex-1 p-4 space-y-1">
           <Link
-            href="/"
+            href="/dashboard"
             onClick={onItemClick}
             className={cn(
               "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
               "hover:bg-accent hover:text-accent-foreground",
-              isActive('/') ? "bg-accent text-accent-foreground" : "text-foreground"
+              isActive('/dashboard') ? "bg-accent text-accent-foreground" : "text-foreground"
             )}
           >
             <LayoutDashboard className="w-5 h-5" />
             <span>Dashboard</span>
           </Link>
-          <button
+          <Button
+            variant="ghost"
             onClick={() => { handleCreateNew(); onItemClick?.(); }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors hover:bg-accent hover:text-accent-foreground text-foreground"
+            className="w-full justify-start gap-3 px-4 py-6 text-foreground hover:text-accent-foreground"
           >
             <Plus className="w-5 h-5" />
-            <span>Vytvoriť novú</span>
-          </button>
+            <span className="text-base font-normal">Vytvoriť novú</span>
+          </Button>
           <Link
             href="/favorites"
             onClick={onItemClick}
@@ -163,7 +164,7 @@ export default function DashboardSidebar() {
         onOpenChange={setShowTemplateSelector}
         onSelectTemplate={handleTemplateSelected}
       />
-      
+
       <Dialog open={showNameDialog} onOpenChange={setShowNameDialog}>
         <DialogContent>
           <DialogHeader>
