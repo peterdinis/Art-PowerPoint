@@ -1,74 +1,62 @@
 # Presentation Builder
 
-Aplikace pro vytváření prezentací podobná PowerPointu, postavená na Next.js, TypeScript a React.
+A PowerPoint-like presentation application built with Next.js, TypeScript, and React.
 
-## Funkce
+## Features
 
-- 📊 **Dashboard** - Přehled všech prezentací
-- ✏️ **Editor** - Vytváření a úprava slideů
-- 🎨 **Elementy** - Text, obrázky, tvary
-- 💾 **Ukládání** - Automatické ukládání do localStorage
-- 🎯 **Drag & Drop** - Přesouvání elementů na slidech
+- 📊 **Dashboard** - Overview of all presentations
+- ✏️ **Editor** - Create and edit slides
+- 🎨 **Elements** - Text, images, shapes
+- 💾 **Auto-save** - Automatic saving to localStorage
+- 🎯 **Drag & Drop** - Move elements on slides
 
-## Technologie
+## Technologies
 
 - **Next.js 16** - React framework
-- **TypeScript** - Typování
+- **TypeScript** - Type safety
 - **Zustand** - State management
 - **React DnD** - Drag and drop
-- **Tailwind CSS** - Stylování
-- **Lucide React** - Ikony
+- **Tailwind CSS** - Styling
+- **Lucide React** - Icons
 
-## Instalace
-
+## Installation
 ```bash
 npm install
 ```
 
-## Spuštění
-
+## Running the App
 ```bash
 npm run dev
 ```
 
-Aplikace poběží na [http://localhost:3000](http://localhost:3000)
+The app will run on [http://localhost:3000](http://localhost:3000)
 
-## Struktura projektu
-
+## Project Structure
 ```
 presentation-builder/
 ├── app/
 │   ├── page.tsx          # Dashboard
 │   ├── editor/
-│   │   └── page.tsx       # Editor stránka
+│   │   └── page.tsx       # Editor page
 │   └── layout.tsx
 ├── components/
-│   ├── EditorCanvas.tsx   # Hlavní plátno pro editaci
-│   ├── SlideElement.tsx   # Element na slide
-│   ├── SlidePanel.tsx     # Panel se slidey
-│   ├── Toolbar.tsx        # Nástroje
-│   └── PropertiesPanel.tsx # Vlastnosti elementu
+│   ├── EditorCanvas.tsx   # Main canvas for editing
+│   ├── SlideElement.tsx   # Slide element
+│   ├── SlidePanel.tsx     # Slide panel
+│   ├── Toolbar.tsx        # Toolbar
+│   └── PropertiesPanel.tsx # Element properties panel
 ├── lib/
 │   ├── types/
-│   │   └── presentation.ts # Typy pro prezentace
+│   │   └── presentation.ts # Presentation types
 │   └── store/
 │       └── presentationStore.ts # Zustand store
 └── components/
 ```
 
-## Použití
+## Usage
 
-1. **Vytvoření prezentace**: Na dashboardu klikněte na "Vytvořit novou prezentaci"
-2. **Přidání elementů**: V editoru použijte toolbar pro přidání textu, obrázků nebo tvarů
-3. **Úprava elementů**: Klikněte na element a upravte ho v panelu vlastností
-4. **Správa slideů**: V levém panelu můžete přidávat, mazat a duplikovat slidey
-5. **Uložení**: Prezentace se automaticky ukládají do localStorage
-
-## Budoucí vylepšení
-
-- [ ] Export do PDF
-- [ ] Export do PowerPoint
-- [ ] Více typů elementů (grafy, tabulky)
-- [ ] Animace a přechody
-- [ ] Spolupráce v reálném čase
-- [ ] Backend API pro ukládání do cloudu
+1. **Create a presentation**: Click "Create New Presentation" on the dashboard
+2. **Add elements**: Use the toolbar in the editor to add text, images, or shapes
+3. **Edit elements**: Click on an element and modify it in the properties panel
+4. **Manage slides**: Add, delete, and duplicate slides in the left panel
+5. **Save**: Presentations are automatically saved to localStorage
