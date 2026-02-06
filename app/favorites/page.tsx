@@ -32,7 +32,7 @@ export default function FavoritesPage() {
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - d.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) return 'Dnes';
     if (diffDays === 1) return 'Včera';
     if (diffDays < 7) return `Pred ${diffDays} dňami`;
@@ -47,7 +47,7 @@ export default function FavoritesPage() {
           <div className="container mx-auto px-4 py-6 lg:py-8 max-w-7xl">
             <div className="mb-6">
               <Button variant="ghost" asChild className="mb-4">
-                <Link href="/">
+                <Link href="/dashboard">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Späť
                 </Link>
@@ -71,7 +71,7 @@ export default function FavoritesPage() {
                       Zatiaľ nemáte žiadne obľúbené prezentácie
                     </p>
                     <Button asChild>
-                      <Link href="/">
+                      <Link href="/dashboard">
                         Prejsť na dashboard
                       </Link>
                     </Button>

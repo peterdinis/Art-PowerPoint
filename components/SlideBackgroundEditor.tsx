@@ -103,16 +103,17 @@ export default function SlideBackgroundEditor({ currentBackground, onUpdate }: S
               />
             </div>
           </div>
-          
+
           <div>
             <Label className="mb-2 block">Prednastavené farby</Label>
             <div className="grid grid-cols-6 gap-2">
               {PRESET_COLORS.map((presetColor) => (
-                <button
+                <Button
                   key={presetColor}
                   onClick={() => handleColorChange(presetColor)}
+                  variant="outline"
                   className={cn(
-                    "w-full h-10 rounded-md border-2 transition-all hover:scale-110",
+                    "w-full h-10 p-0 rounded-md border-2 transition-all hover:scale-110",
                     color === presetColor ? "border-primary ring-2 ring-primary/20" : "border-border"
                   )}
                   style={{ backgroundColor: presetColor }}
@@ -128,11 +129,12 @@ export default function SlideBackgroundEditor({ currentBackground, onUpdate }: S
             <Label className="mb-2 block">Prednastavené gradienty</Label>
             <div className="grid grid-cols-2 gap-2">
               {PRESET_GRADIENTS.map((gradient) => (
-                <button
+                <Button
                   key={gradient.name}
                   onClick={() => handleGradientChange(gradient.value)}
+                  variant="outline"
                   className={cn(
-                    "w-full h-16 rounded-md border-2 transition-all hover:scale-105 relative overflow-hidden",
+                    "w-full h-16 p-0 rounded-md border-2 transition-all hover:scale-105 relative overflow-hidden block",
                     selectedGradient === gradient.value
                       ? "border-primary ring-2 ring-primary/20"
                       : "border-border"
@@ -142,11 +144,11 @@ export default function SlideBackgroundEditor({ currentBackground, onUpdate }: S
                   <span className="absolute bottom-1 left-2 text-xs font-medium text-white drop-shadow">
                     {gradient.name}
                   </span>
-                </button>
+                </Button>
               ))}
             </div>
           </div>
-          
+
           <div>
             <Label>Vlastný gradient</Label>
             <Input
@@ -177,7 +179,7 @@ export default function SlideBackgroundEditor({ currentBackground, onUpdate }: S
               />
             </div>
           </div>
-          
+
           <div>
             <Label>URL obrázka</Label>
             <div className="flex gap-2 mt-2">
@@ -199,7 +201,7 @@ export default function SlideBackgroundEditor({ currentBackground, onUpdate }: S
               )}
             </div>
           </div>
-          
+
           {imageUrl && (
             <Card>
               <CardContent className="p-0">

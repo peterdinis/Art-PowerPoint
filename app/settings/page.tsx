@@ -21,7 +21,7 @@ export default function SettingsPage() {
           <div className="container mx-auto px-4 py-6 lg:py-8 max-w-4xl">
             <div className="mb-6">
               <Button variant="ghost" asChild className="mb-4">
-                <Link href="/">
+                <Link href="/dashboard">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Späť
                 </Link>

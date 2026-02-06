@@ -17,22 +17,22 @@ export default function StatisticsPage() {
 
   const stats = useMemo(() => {
     const totalSlides = presentations.reduce((sum, p) => sum + p.slides.length, 0);
-    const totalElements = presentations.reduce((sum, p) => 
+    const totalElements = presentations.reduce((sum, p) =>
       sum + p.slides.reduce((slideSum, slide) => slideSum + slide.elements.length, 0), 0
     );
     const recentCount = presentations.filter(p => {
       const daysSinceUpdate = (Date.now() - new Date(p.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
       return daysSinceUpdate <= 7;
     }).length;
-    
+
     const avgSlides = presentations.length > 0 ? Math.round(totalSlides / presentations.length) : 0;
     const avgElements = presentations.length > 0 ? Math.round(totalElements / presentations.length) : 0;
-    
+
     const thisWeek = presentations.filter(p => {
       const daysSinceUpdate = (Date.now() - new Date(p.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
       return daysSinceUpdate <= 7;
     }).length;
-    
+
     const thisMonth = presentations.filter(p => {
       const daysSinceUpdate = (Date.now() - new Date(p.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
       return daysSinceUpdate <= 30;
@@ -58,7 +58,7 @@ export default function StatisticsPage() {
           <div className="container mx-auto px-4 py-6 lg:py-8 max-w-7xl">
             <div className="mb-6">
               <Button variant="ghost" asChild className="mb-4">
-                <Link href="/">
+                <Link href="/dashboard">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Späť
                 </Link>
