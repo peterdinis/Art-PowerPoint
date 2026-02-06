@@ -23,10 +23,10 @@ export default function SettingsPage() {
               <Button variant="ghost" asChild className="mb-4">
                 <Link href="/dashboard">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Späť
+                  Back
                 </Link>
               </Button>
-              <h1 className="text-3xl font-bold mb-2">Nastavenia</h1>
+              <h1 className="text-3xl font-bold mb-2">Settings</h1>
               <p className="text-muted-foreground">
                 Spravujte nastavenia aplikácie a preferencie
               </p>

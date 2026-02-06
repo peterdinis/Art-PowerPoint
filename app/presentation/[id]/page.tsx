@@ -134,7 +134,7 @@ export default function PresentationPage() {
         <div className="text-center">
           <p className="mb-4">Prezentácia sa nenašla</p>
           <Button onClick={() => router.push('/')} variant="outline">
-            Späť na dashboard
+            Back to dashboard
           </Button>
         </div>
       </div>
@@ -147,7 +147,7 @@ export default function PresentationPage() {
         <div className="text-center">
           <p className="mb-4">Prezentácia nemá žiadne slajdy</p>
           <Button onClick={() => router.push(`/editor?id=${presentation.id}`)} variant="outline">
-            Späť do editora
+            Back to editor
           </Button>
         </div>
       </div>

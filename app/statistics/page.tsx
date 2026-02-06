@@ -60,12 +60,12 @@ export default function StatisticsPage() {
               <Button variant="ghost" asChild className="mb-4">
                 <Link href="/dashboard">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Späť
+                  Back
                 </Link>
               </Button>
               <div className="flex items-center gap-3 mb-2">
                 <TrendingUp className="w-8 h-8 text-primary" />
-                <h1 className="text-3xl font-bold">Štatistiky</h1>
+                <h1 className="text-3xl font-bold">Statistics</h1>
               </div>
               <p className="text-muted-foreground">
                 Prehľad vašich prezentácií a aktivity
@@ -94,7 +94,7 @@ export default function StatisticsPage() {
                 <CardContent>
                   <div className="text-2xl font-bold">{stats.totalSlides}</div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Priemer: {stats.avgSlides} na prezentáciu
+                    Average: {stats.avgSlides} per presentation
                   </p>
                 </CardContent>
               </Card>
@@ -107,7 +107,7 @@ export default function StatisticsPage() {
                 <CardContent>
                   <div className="text-2xl font-bold">{stats.totalElements}</div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Priemer: {stats.avgElements} na prezentáciu
+                    Average: {stats.avgElements} per presentation
                   </p>
                 </CardContent>
               </Card>

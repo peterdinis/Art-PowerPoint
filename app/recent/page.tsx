@@ -45,12 +45,12 @@ export default function RecentPage() {
               <Button variant="ghost" asChild className="mb-4">
                 <Link href="/dashboard">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Späť
+                  Back
                 </Link>
               </Button>
               <div className="flex items-center gap-3 mb-2">
                 <Clock className="w-8 h-8 text-primary" />
-                <h1 className="text-3xl font-bold">Nedávne</h1>
+                <h1 className="text-3xl font-bold">Recent</h1>
               </div>
               <p className="text-muted-foreground">
                 Nedávno upravené prezentácie
@@ -62,7 +62,7 @@ export default function RecentPage() {
                 <CardContent className="pt-6">
                   <div className="text-center py-16">
                     <Clock className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-                    <h3 className="text-xl font-semibold mb-2">Žiadne nedávne prezentácie</h3>
+                    <h3 className="text-xl font-semibold mb-2">No recent presentations</h3>
                     <p className="text-muted-foreground mb-6">
                       Zatiaľ ste neupravovali žiadne prezentácie
                     </p>

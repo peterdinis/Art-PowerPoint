@@ -82,7 +82,7 @@ function EditorContent() {
           </p>
           <Button variant="link" asChild>
             <Link href="/">
-              Späť na dashboard
+              Back to dashboard
             </Link>
           </Button>
         </div>

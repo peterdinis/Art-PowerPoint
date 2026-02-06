@@ -96,7 +96,7 @@ export default function DashboardSidebar() {
             className="w-full justify-start gap-3 px-4 py-6 text-foreground hover:text-accent-foreground"
           >
             <Plus className="w-5 h-5" />
-            <span className="text-base font-normal">Vytvoriť novú</span>
+            <span className="text-base font-normal">Create New</span>
           </Button>
           <Link
             href="/favorites"
@@ -108,7 +108,7 @@ export default function DashboardSidebar() {
             )}
           >
             <Star className="w-5 h-5" />
-            <span>Obľúbené</span>
+            <span>Favorites</span>
           </Link>
           <Link
             href="/recent"
@@ -120,7 +120,7 @@ export default function DashboardSidebar() {
             )}
           >
             <Clock className="w-5 h-5" />
-            <span>Nedávne</span>
+            <span>Recent</span>
           </Link>
           <Link
             href="/statistics"
@@ -132,7 +132,7 @@ export default function DashboardSidebar() {
             )}
           >
             <TrendingUp className="w-5 h-5" />
-            <span>Štatistiky</span>
+            <span>Statistics</span>
           </Link>
         </nav>
 
@@ -147,7 +147,7 @@ export default function DashboardSidebar() {
             )}
           >
             <Settings className="w-5 h-5" />
-            <span>Nastavenia</span>
+            <span>Settings</span>
           </Link>
           <div className="flex items-center justify-center px-4">
             <ThemeToggle />
@@ -168,19 +168,19 @@ export default function DashboardSidebar() {
       <Dialog open={showNameDialog} onOpenChange={setShowNameDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Vytvoriť novú prezentáciu</DialogTitle>
+            <DialogTitle>Create new presentation</DialogTitle>
             <DialogDescription>
-              Zadajte názov a popis pre vašu prezentáciu
+              Enter the name and description for your presentation
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Názov prezentácie *</Label>
+              <Label htmlFor="title">Presentation name *</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Moja prezentácia"
+                placeholder="My presentation"
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && title.trim()) {
@@ -190,21 +190,21 @@ export default function DashboardSidebar() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Popis (voliteľné)</Label>
+              <Label htmlFor="description">Description (optional)</Label>
               <Input
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Krátky popis prezentácie"
+                placeholder="Short presentation description"
               />
             </div>
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowNameDialog(false)}>
-              Zrušiť
+              Cancel
             </Button>
             <Button onClick={handleCreateFromTemplate} disabled={!title.trim()}>
-              Vytvoriť
+              Create
             </Button>
           </div>
         </DialogContent>

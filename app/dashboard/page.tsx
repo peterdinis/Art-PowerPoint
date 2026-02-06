@@ -66,9 +66,9 @@ export default function Home() {
   }, [presentations]);
 
   const handleCreateNew = () => {
-    const title = prompt('Zadajte názov prezentácie:');
+    const title = prompt('Enter presentation name:');
     if (title) {
-      const description = prompt('Zadajte popis (voliteľné):') || undefined;
+      const description = prompt('Enter description (optional):') || undefined;
       const newId = createPresentation(title, description);
       router.push(`/editor?id=${newId}`);
     }
@@ -89,11 +89,11 @@ export default function Home() {
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - d.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) return 'Dnes';
-    if (diffDays === 1) return 'Včera';
-    if (diffDays < 7) return `Pred ${diffDays} dňami`;
-    return d.toLocaleDateString('sk-SK', { day: 'numeric', month: 'short', year: 'numeric' });
+
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
   return (
@@ -109,14 +109,14 @@ export default function Home() {
             <div className="mb-6 lg:mb-8">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
-                  <h1 className="text-3xl lg:text-4xl font-bold mb-2">Prezentácie</h1>
+                  <h1 className="text-3xl lg:text-4xl font-bold mb-2">Presentations</h1>
                   <p className="text-muted-foreground">
-                    Vytvárajte a spravujte svoje profesionálne prezentácie
+                    Create and manage your professional presentations
                   </p>
                 </div>
                 <Button onClick={handleCreateNew} size="lg" className="w-full sm:w-auto">
                   <Plus className="w-4 h-4 mr-2" />
-                  Nová prezentácia
+                  New presentation
                 </Button>
               </div>
 
@@ -124,7 +124,7 @@ export default function Home() {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Celkom prezentácií</CardTitle>
+                    <CardTitle className="text-sm font-medium">Total presentations</CardTitle>
                     <FileText className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
@@ -133,7 +133,7 @@ export default function Home() {
                 </Card>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Celkom slajdov</CardTitle>
+                    <CardTitle className="text-sm font-medium">Total slides</CardTitle>
                     <Grid3x3 className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
@@ -142,7 +142,7 @@ export default function Home() {
                 </Card>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Nedávno upravené</CardTitle>
+                    <CardTitle className="text-sm font-medium">Recently edited</CardTitle>
                     <Clock className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
@@ -151,7 +151,7 @@ export default function Home() {
                 </Card>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Priemer slajdov</CardTitle>
+                    <CardTitle className="text-sm font-medium">Average slides</CardTitle>
                     <TrendingUp className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
@@ -168,7 +168,7 @@ export default function Home() {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
                         type="text"
-                        placeholder="Hľadať prezentácie..."
+                        placeholder="Search presentations..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-10"
@@ -179,17 +179,17 @@ export default function Home() {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="outline">
-                            {sortBy === 'recent' && 'Najnovšie'}
-                            {sortBy === 'oldest' && 'Najstaršie'}
-                            {sortBy === 'name' && 'Podľa názvu'}
-                            {sortBy === 'slides' && 'Podľa slajdov'}
+                            {sortBy === 'recent' && 'Most recent'}
+                            {sortBy === 'oldest' && 'Oldest'}
+                            {sortBy === 'name' && 'By name'}
+                            {sortBy === 'slides' && 'By slides'}
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          <DropdownMenuItem onClick={() => setSortBy('recent')}>Najnovšie</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setSortBy('oldest')}>Najstaršie</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setSortBy('name')}>Podľa názvu</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setSortBy('slides')}>Podľa počtu slajdov</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setSortBy('recent')}>Most recent</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setSortBy('oldest')}>Oldest</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setSortBy('name')}>By name</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setSortBy('slides')}>By slide count</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -221,10 +221,10 @@ export default function Home() {
                   <div className="text-center py-12">
                     <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground text-lg mb-2">
-                      Žiadne prezentácie sa nenašli
+                      No presentations found
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Skúste zmeniť vyhľadávací dotaz
+                      Try changing your search query
                     </p>
                   </div>
                 </CardContent>
@@ -237,14 +237,14 @@ export default function Home() {
                       <FileText className="w-12 h-12 text-muted-foreground" />
                     </div>
                     <h3 className="text-2xl font-semibold mb-2">
-                      Zatiaľ nemáte žiadne prezentácie
+                      You don't have any presentations yet
                     </h3>
                     <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                      Začnite vytváraním svojej prvej prezentácie. Je to jednoduché a rýchle!
+                      Start by creating your first presentation. It's simple and quick!
                     </p>
                     <Button onClick={handleCreateNew} size="lg">
                       <Plus className="w-4 h-4 mr-2" />
-                      Vytvoriť prvú prezentáciu
+                      Create first presentation
                     </Button>
                   </div>
                 </CardContent>
@@ -252,7 +252,7 @@ export default function Home() {
             ) : viewMode === 'grid' ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
                 {/* Create New Card */}
-                <Card 
+                <Card
                   className="cursor-pointer hover:border-primary transition-colors border-dashed"
                   onClick={handleCreateNew}
                 >
@@ -260,7 +260,7 @@ export default function Home() {
                     <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
                       <Plus className="w-8 h-8 text-muted-foreground" />
                     </div>
-                    <p className="font-semibold text-center">Vytvoriť novú prezentáciu</p>
+                    <p className="font-semibold text-center">Create new presentation</p>
                   </CardContent>
                 </Card>
 
@@ -273,7 +273,7 @@ export default function Home() {
                           {presentation.slides.length}
                         </div>
                         <div className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm text-xs px-2 py-1 rounded">
-                          {presentation.slides.length} slajd{presentation.slides.length !== 1 ? 'ov' : ''}
+                          {presentation.slides.length} slide{presentation.slides.length !== 1 ? 's' : ''}
                         </div>
                       </div>
                       <CardHeader>
@@ -305,7 +305,7 @@ export default function Home() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={(e) => { e.preventDefault(); handleDelete(presentation.id); }}>
                             <Trash2 className="w-4 h-4 mr-2" />
-                            Vymazať
+                            Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -335,7 +335,7 @@ export default function Home() {
                             <div className="flex items-center gap-4 text-xs text-muted-foreground">
                               <span className="flex items-center gap-1">
                                 <Grid3x3 className="w-3 h-3" />
-                                {presentation.slides.length} slajd{presentation.slides.length !== 1 ? 'ov' : ''}
+                                {presentation.slides.length} slide{presentation.slides.length !== 1 ? 's' : ''}
                               </span>
                               <span className="flex items-center gap-1">
                                 <Calendar className="w-3 h-3" />
@@ -352,7 +352,7 @@ export default function Home() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={(e) => { e.preventDefault(); handleDelete(presentation.id); }}>
                                 <Trash2 className="w-4 h-4 mr-2" />
-                                Vymazať
+                                Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
