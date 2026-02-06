@@ -16,6 +16,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
+import { motion } from 'framer-motion';
 
 export default function Toolbar() {
   const { addElement, currentPresentation, currentSlideIndex, selectedElementId, updateElement } = usePresentationStore();
@@ -130,7 +131,7 @@ export default function Toolbar() {
     }
   };
 
-  const handleAddShape = (shapeType: 'square' | 'circle' | 'triangle' | 'rectangle' | 'rounded') => {
+  const handleAddShape = (shapeType: 'square' | 'circle' | 'triangle' | 'rectangle' | 'rounded' | 'star') => {
     const sizes = {
       square: { width: 200, height: 200 },
       circle: { width: 200, height: 200 },
@@ -188,36 +189,49 @@ export default function Toolbar() {
     <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="px-4 py-3">
         <div className="flex items-center gap-3 flex-wrap">
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept="image/*"
+            onChange={handleFileUpload}
+          />
           {/* Quick Add Buttons */}
           <div className="flex items-center gap-2">
-            <Button
-              onClick={() => handleAddText('heading1')}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
-              <Heading1 className="w-4 h-4" />
-              <span className="hidden sm:inline">H1</span>
-            </Button>
-            <Button
-              onClick={() => handleAddText('body')}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
-              <Type className="w-4 h-4" />
-              <span className="hidden sm:inline">Text</span>
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                onClick={() => handleAddText('heading1')}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <Heading1 className="w-4 h-4" />
+                <span className="hidden sm:inline">H1</span>
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                onClick={() => handleAddText('body')}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <Type className="w-4 h-4" />
+                <span className="hidden sm:inline">Text</span>
+              </Button>
+            </motion.div>
             <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
               <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                >
-                  <Image className="w-4 h-4" />
-                  <span className="hidden sm:inline">Obrázok</span>
-                </Button>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Image className="w-4 h-4" />
+                    <span className="hidden sm:inline">Obrázok</span>
+                  </Button>
+                </motion.div>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
@@ -248,6 +262,22 @@ export default function Toolbar() {
                       />
                     </div>
                   )}
+
+                  <div className="flex items-center gap-4">
+                    <Separator className="flex-1" />
+                    <span className="text-xs text-muted-foreground">ALEBO</span>
+                    <Separator className="flex-1" />
+                  </div>
+
+                  <div className="flex justify-center">
+                    <Button
+                      variant="secondary"
+                      className="w-full"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Nahrať z počítača
+                    </Button>
+                  </div>
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setImageDialogOpen(false)}>
@@ -259,23 +289,27 @@ export default function Toolbar() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
-            <Button
-              onClick={() => handleAddShape('square')}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
-              <Square className="w-4 h-4" />
-            </Button>
-            <Button
-              onClick={() => handleAddShape('star')}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              title="Pridať hviezdu"
-            >
-              <span className="text-lg leading-none">★</span>
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                onClick={() => handleAddShape('square')}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <Square className="w-4 h-4" />
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                onClick={() => handleAddShape('star')}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                title="Pridať hviezdu"
+              >
+                <span className="text-lg leading-none">★</span>
+              </Button>
+            </motion.div>
           </div>
 
           <Separator orientation="vertical" className="h-6" />
@@ -283,11 +317,13 @@ export default function Toolbar() {
           {/* Add Elements Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="default" size="sm" className="gap-2">
-                <Plus className="w-4 h-4" />
-                Pridať
-                <ChevronDown className="w-4 h-4" />
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button variant="default" size="sm" className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  Pridať
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
+              </motion.div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-64">
               <DropdownMenuLabel className="text-xs text-muted-foreground">Text</DropdownMenuLabel>
@@ -373,6 +409,22 @@ export default function Toolbar() {
                         />
                       </div>
                     )}
+
+                    <div className="flex items-center gap-4">
+                      <Separator className="flex-1" />
+                      <span className="text-xs text-muted-foreground">ALEBO</span>
+                      <Separator className="flex-1" />
+                    </div>
+
+                    <div className="flex justify-center">
+                      <Button
+                        variant="secondary"
+                        className="w-full"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        Nahrať z počítača
+                      </Button>
+                    </div>
                   </div>
                   <DialogFooter>
                     <Button variant="outline" onClick={() => setImageDialogOpen(false)}>
@@ -505,64 +557,76 @@ export default function Toolbar() {
             <>
               <Separator orientation="vertical" className="h-6" />
               <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
-                <Button
-                  variant={selectedElement.style?.fontWeight === 'bold' ? 'default' : 'ghost'}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => handleTextStyle('fontWeight', selectedElement.style?.fontWeight === 'bold' ? 'normal' : 'bold')}
-                  title="Tučné"
-                >
-                  <Bold className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={selectedElement.style?.fontStyle === 'italic' ? 'default' : 'ghost'}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => handleTextStyle('fontStyle', selectedElement.style?.fontStyle === 'italic' ? 'normal' : 'italic')}
-                  title="Kurzíva"
-                >
-                  <Italic className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={selectedElement.style?.textDecoration === 'underline' ? 'default' : 'ghost'}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => handleTextStyle('textDecoration', selectedElement.style?.textDecoration === 'underline' ? 'none' : 'underline')}
-                  title="Podčiarknuté"
-                >
-                  <Underline className="w-4 h-4" />
-                </Button>
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                  <Button
+                    variant={selectedElement.style?.fontWeight === 'bold' ? 'default' : 'ghost'}
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => handleTextStyle('fontWeight', selectedElement.style?.fontWeight === 'bold' ? 'normal' : 'bold')}
+                    title="Tučné"
+                  >
+                    <Bold className="w-4 h-4" />
+                  </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                  <Button
+                    variant={selectedElement.style?.fontStyle === 'italic' ? 'default' : 'ghost'}
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => handleTextStyle('fontStyle', selectedElement.style?.fontStyle === 'italic' ? 'normal' : 'italic')}
+                    title="Kurzíva"
+                  >
+                    <Italic className="w-4 h-4" />
+                  </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                  <Button
+                    variant={selectedElement.style?.textDecoration === 'underline' ? 'default' : 'ghost'}
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => handleTextStyle('textDecoration', selectedElement.style?.textDecoration === 'underline' ? 'none' : 'underline')}
+                    title="Podčiarknuté"
+                  >
+                    <Underline className="w-4 h-4" />
+                  </Button>
+                </motion.div>
               </div>
 
               <Separator orientation="vertical" className="h-6" />
               <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
-                <Button
-                  variant={selectedElement.style?.textAlign === 'left' ? 'default' : 'ghost'}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => handleTextStyle('textAlign', 'left')}
-                  title="Zarovnať vľavo"
-                >
-                  <AlignLeft className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={selectedElement.style?.textAlign === 'center' ? 'default' : 'ghost'}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => handleTextStyle('textAlign', 'center')}
-                  title="Zarovnať na stred"
-                >
-                  <AlignCenter className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={selectedElement.style?.textAlign === 'right' ? 'default' : 'ghost'}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => handleTextStyle('textAlign', 'right')}
-                  title="Zarovnať vpravo"
-                >
-                  <AlignRight className="w-4 h-4" />
-                </Button>
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                  <Button
+                    variant={selectedElement.style?.textAlign === 'left' ? 'default' : 'ghost'}
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => handleTextStyle('textAlign', 'left')}
+                    title="Zarovnať vľavo"
+                  >
+                    <AlignLeft className="w-4 h-4" />
+                  </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                  <Button
+                    variant={selectedElement.style?.textAlign === 'center' ? 'default' : 'ghost'}
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => handleTextStyle('textAlign', 'center')}
+                    title="Zarovnať na stred"
+                  >
+                    <AlignCenter className="w-4 h-4" />
+                  </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                  <Button
+                    variant={selectedElement.style?.textAlign === 'right' ? 'default' : 'ghost'}
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => handleTextStyle('textAlign', 'right')}
+                    title="Zarovnať vpravo"
+                  >
+                    <AlignRight className="w-4 h-4" />
+                  </Button>
+                </motion.div>
               </div>
             </>
           )}

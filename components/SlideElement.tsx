@@ -5,6 +5,7 @@ import { useDrag } from 'react-dnd';
 import { usePresentationStore } from '@/lib/store/presentationStore';
 import type { SlideElement as SlideElementType } from '@/lib/types/presentation';
 import { Video } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface SlideElementProps {
   element: SlideElementType;
@@ -129,7 +130,6 @@ export default function SlideElement({ element, isSelected, onSelect }: SlideEle
     top: `${element.position.y}px`,
     width: `${element.size.width}px`,
     height: `${element.size.height}px`,
-    opacity: isDragging ? 0.5 : 1,
     cursor: isResizing ? 'grabbing' : (isSelected ? 'move' : 'pointer'),
     border: isSelected ? '2px solid hsl(var(--primary))' : '2px solid transparent',
     outline: isSelected ? '2px solid hsl(var(--primary) / 0.3)' : 'none',
@@ -254,9 +254,12 @@ export default function SlideElement({ element, isSelected, onSelect }: SlideEle
   };
 
   return (
-    <div
+    <motion.div
       ref={elementRef}
       style={style}
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: isDragging ? 0.5 : 1, scale: 1 }}
+      transition={{ duration: 0.2 }}
       onMouseDown={handleMouseDown}
       className="select-none"
     >
@@ -275,6 +278,6 @@ export default function SlideElement({ element, isSelected, onSelect }: SlideEle
           <ResizeHandle position="w" cursor="w-resize" />
         </>
       )}
-    </div>
+    </motion.div>
   );
 }

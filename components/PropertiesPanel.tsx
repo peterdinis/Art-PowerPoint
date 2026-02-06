@@ -4,12 +4,18 @@ import { usePresentationStore } from '@/lib/store/presentationStore';
 import { Trash2, Type, Image as ImageIcon, Square, Layers, Video, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { SlideElement } from '@/lib/types/presentation';
 import SlideBackgroundEditor from './SlideBackgroundEditor';
+
+import { motion, AnimatePresence } from 'framer-motion';
+
+// ... (existing imports)
 
 export default function PropertiesPanel() {
   const {
@@ -48,7 +54,12 @@ export default function PropertiesPanel() {
 
   if (!selectedElement) {
     return (
-      <div className="w-80 bg-background border-l border-border flex flex-col">
+      <motion.div
+        initial={{ x: 320, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="w-80 bg-background border-l border-border flex flex-col"
+      >
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Layers className="w-5 h-5" />
@@ -74,7 +85,7 @@ export default function PropertiesPanel() {
               <p className="text-xs text-muted-foreground mb-2">
                 Poznámky sú viditeľné len v editore, nie v prezentácii
               </p>
-              <textarea
+              <Textarea
                 id="slide-notes"
                 value={currentSlide.notes || ''}
                 onChange={(e) => {
@@ -85,7 +96,7 @@ export default function PropertiesPanel() {
                   );
                   updatePresentation(currentPresentation.id, { slides: updatedSlides });
                 }}
-                className="w-full px-3 py-2 mt-2 border border-input rounded-md text-sm bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                className="mt-2 resize-none"
                 rows={6}
                 placeholder="Pridajte poznámky k tomuto slajdu..."
               />
@@ -96,25 +107,28 @@ export default function PropertiesPanel() {
             {/* Slide Transition */}
             <div>
               <Label htmlFor="slide-transition">Prechod medzi slajdmi</Label>
-              <select
-                id="slide-transition"
+              <Select
                 value={currentSlide.transition?.type || 'fade'}
-                onChange={(e) => {
+                onValueChange={(value) => {
                   const updatedSlides = currentPresentation.slides.map((slide, index) =>
                     index === currentSlideIndex
-                      ? { ...slide, transition: { type: e.target.value as any, duration: slide.transition?.duration || 500 } }
+                      ? { ...slide, transition: { type: value as any, duration: slide.transition?.duration || 500 } }
                       : slide
                   );
                   updatePresentation(currentPresentation.id, { slides: updatedSlides });
                 }}
-                className="w-full px-3 py-2 mt-2 border border-input rounded-md text-sm bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <option value="none">Žiadny</option>
-                <option value="fade">Fade</option>
-                <option value="slide">Slide</option>
-                <option value="zoom">Zoom</option>
-                <option value="blur">Blur</option>
-              </select>
+                <SelectTrigger id="slide-transition" className="mt-2">
+                  <SelectValue placeholder="Vyberte prechod" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Žiadny</SelectItem>
+                  <SelectItem value="fade">Fade</SelectItem>
+                  <SelectItem value="slide">Slide</SelectItem>
+                  <SelectItem value="zoom">Zoom</SelectItem>
+                  <SelectItem value="blur">Blur</SelectItem>
+                </SelectContent>
+              </Select>
               {currentSlide.transition && currentSlide.transition.type !== 'none' && (
                 <div className="mt-2">
                   <Label htmlFor="transition-duration" className="text-xs">Trvanie (ms)</Label>
@@ -140,7 +154,7 @@ export default function PropertiesPanel() {
             </div>
           </div>
         </CardContent>
-      </div>
+      </motion.div>
     );
   }
 
@@ -160,7 +174,13 @@ export default function PropertiesPanel() {
   };
 
   return (
-    <div className="w-80 bg-background border-l border-border flex flex-col">
+    <motion.div
+      key={selectedElement.id}
+      initial={{ x: 320, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="w-80 bg-background border-l border-border flex flex-col"
+    >
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
@@ -266,11 +286,11 @@ export default function PropertiesPanel() {
             <Separator />
             <div>
               <Label htmlFor="text-content">Text</Label>
-              <textarea
+              <Textarea
                 id="text-content"
                 value={selectedElement.content}
                 onChange={(e) => handleUpdate({ content: e.target.value })}
-                className="w-full px-3 py-2 mt-2 border border-input rounded-md text-sm bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                className="mt-2 resize-none"
                 rows={4}
               />
             </div>
@@ -308,25 +328,28 @@ export default function PropertiesPanel() {
 
             <div>
               <Label htmlFor="font-family">Font</Label>
-              <select
-                id="font-family"
+              <Select
                 value={selectedElement.style?.fontFamily || 'Arial'}
-                onChange={(e) =>
+                onValueChange={(value) =>
                   handleUpdate({
-                    style: { ...selectedElement.style, fontFamily: e.target.value },
+                    style: { ...selectedElement.style, fontFamily: value },
                   })
                 }
-                className="w-full px-3 py-2 mt-2 border border-input rounded-md text-sm bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <option value="Arial">Arial</option>
-                <option value="Helvetica">Helvetica</option>
-                <option value="Times New Roman">Times New Roman</option>
-                <option value="Courier New">Courier New</option>
-                <option value="Verdana">Verdana</option>
-                <option value="Georgia">Georgia</option>
-                <option value="Palatino">Palatino</option>
-                <option value="Garamond">Garamond</option>
-              </select>
+                <SelectTrigger id="font-family" className="mt-2">
+                  <SelectValue placeholder="Vyberte font" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Arial">Arial</SelectItem>
+                  <SelectItem value="Helvetica">Helvetica</SelectItem>
+                  <SelectItem value="Times New Roman">Times New Roman</SelectItem>
+                  <SelectItem value="Courier New">Courier New</SelectItem>
+                  <SelectItem value="Verdana">Verdana</SelectItem>
+                  <SelectItem value="Georgia">Georgia</SelectItem>
+                  <SelectItem value="Palatino">Palatino</SelectItem>
+                  <SelectItem value="Garamond">Garamond</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid grid-cols-2 gap-2 mt-4">
@@ -459,19 +482,22 @@ export default function PropertiesPanel() {
             <Separator />
             <div>
               <Label htmlFor="shape-type">Typ tvaru</Label>
-              <select
-                id="shape-type"
+              <Select
                 value={selectedElement.content || 'square'}
-                onChange={(e) => handleUpdate({ content: e.target.value })}
-                className="w-full px-3 py-2 mt-2 border border-input rounded-md text-sm bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                onValueChange={(value) => handleUpdate({ content: value })}
               >
-                <option value="square">Štvorec</option>
-                <option value="circle">Kruh</option>
-                <option value="triangle">Trojuholník</option>
-                <option value="rectangle">Obdĺžnik</option>
-                <option value="rounded">Zaoblený obdĺžnik</option>
-                <option value="star">Hviezda</option>
-              </select>
+                <SelectTrigger id="shape-type" className="mt-2">
+                  <SelectValue placeholder="Vyberte tvar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="square">Štvorec</SelectItem>
+                  <SelectItem value="circle">Kruh</SelectItem>
+                  <SelectItem value="triangle">Trojuholník</SelectItem>
+                  <SelectItem value="rectangle">Obdĺžnik</SelectItem>
+                  <SelectItem value="rounded">Zaoblený obdĺžnik</SelectItem>
+                  <SelectItem value="star">Hviezda</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="shape-bg">Farba pozadia</Label>
@@ -528,27 +554,30 @@ export default function PropertiesPanel() {
           <div className="space-y-3">
             <div>
               <Label htmlFor="animation-type" className="text-xs text-muted-foreground">Typ animácie</Label>
-              <select
-                id="animation-type"
+              <Select
                 value={selectedElement.animation?.type || 'none'}
-                onChange={(e) =>
+                onValueChange={(value) =>
                   handleUpdate({
                     animation: {
-                      type: e.target.value as any,
+                      type: value as any,
                       duration: selectedElement.animation?.duration || 500,
                       delay: selectedElement.animation?.delay || 0,
                     },
                   })
                 }
-                className="w-full px-3 py-2 mt-1 border border-input rounded-md text-sm bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <option value="none">Žiadna</option>
-                <option value="fadeIn">Fade In</option>
-                <option value="slideIn">Slide In</option>
-                <option value="zoomIn">Zoom In</option>
-                <option value="bounce">Bounce</option>
-                <option value="rotate">Rotate</option>
-              </select>
+                <SelectTrigger id="animation-type" className="mt-1">
+                  <SelectValue placeholder="Vyberte animáciu" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Žiadna</SelectItem>
+                  <SelectItem value="fadeIn">Fade In</SelectItem>
+                  <SelectItem value="slideIn">Slide In</SelectItem>
+                  <SelectItem value="zoomIn">Zoom In</SelectItem>
+                  <SelectItem value="bounce">Bounce</SelectItem>
+                  <SelectItem value="rotate">Rotate</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             {selectedElement.animation && selectedElement.animation.type !== 'none' && (
               <>
@@ -597,6 +626,6 @@ export default function PropertiesPanel() {
           </div>
         </div>
       </CardContent>
-    </div>
+    </motion.div>
   );
 }
