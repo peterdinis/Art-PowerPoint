@@ -79,7 +79,7 @@ function EditorContent() {
 					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
 					<p className="text-muted-foreground mb-4">Načítanie prezentácie...</p>
 					<Button variant="link" asChild>
-						<Link href="/">Back to dashboard</Link>
+						<Link href="/">Späť na dashboard</Link>
 					</Button>
 				</div>
 			</div>

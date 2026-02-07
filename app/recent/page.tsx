@@ -77,7 +77,7 @@ export default function RecentPage() {
 									<div className="text-center py-16">
 										<Clock className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
 										<h3 className="text-xl font-semibold mb-2">
-											No recent presentations
+											Žiadne nedávne prezentácie
 										</h3>
 										<p className="text-muted-foreground mb-6">
 											Zatiaľ ste neupravovali žiadne prezentácie

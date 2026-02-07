@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { usePresentationStore } from "@/lib/store/presentationStore";
 import { X, ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
@@ -43,6 +43,37 @@ export default function PresentationPage() {
 		}
 	}, [presentations, presentation, presentationId, router]);
 
+	const nextSlide = useCallback(() => {
+		if (presentation && currentSlideIndex < presentation.slides.length - 1) {
+			setCurrentSlideIndex((prev) => prev + 1);
+		}
+	}, [presentation, currentSlideIndex]);
+
+	const prevSlide = useCallback(() => {
+		if (currentSlideIndex > 0) {
+			setCurrentSlideIndex((prev) => prev - 1);
+		}
+	}, [currentSlideIndex]);
+
+	const toggleFullscreen = useCallback(() => {
+		if (!document.fullscreenElement) {
+			document.documentElement.requestFullscreen().catch(() => {
+				// Ignore errors
+			});
+			setIsFullscreen(true);
+		} else {
+			document.exitFullscreen();
+			setIsFullscreen(false);
+		}
+	}, []);
+
+	const exitFullscreen = useCallback(() => {
+		if (document.fullscreenElement) {
+			document.exitFullscreen();
+			setIsFullscreen(false);
+		}
+	}, []);
+
 	useEffect(() => {
 		if (!presentation) return;
 
@@ -62,77 +93,49 @@ export default function PresentationPage() {
 
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [currentSlideIndex, presentation]);
+	}, [presentation, nextSlide, prevSlide, exitFullscreen, toggleFullscreen]);
 
 	useEffect(() => {
 		if (isPlaying && presentation) {
 			const interval = setInterval(() => {
-				if (currentSlideIndex < presentation.slides.length - 1) {
-					setCurrentSlideIndex((prev) => prev + 1);
-				} else {
-					setIsPlaying(false);
-				}
+				setCurrentSlideIndex((prev) => {
+					if (prev < presentation.slides.length - 1) {
+						return prev + 1;
+					} else {
+						setIsPlaying(false);
+						return prev;
+					}
+				});
 			}, 5000);
 
 			return () => clearInterval(interval);
 		}
-	}, [isPlaying, currentSlideIndex, presentation]);
+	}, [isPlaying, presentation]);
 
 	useEffect(() => {
+		if (!isFullscreen) return;
+
 		const handleMouseMove = () => {
 			setShowControls(true);
 			const timeout = setTimeout(() => setShowControls(false), 3000);
 			return () => clearTimeout(timeout);
 		};
 
-		if (isFullscreen) {
-			window.addEventListener("mousemove", handleMouseMove);
-			return () => window.removeEventListener("mousemove", handleMouseMove);
-		}
+		window.addEventListener("mousemove", handleMouseMove);
+		return () => window.removeEventListener("mousemove", handleMouseMove);
 	}, [isFullscreen]);
 
-	const nextSlide = () => {
-		if (presentation && currentSlideIndex < presentation.slides.length - 1) {
-			setCurrentSlideIndex((prev) => prev + 1);
-		}
-	};
-
-	const prevSlide = () => {
-		if (currentSlideIndex > 0) {
-			setCurrentSlideIndex((prev) => prev - 1);
-		}
-	};
-
-	const toggleFullscreen = () => {
-		if (!document.fullscreenElement) {
-			document.documentElement.requestFullscreen().catch(() => {
-				// Ignore errors
-			});
-			setIsFullscreen(true);
-		} else {
-			document.exitFullscreen();
-			setIsFullscreen(false);
-		}
-	};
-
-	const exitFullscreen = () => {
-		if (document.fullscreenElement) {
-			document.exitFullscreen();
-			setIsFullscreen(false);
-		}
-	};
-
 	if (isLoading) {
-		return <Loading message="Loading presentation" fullScreen size="lg" />;
+		return <Loading message="Načítavanie prezentácie" fullScreen size="lg" />;
 	}
 
 	if (!presentation) {
 		return (
 			<div className="flex items-center justify-center h-screen bg-background">
 				<div className="text-center">
-					<p className="mb-4 text-foreground">Presentation not found</p>
+					<p className="mb-4 text-foreground">Prezentácia sa nenašla</p>
 					<Button onClick={() => router.push("/")} variant="outline">
-						Back to dashboard
+						Späť na dashboard
 					</Button>
 				</div>
 			</div>
@@ -143,12 +146,12 @@ export default function PresentationPage() {
 		return (
 			<div className="flex items-center justify-center h-screen bg-background">
 				<div className="text-center">
-					<p className="mb-4 text-foreground">Presentation has no slides</p>
+					<p className="mb-4 text-foreground">Prezentácia nemá žiadne slajdy</p>
 					<Button
 						onClick={() => router.push(`/editor?id=${presentation.id}`)}
 						variant="outline"
 					>
-						Back to editor
+						Späť do editora
 					</Button>
 				</div>
 			</div>
@@ -193,6 +196,7 @@ export default function PresentationPage() {
 						key={element.id}
 						element={element}
 						slideIndex={currentSlideIndex}
+						slideBackground={currentSlide.background}
 					/>
 				))}
 			</div>
@@ -246,7 +250,7 @@ export default function PresentationPage() {
 							size="icon"
 							onClick={toggleFullscreen}
 							className="text-white hover:bg-white/20"
-							title="Fullscreen (F)"
+							title="Celá obrazovka (F)"
 						>
 							<span className="text-xs">⛶</span>
 						</Button>
@@ -255,7 +259,7 @@ export default function PresentationPage() {
 							size="icon"
 							onClick={() => router.push(`/editor?id=${presentation.id}`)}
 							className="text-white hover:bg-white/20"
-							title="Close"
+							title="Zavrieť"
 						>
 							<X className="w-5 h-5" />
 						</Button>
@@ -274,9 +278,11 @@ export default function PresentationPage() {
 function PresentationElement({
 	element,
 	slideIndex,
+	slideBackground,
 }: {
 	element: SlideElement;
 	slideIndex: number;
+	slideBackground?: { color?: string; gradient?: string; image?: string };
 }) {
 	const [isVisible, setIsVisible] = useState(false);
 
@@ -334,6 +340,15 @@ function PresentationElement({
 	const renderContent = () => {
 		switch (element.type) {
 			case "text":
+				// Determine text color based on slide background
+				const bgColor = slideBackground?.color || "#ffffff";
+				const isDarkBg = bgColor && (
+					bgColor === "#000000" || 
+					bgColor.toLowerCase().includes("dark") ||
+					(bgColor.startsWith("#") && parseInt(bgColor.slice(1), 16) < 0x808080)
+				);
+				const defaultTextColor = isDarkBg ? "#ffffff" : "#212121";
+				
 				return (
 					<div
 						style={{
@@ -341,7 +356,7 @@ function PresentationElement({
 							height: "100%",
 							padding: "8px",
 							fontSize: `${(element.style?.fontSize || 16) * scale}px`,
-							color: element.style?.color || "#000000",
+							color: element.style?.color || defaultTextColor,
 							fontFamily: element.style?.fontFamily || "Arial",
 							fontWeight: element.style?.fontWeight || "normal",
 							fontStyle: element.style?.fontStyle || "normal",

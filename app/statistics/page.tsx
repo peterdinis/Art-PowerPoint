@@ -124,7 +124,7 @@ export default function StatisticsPage() {
 								<CardContent>
 									<div className="text-2xl font-bold">{stats.totalSlides}</div>
 									<p className="text-xs text-muted-foreground mt-1">
-										Average: {stats.avgSlides} per presentation
+										Priemer: {stats.avgSlides} na prezentáciu
 									</p>
 								</CardContent>
 							</Card>
@@ -141,7 +141,7 @@ export default function StatisticsPage() {
 										{stats.totalElements}
 									</div>
 									<p className="text-xs text-muted-foreground mt-1">
-										Average: {stats.avgElements} per presentation
+										Priemer: {stats.avgElements} na prezentáciu
 									</p>
 								</CardContent>
 							</Card>

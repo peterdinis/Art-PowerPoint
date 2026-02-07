@@ -231,7 +231,7 @@ export default function Toolbar() {
 			content: items,
 			style: {
 				fontSize: 20,
-				color: "#000000",
+				color: "#212121",
 				fontFamily: "Arial",
 				textAlign: "left",
 			},

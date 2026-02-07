@@ -78,7 +78,7 @@ export default function FavoritesPage() {
 									<div className="text-center py-16">
 										<Star className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
 										<h3 className="text-xl font-semibold mb-2">
-											No favorite presentations
+											Žiadne obľúbené prezentácie
 										</h3>
 										<p className="text-muted-foreground mb-6">
 											Zatiaľ nemáte žiadne obľúbené prezentácie

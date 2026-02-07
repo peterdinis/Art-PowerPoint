@@ -160,7 +160,7 @@ export default function Home() {
 										Presentations
 									</h1>
 									<p className="text-muted-foreground">
-										Create and manage your professional presentations
+										Vytvárajte a spravujte profesionálne prezentácie
 									</p>
 								</div>
 								<Button
@@ -178,7 +178,7 @@ export default function Home() {
 								<Card>
 									<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 										<CardTitle className="text-sm font-medium">
-											Total presentations
+											Celkom prezentácií
 										</CardTitle>
 										<FileText className="h-4 w-4 text-muted-foreground" />
 									</CardHeader>
@@ -189,7 +189,7 @@ export default function Home() {
 								<Card>
 									<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 										<CardTitle className="text-sm font-medium">
-											Total slides
+											Celkom slajdov
 										</CardTitle>
 										<Grid3x3 className="h-4 w-4 text-muted-foreground" />
 									</CardHeader>
@@ -202,7 +202,7 @@ export default function Home() {
 								<Card>
 									<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 										<CardTitle className="text-sm font-medium">
-											Recently edited
+											Naposledy upravené
 										</CardTitle>
 										<Clock className="h-4 w-4 text-muted-foreground" />
 									</CardHeader>
@@ -213,7 +213,7 @@ export default function Home() {
 								<Card>
 									<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 										<CardTitle className="text-sm font-medium">
-											Average slides
+											Priemer slajdov
 										</CardTitle>
 										<TrendingUp className="h-4 w-4 text-muted-foreground" />
 									</CardHeader>
@@ -242,25 +242,25 @@ export default function Home() {
 											<DropdownMenu>
 												<DropdownMenuTrigger asChild>
 													<Button variant="outline">
-														{sortBy === "recent" && "Most recent"}
-														{sortBy === "oldest" && "Oldest"}
-														{sortBy === "name" && "By name"}
-														{sortBy === "slides" && "By slides"}
-													</Button>
-												</DropdownMenuTrigger>
-												<DropdownMenuContent>
-													<DropdownMenuItem onClick={() => setSortBy("recent")}>
-														Most recent
-													</DropdownMenuItem>
-													<DropdownMenuItem onClick={() => setSortBy("oldest")}>
-														Oldest
-													</DropdownMenuItem>
-													<DropdownMenuItem onClick={() => setSortBy("name")}>
-														By name
-													</DropdownMenuItem>
-													<DropdownMenuItem onClick={() => setSortBy("slides")}>
-														By slide count
-													</DropdownMenuItem>
+													{sortBy === "recent" && "Najnovšie"}
+													{sortBy === "oldest" && "Najstaršie"}
+													{sortBy === "name" && "Podľa názvu"}
+													{sortBy === "slides" && "Podľa slajdov"}
+												</Button>
+											</DropdownMenuTrigger>
+											<DropdownMenuContent>
+												<DropdownMenuItem onClick={() => setSortBy("recent")}>
+													Najnovšie
+												</DropdownMenuItem>
+												<DropdownMenuItem onClick={() => setSortBy("oldest")}>
+													Najstaršie
+												</DropdownMenuItem>
+												<DropdownMenuItem onClick={() => setSortBy("name")}>
+													Podľa názvu
+												</DropdownMenuItem>
+												<DropdownMenuItem onClick={() => setSortBy("slides")}>
+													Podľa počtu slajdov
+												</DropdownMenuItem>
 												</DropdownMenuContent>
 											</DropdownMenu>
 										</div>
@@ -292,10 +292,10 @@ export default function Home() {
 									<div className="text-center py-12">
 										<Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
 										<p className="text-muted-foreground text-lg mb-2">
-											No presentations found
+											Žiadne prezentácie sa nenašli
 										</p>
 										<p className="text-sm text-muted-foreground">
-											Try changing your search query
+											Skúste zmeniť vyhľadávací dotaz
 										</p>
 									</div>
 								</CardContent>
@@ -308,15 +308,15 @@ export default function Home() {
 											<FileText className="w-12 h-12 text-muted-foreground" />
 										</div>
 										<h3 className="text-2xl font-semibold mb-2">
-											You don't have any presentations yet
+											Zatiaľ nemáte žiadne prezentácie
 										</h3>
 										<p className="text-muted-foreground mb-6 max-w-md mx-auto">
-											Start by creating your first presentation. It's simple and
-											quick!
+											Začnite vytvorením vašej prvej prezentácie. Je to jednoduché a
+											rýchle!
 										</p>
 										<Button onClick={handleCreateNew} size="lg">
 											<Plus className="w-4 h-4 mr-2" />
-											Create first presentation
+											Vytvoriť prvú prezentáciu
 										</Button>
 									</div>
 								</CardContent>
@@ -333,7 +333,7 @@ export default function Home() {
 											<Plus className="w-8 h-8 text-muted-foreground" />
 										</div>
 										<p className="font-semibold text-center">
-											Create new presentation
+											Vytvoriť novú prezentáciu
 										</p>
 									</CardContent>
 								</Card>
@@ -353,8 +353,8 @@ export default function Home() {
 													{presentation.slides.length}
 												</div>
 												<div className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm text-xs px-2 py-1 rounded">
-													{presentation.slides.length} slide
-													{presentation.slides.length !== 1 ? "s" : ""}
+													{presentation.slides.length} slajd
+													{presentation.slides.length !== 1 ? "ov" : ""}
 												</div>
 											</div>
 											<CardHeader>
