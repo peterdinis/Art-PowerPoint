@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/components/ThemeProvider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -58,6 +59,7 @@ export default function Toolbar() {
 		selectedElementId,
 		updateElement,
 	} = usePresentationStore();
+	const { theme } = useTheme();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [imageDialogOpen, setImageDialogOpen] = useState(false);
 	const [videoDialogOpen, setVideoDialogOpen] = useState(false);
@@ -66,6 +68,13 @@ export default function Toolbar() {
 	const [videoUrl, setVideoUrl] = useState("");
 	const [linkUrl, setLinkUrl] = useState("");
 	const [linkText, setLinkText] = useState("");
+
+	// Get default text color based on theme
+	const getDefaultTextColor = () => {
+		if (typeof window === "undefined") return "#212121";
+		const isDark = document.documentElement.classList.contains("dark");
+		return isDark ? "#e5e5e5" : "#212121";
+	};
 
 	if (!currentPresentation) return null;
 
@@ -103,28 +112,28 @@ export default function Toolbar() {
 
 		const styleConfig = styles[textType];
 
-		addElement({
+    addElement({
 			type: "text",
-			position: { x: 100, y: 100 },
+      position: { x: 100, y: 100 },
 			size: {
 				width: 400,
 				height:
 					textType === "heading1" ? 80 : textType === "heading2" ? 60 : 50,
 			},
 			content: contents[textType],
-			style: {
+      style: {
 				fontSize: styleConfig.fontSize,
-				color: "#000000",
+				color: getDefaultTextColor(),
 				fontFamily: styleConfig.fontFamily || "Arial",
 				fontWeight: styleConfig.fontWeight || "normal",
 				fontStyle:
 					styleConfig.fontStyle || (textType === "quote" ? "italic" : "normal"),
 				textAlign: "left",
-			},
-		});
-	};
+      },
+    });
+  };
 
-	const handleAddImage = () => {
+  const handleAddImage = () => {
 		if (imageUrl) {
 			addElement({
 				type: "image",
@@ -169,9 +178,9 @@ export default function Toolbar() {
 
 	const handleAddLink = () => {
 		if (linkUrl && linkText) {
-			addElement({
+      addElement({
 				type: "text",
-				position: { x: 100, y: 100 },
+        position: { x: 100, y: 100 },
 				size: { width: 200, height: 40 },
 				content: linkText,
 				style: {
@@ -224,19 +233,19 @@ export default function Toolbar() {
 				? "1. Prvý bod\n2. Druhý bod\n3. Tretí bod"
 				: "• Prvý bod\n• Druhý bod\n• Tretí bod";
 
-		addElement({
+    addElement({
 			type: "text",
-			position: { x: 100, y: 100 },
+      position: { x: 100, y: 100 },
 			size: { width: 300, height: 120 },
 			content: items,
-			style: {
+      style: {
 				fontSize: 20,
-				color: "#212121",
+				color: getDefaultTextColor(),
 				fontFamily: "Arial",
 				textAlign: "left",
-			},
-		});
-	};
+      },
+    });
+  };
 
 	const handleTextStyle = (property: string, value: any) => {
 		if (selectedElement && selectedElement.type === "text") {
@@ -247,9 +256,9 @@ export default function Toolbar() {
 				},
 			});
 		}
-	};
+  };
 
-	return (
+  return (
 		<div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
 			<div className="px-4 py-3">
 				<div className="flex items-center gap-3 flex-wrap">
@@ -279,8 +288,8 @@ export default function Toolbar() {
 								variant="outline"
 								size="sm"
 								className="gap-2"
-							>
-								<Type className="w-4 h-4" />
+      >
+        <Type className="w-4 h-4" />
 								<span className="hidden sm:inline">Text</span>
 							</Button>
 						</motion.div>
@@ -291,7 +300,7 @@ export default function Toolbar() {
 									whileTap={{ scale: 0.95 }}
 								>
 									<Button variant="outline" size="sm" className="gap-2">
-										<Image className="w-4 h-4" />
+        <Image className="w-4 h-4" />
 										<span className="hidden sm:inline">Obrázok</span>
 									</Button>
 								</motion.div>
@@ -361,8 +370,8 @@ export default function Toolbar() {
 								variant="outline"
 								size="sm"
 								className="gap-2"
-							>
-								<Square className="w-4 h-4" />
+      >
+        <Square className="w-4 h-4" />
 							</Button>
 						</motion.div>
 						<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -835,6 +844,6 @@ export default function Toolbar() {
 					)}
 				</div>
 			</div>
-		</div>
-	);
+    </div>
+  );
 }

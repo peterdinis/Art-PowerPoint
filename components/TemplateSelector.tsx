@@ -30,6 +30,7 @@ import {
 	type PresentationTemplate,
 } from "@/lib/templates/presentationTemplates";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/components/ThemeProvider";
 
 interface TemplateSelectorProps {
 	open: boolean;
@@ -56,7 +57,15 @@ export default function TemplateSelector({
 	onOpenChange,
 	onSelectTemplate,
 }: TemplateSelectorProps) {
+	const { theme } = useTheme();
 	const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
+	// Get default text color based on theme
+	const getDefaultTextColor = () => {
+		if (typeof window === "undefined") return "#212121";
+		const isDark = document.documentElement.classList.contains("dark");
+		return isDark ? "#e5e5e5" : "#212121";
+	};
 
 	const filteredTemplates =
 		selectedCategory === "all"
@@ -177,7 +186,7 @@ export default function TemplateSelector({
 																			width: `${(el.size.width / 960) * 100}%`,
 																			height: `${(el.size.height / 540) * 100}%`,
 																			fontSize: `${(el.style?.fontSize || 16) * 0.3}px`,
-																			color: el.style?.color || "#000",
+																			color: el.style?.color || getDefaultTextColor(),
 																			textAlign: el.style?.textAlign || "left",
 																			overflow: "hidden",
 																			textOverflow: "ellipsis",

@@ -81,7 +81,7 @@ export default function DashboardSidebar() {
 						<div className="p-2 bg-primary rounded-lg">
 							<FileText className="w-5 h-5 text-primary-foreground" />
 						</div>
-						<h2 className="text-xl font-bold">Prezentácie</h2>
+						<h2 className="text-xl dark:text-white font-bold">Slide Master</h2>
 					</div>
 					<Button
 						onClick={() => {

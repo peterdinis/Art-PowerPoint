@@ -24,15 +24,15 @@ export function ThemeToggle() {
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end">
 				<DropdownMenuItem onClick={() => setTheme("light")}>
-					<Sun className="mr-2 h-4 w-4" />
+					<Sun className="dark:text-white mr-2 h-4 w-4" />
 					<span>Svetlá</span>
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={() => setTheme("dark")}>
-					<Moon className="mr-2 h-4 w-4" />
+					<Moon className="dark:text-white mr-2 h-4 w-4" />
 					<span>Tmavá</span>
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={() => setTheme("system")}>
-					<Monitor className="mr-2 h-4 w-4" />
+					<Monitor className="dark:text-white mr-2 h-4 w-4" />
 					<span>Systém</span>
 				</DropdownMenuItem>
 			</DropdownMenuContent>

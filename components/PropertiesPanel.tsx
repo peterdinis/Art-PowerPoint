@@ -31,6 +31,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { SlideElement } from "@/lib/types/presentation";
 import SlideBackgroundEditor from "./SlideBackgroundEditor";
+import { useTheme } from "@/components/ThemeProvider";
 
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -46,6 +47,14 @@ export default function PropertiesPanel() {
 		selectElement,
 		updatePresentation,
 	} = usePresentationStore();
+	const { theme } = useTheme();
+
+	// Get default text color based on theme
+	const getDefaultTextColor = () => {
+		if (typeof window === "undefined") return "#212121";
+		const isDark = document.documentElement.classList.contains("dark");
+		return isDark ? "#e5e5e5" : "#212121";
+	};
 
 	if (!currentPresentation) return null;
 
@@ -388,7 +397,7 @@ export default function PropertiesPanel() {
 							<Input
 								id="text-color"
 								type="color"
-								value={selectedElement.style?.color || "#000000"}
+								value={selectedElement.style?.color || getDefaultTextColor()}
 								onChange={(e) =>
 									handleUpdate({
 										style: { ...selectedElement.style, color: e.target.value },
