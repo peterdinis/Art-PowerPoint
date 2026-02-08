@@ -15,6 +15,7 @@ import {
   TrendingUp,
   Clock,
   GripVertical,
+  X,
 } from "lucide-react";
 import { usePresentationStore } from "@/lib/store/presentationStore";
 import { useEffect, useState, useMemo, useCallback } from "react";
@@ -97,7 +98,7 @@ function SortableGridItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group hover:shadow-lg transition-shadow relative rounded-lg", // Zmenené na rounded-lg
+        "group hover:shadow-lg transition-shadow relative rounded-lg",
         isDragging && "ring-2 ring-primary shadow-xl"
       )}
     >
@@ -110,7 +111,7 @@ function SortableGridItem({
           }
         }}
       >
-        <div className="h-40 bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center relative overflow-hidden rounded-t-lg"> {/* Pridané rounded-t-lg */}
+        <div className="h-40 bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center relative overflow-hidden rounded-t-lg">
           <div className="text-5xl font-bold opacity-20 text-primary">
             {presentation.slides.length}
           </div>
@@ -144,7 +145,7 @@ function SortableGridItem({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 cursor-grab active:cursor-grabbing hover:bg-primary/10 rounded-md" // Zmenené na rounded-md
+              className="h-8 w-8 cursor-grab active:cursor-grabbing hover:bg-primary/10 rounded-md"
               {...attributes}
               {...listeners}
             >
@@ -250,7 +251,7 @@ function SortableListItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group hover:shadow-md transition-shadow rounded-lg", // Zmenené na rounded-lg
+        "group hover:shadow-md transition-shadow rounded-lg",
         isDragging && "ring-2 ring-primary shadow-xl"
       )}
     >
@@ -382,6 +383,7 @@ export default function Home() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [localOrder, setLocalOrder] = useState<string[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Načítanie prezentácií
   useEffect(() => {
@@ -417,10 +419,8 @@ export default function Home() {
       return presentations;
     }
 
-    // Vytvoriť mapu prezentácií pre rýchle vyhľadávanie
     const presentationMap = new Map(presentations.map(p => [p.id, p]));
     
-    // Zoradiť podľa lokálneho poradia
     return localOrder
       .map(id => presentationMap.get(id))
       .filter(Boolean) as typeof presentations;
@@ -467,7 +467,6 @@ export default function Home() {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      // Nájsť indexy v aktuálnom zozname (filteredAndSorted)
       const activeIndex = filteredAndSorted.findIndex(
         (item) => item.id === active.id
       );
@@ -476,22 +475,16 @@ export default function Home() {
       );
 
       if (activeIndex !== -1 && overIndex !== -1) {
-        // Vytvoriť nové lokálne poradie
         const newLocalOrder = [...localOrder];
         
-        // Zistiť skutočné pozície v hlavnom poradí
         const oldGlobalIndex = newLocalOrder.indexOf(active.id as string);
         const newGlobalIndex = newLocalOrder.indexOf(over.id as string);
         
         if (oldGlobalIndex !== -1 && newGlobalIndex !== -1) {
-          // Presunúť položku v lokálnom poradí
           const [movedItem] = newLocalOrder.splice(oldGlobalIndex, 1);
           newLocalOrder.splice(newGlobalIndex, 0, movedItem);
           
-          // Aktualizovať lokálne poradie
           setLocalOrder(newLocalOrder);
-          
-          // Uložiť do store (a tým do localStorage)
           reorderPresentationsByIds(newLocalOrder);
         }
       }
@@ -539,7 +532,6 @@ export default function Home() {
     if (showDeleteConfirm === id) {
       deletePresentation(id);
       setShowDeleteConfirm(null);
-      // Odstrániť z lokálneho poradia
       setLocalOrder(prev => prev.filter(itemId => itemId !== id));
     } else {
       setShowDeleteConfirm(id);
@@ -563,11 +555,24 @@ export default function Home() {
     });
   }, []);
 
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    if (e.target.value.trim() !== "") {
+      setIsSearching(true);
+    } else {
+      setIsSearching(false);
+    }
+  }, []);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery("");
+    setIsSearching(false);
+  }, []);
+
   const activePresentation = activeId
     ? presentations.find((p) => p.id === activeId)
     : null;
 
-  // Položky pre SortableContext
   const sortableItems = useMemo(() => 
     filteredAndSorted.map(p => p.id),
     [filteredAndSorted]
@@ -678,9 +683,19 @@ export default function Home() {
                         type="text"
                         placeholder="Hľadať prezentácie..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10 rounded-lg"
+                        onChange={handleSearchChange}
+                        className="pl-10 pr-10 rounded-lg transition-all duration-300"
                       />
+                      {searchQuery && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={handleClearSearch}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-transparent"
+                        >
+                          <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                        </Button>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Filter className="w-4 h-4 text-muted-foreground" />
