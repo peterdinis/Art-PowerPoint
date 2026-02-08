@@ -14,11 +14,10 @@ import {
   MoreVertical,
   TrendingUp,
   Clock,
-  Star,
   GripVertical,
 } from "lucide-react";
 import { usePresentationStore } from "@/lib/store/presentationStore";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -63,25 +62,34 @@ type SortOption = "recent" | "oldest" | "name" | "slides" | "custom";
 // Sortable Item Component pre Grid View
 function SortableGridItem({
   presentation,
-  viewMode,
   handleDelete,
   formatDate,
   showDeleteConfirm,
-  isDragging,
-}: any) {
+  isOverlay = false,
+}: {
+  presentation: any;
+  handleDelete: (id: string) => void;
+  formatDate: (date: Date) => string;
+  showDeleteConfirm: string | null;
+  isOverlay?: boolean;
+}) {
   const {
     attributes,
     listeners,
     setNodeRef,
     transform,
     transition,
-    isDragging: isSortableDragging,
-  } = useSortable({ id: presentation.id });
+    isDragging,
+  } = useSortable({
+    id: presentation.id,
+    disabled: isOverlay,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isSortableDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 999 : "auto",
   };
 
   return (
@@ -89,12 +97,20 @@ function SortableGridItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group hover:shadow-lg transition-shadow relative",
-        (isDragging || isSortableDragging) && "ring-2 ring-primary"
+        "group hover:shadow-lg transition-shadow relative rounded-lg", // Zmenené na rounded-lg
+        isDragging && "ring-2 ring-primary shadow-xl"
       )}
     >
-      <Link href={`/editor?id=${presentation.id}`} className="block">
-        <div className="h-40 bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center relative overflow-hidden">
+      <Link
+        href={`/editor?id=${presentation.id}`}
+        className="block"
+        onClick={(e) => {
+          if (isDragging) {
+            e.preventDefault();
+          }
+        }}
+      >
+        <div className="h-40 bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center relative overflow-hidden rounded-t-lg"> {/* Pridané rounded-t-lg */}
           <div className="text-5xl font-bold opacity-20 text-primary">
             {presentation.slides.length}
           </div>
@@ -103,17 +119,17 @@ function SortableGridItem({
             {presentation.slides.length !== 1 ? "ov" : ""}
           </div>
         </div>
-        <CardHeader>
-          <CardTitle className="line-clamp-1 group-hover:text-primary transition-colors">
+        <CardHeader className="pb-3">
+          <CardTitle className="line-clamp-1 group-hover:text-primary transition-colors text-base">
             {presentation.title}
           </CardTitle>
           {presentation.description && (
-            <CardDescription className="line-clamp-2">
+            <CardDescription className="line-clamp-2 text-sm">
               {presentation.description}
             </CardDescription>
           )}
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
               <Calendar className="w-3 h-3" />
@@ -122,37 +138,76 @@ function SortableGridItem({
           </div>
         </CardContent>
       </Link>
-      <div className="absolute top-2 left-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-grab active:cursor-grabbing"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="w-4 h-4" />
-        </Button>
-      </div>
-      <div className="absolute top-2 right-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreVertical className="w-4 h-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.preventDefault();
-                handleDelete(presentation.id);
-              }}
+      {!isOverlay && (
+        <>
+          <div className="absolute top-2 left-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 cursor-grab active:cursor-grabbing hover:bg-primary/10 rounded-md" // Zmenené na rounded-md
+              {...attributes}
+              {...listeners}
             >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+              <GripVertical className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="absolute top-2 right-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-md">
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="rounded-lg">
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleDelete(presentation.id);
+                  }}
+                  className="text-destructive focus:text-destructive rounded-md"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Vymazať
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </>
+      )}
+      {showDeleteConfirm === presentation.id && (
+        <div className="absolute inset-0 bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg z-10">
+          <div className="text-center p-4">
+            <p className="font-medium mb-2">Vymazať prezentáciu?</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              Túto akciu nemožno vrátiť späť.
+            </p>
+            <div className="flex gap-2 justify-center">
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleDelete(presentation.id);
+                }}
+                className="rounded-md"
+              >
+                Áno, vymazať
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleDelete("cancel");
+                }}
+                className="rounded-md"
+              >
+                Zrušiť
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }
@@ -160,25 +215,34 @@ function SortableGridItem({
 // Sortable Item Component pre List View
 function SortableListItem({
   presentation,
-  viewMode,
   handleDelete,
   formatDate,
   showDeleteConfirm,
-  isDragging,
-}: any) {
+  isOverlay = false,
+}: {
+  presentation: any;
+  handleDelete: (id: string) => void;
+  formatDate: (date: Date) => string;
+  showDeleteConfirm: string | null;
+  isOverlay?: boolean;
+}) {
   const {
     attributes,
     listeners,
     setNodeRef,
     transform,
     transition,
-    isDragging: isSortableDragging,
-  } = useSortable({ id: presentation.id });
+    isDragging,
+  } = useSortable({
+    id: presentation.id,
+    disabled: isOverlay,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isSortableDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 999 : "auto",
   };
 
   return (
@@ -186,41 +250,50 @@ function SortableListItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group hover:shadow-md transition-shadow",
-        (isDragging || isSortableDragging) && "ring-2 ring-primary"
+        "group hover:shadow-md transition-shadow rounded-lg", // Zmenené na rounded-lg
+        isDragging && "ring-2 ring-primary shadow-xl"
       )}
     >
-      <Link href={`/editor?id=${presentation.id}`}>
+      <Link
+        href={`/editor?id=${presentation.id}`}
+        onClick={(e) => {
+          if (isDragging) {
+            e.preventDefault();
+          }
+        }}
+      >
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 cursor-grab active:cursor-grabbing"
-                {...attributes}
-                {...listeners}
-              >
-                <GripVertical className="w-4 h-4" />
-              </Button>
+              {!isOverlay && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 cursor-grab active:cursor-grabbing hover:bg-primary/10 rounded-md"
+                  {...attributes}
+                  {...listeners}
+                >
+                  <GripVertical className="w-4 h-4" />
+                </Button>
+              )}
               <div className="w-20 h-20 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
                 <FileText className="w-10 h-10 text-primary" />
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <CardTitle className="line-clamp-1 group-hover:text-primary transition-colors mb-1">
+              <CardTitle className="line-clamp-1 group-hover:text-primary transition-colors mb-1 text-base">
                 {presentation.title}
               </CardTitle>
               {presentation.description && (
-                <CardDescription className="line-clamp-1 mb-2">
+                <CardDescription className="line-clamp-1 mb-2 text-sm">
                   {presentation.description}
                 </CardDescription>
               )}
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Grid3x3 className="w-3 h-3" />
-                  {presentation.slides.length} slide
-                  {presentation.slides.length !== 1 ? "s" : ""}
+                  {presentation.slides.length} slajd
+                  {presentation.slides.length !== 1 ? "ov" : ""}
                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
@@ -228,27 +301,64 @@ function SortableListItem({
                 </span>
               </div>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleDelete(presentation.id);
-                  }}
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {!isOverlay && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-md">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="rounded-lg">
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDelete(presentation.id);
+                    }}
+                    className="text-destructive focus:text-destructive rounded-md"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Vymazať
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </CardContent>
       </Link>
+      {showDeleteConfirm === presentation.id && (
+        <div className="absolute inset-0 bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg z-10">
+          <div className="text-center p-4">
+            <p className="font-medium mb-2">Vymazať prezentáciu?</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              Túto akciu nemožno vrátiť späť.
+            </p>
+            <div className="flex gap-2 justify-center">
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleDelete(presentation.id);
+                }}
+                className="rounded-md"
+              >
+                Áno, vymazať
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleDelete("cancel");
+                }}
+                className="rounded-md"
+              >
+                Zrušiť
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }
@@ -260,7 +370,8 @@ export default function Home() {
     loadPresentations,
     createPresentation,
     deletePresentation,
-    updatePresentationOrder,
+    reorderPresentationsByIds,
+    presentationOrder,
   } = usePresentationStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -269,15 +380,25 @@ export default function Home() {
     null
   );
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [orderedPresentations, setOrderedPresentations] = useState(presentations);
+  const [isLoading, setIsLoading] = useState(true);
+  const [localOrder, setLocalOrder] = useState<string[]>([]);
 
+  // Načítanie prezentácií
   useEffect(() => {
+    setIsLoading(true);
     loadPresentations();
+    const timer = setTimeout(() => setIsLoading(false), 100);
+    return () => clearTimeout(timer);
   }, [loadPresentations]);
 
+  // Synchronizácia lokálneho poradia s store
   useEffect(() => {
-    setOrderedPresentations(presentations);
-  }, [presentations]);
+    if (presentationOrder.length > 0) {
+      setLocalOrder(presentationOrder);
+    } else if (presentations.length > 0) {
+      setLocalOrder(presentations.map(p => p.id));
+    }
+  }, [presentationOrder, presentations]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -290,6 +411,21 @@ export default function Home() {
     })
   );
 
+  // Zoradené prezentácie podľa lokálneho poradia
+  const orderedPresentations = useMemo(() => {
+    if (localOrder.length === 0 || presentations.length === 0) {
+      return presentations;
+    }
+
+    // Vytvoriť mapu prezentácií pre rýchle vyhľadávanie
+    const presentationMap = new Map(presentations.map(p => [p.id, p]));
+    
+    // Zoradiť podľa lokálneho poradia
+    return localOrder
+      .map(id => presentationMap.get(id))
+      .filter(Boolean) as typeof presentations;
+  }, [presentations, localOrder]);
+
   const filteredAndSorted = useMemo(() => {
     let filtered = orderedPresentations.filter(
       (p) =>
@@ -297,12 +433,10 @@ export default function Home() {
         p.description?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Ak je zvolené custom ordering, použijeme aktuálne poradie
     if (sortBy === "custom") {
       return filtered;
     }
 
-    // Inak aplikujeme sorting
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "recent":
@@ -325,29 +459,46 @@ export default function Home() {
     return filtered;
   }, [orderedPresentations, searchQuery, sortBy]);
 
-  const handleDragStart = (event: DragStartEvent) => {
+  const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveId(event.active.id as string);
-  };
+  }, []);
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      setOrderedPresentations((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
+      // Nájsť indexy v aktuálnom zozname (filteredAndSorted)
+      const activeIndex = filteredAndSorted.findIndex(
+        (item) => item.id === active.id
+      );
+      const overIndex = filteredAndSorted.findIndex(
+        (item) => item.id === over.id
+      );
+
+      if (activeIndex !== -1 && overIndex !== -1) {
+        // Vytvoriť nové lokálne poradie
+        const newLocalOrder = [...localOrder];
         
-        const newOrder = arrayMove(items, oldIndex, newIndex);
+        // Zistiť skutočné pozície v hlavnom poradí
+        const oldGlobalIndex = newLocalOrder.indexOf(active.id as string);
+        const newGlobalIndex = newLocalOrder.indexOf(over.id as string);
         
-        // Uloženie nového poradia do store
-        updatePresentationOrder(newOrder.map(p => p.id));
-        
-        return newOrder;
-      });
+        if (oldGlobalIndex !== -1 && newGlobalIndex !== -1) {
+          // Presunúť položku v lokálnom poradí
+          const [movedItem] = newLocalOrder.splice(oldGlobalIndex, 1);
+          newLocalOrder.splice(newGlobalIndex, 0, movedItem);
+          
+          // Aktualizovať lokálne poradie
+          setLocalOrder(newLocalOrder);
+          
+          // Uložiť do store (a tým do localStorage)
+          reorderPresentationsByIds(newLocalOrder);
+        }
+      }
     }
 
     setActiveId(null);
-  };
+  }, [filteredAndSorted, localOrder, reorderPresentationsByIds]);
 
   const stats = useMemo(() => {
     const totalSlides = presentations.reduce(
@@ -370,44 +521,74 @@ export default function Home() {
     };
   }, [presentations]);
 
-  const handleCreateNew = () => {
-    const title = prompt("Enter presentation name:");
+  const handleCreateNew = useCallback(() => {
+    const title = prompt("Zadajte názov prezentácie:");
     if (title) {
-      const description = prompt("Enter description (optional):") || undefined;
+      const description = prompt("Zadajte popis (voliteľné):") || undefined;
       const newId = createPresentation(title, description);
       router.push(`/editor?id=${newId}`);
     }
-  };
+  }, [createPresentation, router]);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = useCallback((id: string) => {
+    if (id === "cancel") {
+      setShowDeleteConfirm(null);
+      return;
+    }
+    
     if (showDeleteConfirm === id) {
       deletePresentation(id);
       setShowDeleteConfirm(null);
+      // Odstrániť z lokálneho poradia
+      setLocalOrder(prev => prev.filter(itemId => itemId !== id));
     } else {
       setShowDeleteConfirm(id);
       setTimeout(() => setShowDeleteConfirm(null), 3000);
     }
-  };
+  }, [deletePresentation, showDeleteConfirm]);
 
-  const formatDate = (date: Date) => {
+  const formatDate = useCallback((date: Date) => {
     const d = new Date(date);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - d.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return "Today";
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
-    return d.toLocaleDateString("en-US", {
+    if (diffDays === 0) return "Dnes";
+    if (diffDays === 1) return "Včera";
+    if (diffDays < 7) return `Pred ${diffDays} dňami`;
+    return d.toLocaleDateString("sk-SK", {
       day: "numeric",
       month: "short",
       year: "numeric",
     });
-  };
+  }, []);
 
   const activePresentation = activeId
     ? presentations.find((p) => p.id === activeId)
     : null;
+
+  // Položky pre SortableContext
+  const sortableItems = useMemo(() => 
+    filteredAndSorted.map(p => p.id),
+    [filteredAndSorted]
+  );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="flex">
+          <DashboardSidebar />
+          <div className="flex-1 lg:pl-64">
+            <div className="container mx-auto px-4 py-6 lg:py-8 max-w-7xl">
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -421,7 +602,7 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
                   <h1 className="text-3xl lg:text-4xl font-bold mb-2">
-                    Presentations
+                    Prezentácie
                   </h1>
                   <p className="text-muted-foreground">
                     Vytvárajte a spravujte profesionálne prezentácie
@@ -430,16 +611,16 @@ export default function Home() {
                 <Button
                   onClick={handleCreateNew}
                   size="lg"
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto rounded-lg"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  New presentation
+                  Nová prezentácia
                 </Button>
               </div>
 
               {/* Statistics */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <Card>
+                <Card className="rounded-lg">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
                       Celkom prezentácií
@@ -450,7 +631,7 @@ export default function Home() {
                     <div className="text-2xl font-bold">{stats.total}</div>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card className="rounded-lg">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
                       Celkom slajdov
@@ -463,7 +644,7 @@ export default function Home() {
                     </div>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card className="rounded-lg">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
                       Naposledy upravené
@@ -474,7 +655,7 @@ export default function Home() {
                     <div className="text-2xl font-bold">{stats.recent}</div>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card className="rounded-lg">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
                       Priemer slajdov
@@ -488,24 +669,24 @@ export default function Home() {
               </div>
 
               {/* Search and Filters */}
-              <Card>
+              <Card className="rounded-lg">
                 <CardContent className="pt-6">
                   <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex-1 relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
                         type="text"
-                        placeholder="Search presentations..."
+                        placeholder="Hľadať prezentácie..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10"
+                        className="pl-10 rounded-lg"
                       />
                     </div>
                     <div className="flex items-center gap-2">
                       <Filter className="w-4 h-4 text-muted-foreground" />
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="outline">
+                          <Button variant="outline" className="rounded-lg">
                             {sortBy === "recent" && "Najnovšie"}
                             {sortBy === "oldest" && "Najstaršie"}
                             {sortBy === "name" && "Podľa názvu"}
@@ -513,20 +694,35 @@ export default function Home() {
                             {sortBy === "custom" && "Vlastné poradie"}
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem onClick={() => setSortBy("recent")}>
+                        <DropdownMenuContent className="rounded-lg">
+                          <DropdownMenuItem 
+                            onClick={() => setSortBy("recent")}
+                            className="rounded-md"
+                          >
                             Najnovšie
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setSortBy("oldest")}>
+                          <DropdownMenuItem 
+                            onClick={() => setSortBy("oldest")}
+                            className="rounded-md"
+                          >
                             Najstaršie
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setSortBy("name")}>
+                          <DropdownMenuItem 
+                            onClick={() => setSortBy("name")}
+                            className="rounded-md"
+                          >
                             Podľa názvu
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setSortBy("slides")}>
+                          <DropdownMenuItem 
+                            onClick={() => setSortBy("slides")}
+                            className="rounded-md"
+                          >
                             Podľa počtu slajdov
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setSortBy("custom")}>
+                          <DropdownMenuItem 
+                            onClick={() => setSortBy("custom")}
+                            className="rounded-md"
+                          >
                             Vlastné poradie (drag & drop)
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -537,6 +733,7 @@ export default function Home() {
                         variant={viewMode === "grid" ? "default" : "ghost"}
                         size="icon"
                         onClick={() => setViewMode("grid")}
+                        className="rounded-md"
                       >
                         <Grid3x3 className="w-4 h-4" />
                       </Button>
@@ -544,6 +741,7 @@ export default function Home() {
                         variant={viewMode === "list" ? "default" : "ghost"}
                         size="icon"
                         onClick={() => setViewMode("list")}
+                        className="rounded-md"
                       >
                         <List className="w-4 h-4" />
                       </Button>
@@ -555,7 +753,7 @@ export default function Home() {
 
             {/* Presentations */}
             {filteredAndSorted.length === 0 && presentations.length > 0 ? (
-              <Card>
+              <Card className="rounded-lg">
                 <CardContent className="pt-6">
                   <div className="text-center py-12">
                     <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
@@ -569,7 +767,7 @@ export default function Home() {
                 </CardContent>
               </Card>
             ) : filteredAndSorted.length === 0 ? (
-              <Card>
+              <Card className="rounded-lg">
                 <CardContent className="pt-6">
                   <div className="text-center py-16">
                     <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
@@ -582,7 +780,7 @@ export default function Home() {
                       Začnite vytvorením vašej prvej prezentácie. Je to jednoduché a
                       rýchle!
                     </p>
-                    <Button onClick={handleCreateNew} size="lg">
+                    <Button onClick={handleCreateNew} size="lg" className="rounded-lg">
                       <Plus className="w-4 h-4 mr-2" />
                       Vytvoriť prvú prezentáciu
                     </Button>
@@ -597,7 +795,7 @@ export default function Home() {
                 onDragEnd={handleDragEnd}
               >
                 <SortableContext
-                  items={filteredAndSorted.map((p) => p.id)}
+                  items={sortableItems}
                   strategy={
                     viewMode === "grid" ? rectSortingStrategy : verticalListSortingStrategy
                   }
@@ -606,7 +804,7 @@ export default function Home() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
                       {/* Create New Card */}
                       <Card
-                        className="cursor-pointer hover:border-primary transition-colors border-dashed"
+                        className="cursor-pointer hover:border-primary transition-colors border-dashed rounded-lg"
                         onClick={handleCreateNew}
                       >
                         <CardContent className="flex flex-col items-center justify-center h-64 p-6">
@@ -624,11 +822,9 @@ export default function Home() {
                         <SortableGridItem
                           key={presentation.id}
                           presentation={presentation}
-                          viewMode={viewMode}
                           handleDelete={handleDelete}
                           formatDate={formatDate}
                           showDeleteConfirm={showDeleteConfirm}
-                          isDragging={activeId === presentation.id}
                         />
                       ))}
                     </div>
@@ -638,11 +834,9 @@ export default function Home() {
                         <SortableListItem
                           key={presentation.id}
                           presentation={presentation}
-                          viewMode={viewMode}
                           handleDelete={handleDelete}
                           formatDate={formatDate}
                           showDeleteConfirm={showDeleteConfirm}
-                          isDragging={activeId === presentation.id}
                         />
                       ))}
                     </div>
@@ -652,68 +846,21 @@ export default function Home() {
                   <DragOverlay>
                     {activeId && activePresentation ? (
                       viewMode === "grid" ? (
-                        <Card className="shadow-2xl ring-2 ring-primary">
-                          <div className="h-40 bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center relative overflow-hidden">
-                            <div className="text-5xl font-bold opacity-20 text-primary">
-                              {activePresentation.slides.length}
-                            </div>
-                            <div className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm text-xs px-2 py-1 rounded">
-                              {activePresentation.slides.length} slajd
-                              {activePresentation.slides.length !== 1 ? "ov" : ""}
-                            </div>
-                          </div>
-                          <CardHeader>
-                            <CardTitle className="line-clamp-1">
-                              {activePresentation.title}
-                            </CardTitle>
-                            {activePresentation.description && (
-                              <CardDescription className="line-clamp-2">
-                                {activePresentation.description}
-                              </CardDescription>
-                            )}
-                          </CardHeader>
-                          <CardContent>
-                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="w-3 h-3" />
-                                {formatDate(activePresentation.updatedAt)}
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
+                        <SortableGridItem
+                          presentation={activePresentation}
+                          handleDelete={handleDelete}
+                          formatDate={formatDate}
+                          showDeleteConfirm={null}
+                          isOverlay={true}
+                        />
                       ) : (
-                        <Card className="shadow-2xl ring-2 ring-primary">
-                          <CardContent className="p-4">
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center gap-3">
-                                <div className="w-20 h-20 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                                  <FileText className="w-10 h-10 text-primary" />
-                                </div>
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <CardTitle className="line-clamp-1 mb-1">
-                                  {activePresentation.title}
-                                </CardTitle>
-                                {activePresentation.description && (
-                                  <CardDescription className="line-clamp-1 mb-2">
-                                    {activePresentation.description}
-                                  </CardDescription>
-                                )}
-                                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                  <span className="flex items-center gap-1">
-                                    <Grid3x3 className="w-3 h-3" />
-                                    {activePresentation.slides.length} slide
-                                    {activePresentation.slides.length !== 1 ? "s" : ""}
-                                  </span>
-                                  <span className="flex items-center gap-1">
-                                    <Calendar className="w-3 h-3" />
-                                    {formatDate(activePresentation.updatedAt)}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
+                        <SortableListItem
+                          presentation={activePresentation}
+                          handleDelete={handleDelete}
+                          formatDate={formatDate}
+                          showDeleteConfirm={null}
+                          isOverlay={true}
+                        />
                       )
                     ) : null}
                   </DragOverlay>

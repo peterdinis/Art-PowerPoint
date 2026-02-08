@@ -12,7 +12,8 @@ interface PresentationStore {
   currentPresentation: Presentation | null;
   currentSlideIndex: number;
   selectedElementId: string | null;
-  presentationOrder: string[]; // Pole ID v poradí pre drag & drop
+  presentationOrder: string[];
+  isLoading: boolean; // Pridané
 
   // Presentation actions
   createPresentation: (
@@ -58,6 +59,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
   currentSlideIndex: 0,
   selectedElementId: null,
   presentationOrder: [],
+  isLoading: false,
 
   createPresentation: (
     title: string,
@@ -69,7 +71,6 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
     if (templateId) {
       const template = getTemplateById(templateId);
       if (template) {
-        // Deep clone slides with new IDs
         slides = template.slides.map((slide) => ({
           ...slide,
           id: uuidv4(),
@@ -97,7 +98,11 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
       currentSlideIndex: 0,
     }));
 
-    get().savePresentations();
+    // Odložené uloženie
+    setTimeout(() => {
+      get().savePresentations();
+    }, 0);
+
     return newPresentation.id;
   },
 
@@ -118,7 +123,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
       };
     });
 
-    get().savePresentations();
+    setTimeout(() => {
+      get().savePresentations();
+    }, 0);
   },
 
   deletePresentation: (id: string) => {
@@ -129,7 +136,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
         state.currentPresentation?.id === id ? null : state.currentPresentation,
     }));
 
-    get().savePresentations();
+    setTimeout(() => {
+      get().savePresentations();
+    }, 0);
   },
 
   selectPresentation: (id: string) => {
@@ -149,45 +158,53 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
     try {
       // Načítanie prezentácií
       const stored = localStorage.getItem("presentations");
+      let presentations: Presentation[] = [];
+      
       if (stored) {
-        const presentations = JSON.parse(stored).map((p: any) => ({
+        presentations = JSON.parse(stored).map((p: any) => ({
           ...p,
           createdAt: new Date(p.createdAt),
           updatedAt: new Date(p.updatedAt),
         }));
-        
-        // Načítanie poradia (ak existuje)
-        const orderStored = localStorage.getItem("presentationOrder");
-        let presentationOrder: string[] = [];
-        
-        if (orderStored) {
-          presentationOrder = JSON.parse(orderStored);
-          
-          // Skontrolovať, či všetky ID v poradí existujú
-          const validOrder = presentationOrder.filter(orderId =>
-            presentations.some((p: Presentation) => p.id === orderId)
-          );
-          
-          // Pridať chýbajúce prezentácie na koniec
-          const missingPresentations = presentations.filter(
-            (p: Presentation) => !validOrder.includes(p.id)
-          );
-          
-          presentationOrder = [
-            ...validOrder,
-            ...missingPresentations.map((p: Presentation) => p.id)
-          ];
-        } else {
-          // Ak neexistuje poradie, vytvoriť podľa dátumu vytvorenia
-          presentationOrder = [...presentations]
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-            .map(p => p.id);
-        }
-        
-        set({ presentations, presentationOrder });
       }
+      
+      // Načítanie poradia
+      const orderStored = localStorage.getItem("presentationOrder");
+      let presentationOrder: string[] = [];
+      
+      if (orderStored) {
+        presentationOrder = JSON.parse(orderStored);
+        
+        // Skontrolovať, či všetky ID v poradí existujú
+        const validOrder = presentationOrder.filter(orderId =>
+          presentations.some((p: Presentation) => p.id === orderId)
+        );
+        
+        // Pridať chýbajúce prezentácie na koniec
+        const missingPresentations = presentations.filter(
+          (p: Presentation) => !validOrder.includes(p.id)
+        );
+        
+        presentationOrder = [
+          ...validOrder,
+          ...missingPresentations.map((p: Presentation) => p.id)
+        ];
+      } else {
+        // Ak neexistuje poradie, vytvoriť podľa dátumu vytvorenia
+        presentationOrder = [...presentations]
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .map(p => p.id);
+      }
+      
+      // Nastaviť stav naraz
+      set({ 
+        presentations, 
+        presentationOrder,
+        isLoading: false 
+      });
     } catch (error) {
       console.error("Error loading presentations:", error);
+      set({ isLoading: false });
     }
   },
 
@@ -203,16 +220,11 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
     }
   },
 
-  // Drag & Drop metódy
   reorderPresentations: (fromIndex: number, toIndex: number) => {
     const state = get();
     const newOrder = [...state.presentationOrder];
     const [movedItem] = newOrder.splice(fromIndex, 1);
     newOrder.splice(toIndex, 0, movedItem);
-
-    set({
-      presentationOrder: newOrder,
-    });
 
     // Reorder presentations array based on the new order
     const reorderedPresentations = [...state.presentations].sort((a, b) => {
@@ -222,10 +234,13 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
     });
 
     set({
+      presentationOrder: newOrder,
       presentations: reorderedPresentations,
     });
 
-    get().savePresentations();
+    setTimeout(() => {
+      get().savePresentations();
+    }, 0);
   },
 
   reorderPresentationsByIds: (orderedIds: string[]) => {
@@ -255,12 +270,16 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
       presentations: reorderedPresentations,
     });
 
-    get().savePresentations();
+    setTimeout(() => {
+      get().savePresentations();
+    }, 0);
   },
 
   updatePresentationOrder: (newOrder: string[]) => {
     set({ presentationOrder: newOrder });
-    get().savePresentations();
+    setTimeout(() => {
+      get().savePresentations();
+    }, 0);
   },
 
   resetPresentationOrder: () => {
@@ -270,7 +289,10 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
       .map(p => p.id);
     
     set({ presentationOrder: defaultOrder });
-    get().savePresentations();
+    
+    setTimeout(() => {
+      get().savePresentations();
+    }, 0);
   },
 
   addSlide: () => {
@@ -293,7 +315,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
       };
     });
 
-    get().savePresentations();
+    setTimeout(() => {
+      get().savePresentations();
+    }, 0);
   },
 
   deleteSlide: (slideId: string) => {
@@ -326,7 +350,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
       };
     });
 
-    get().savePresentations();
+    setTimeout(() => {
+      get().savePresentations();
+    }, 0);
   },
 
   duplicateSlide: (slideId: string) => {
@@ -365,7 +391,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
       };
     });
 
-    get().savePresentations();
+    setTimeout(() => {
+      get().savePresentations();
+    }, 0);
   },
 
   selectSlide: (index: number) => {
@@ -396,7 +424,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
       };
     });
 
-    get().savePresentations();
+    setTimeout(() => {
+      get().savePresentations();
+    }, 0);
   },
 
   addElement: (element: Omit<SlideElement, "id">) => {
@@ -431,7 +461,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
       };
     });
 
-    get().savePresentations();
+    setTimeout(() => {
+      get().savePresentations();
+    }, 0);
   },
 
   updateElement: (elementId: string, updates: Partial<SlideElement>) => {
@@ -457,7 +489,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
       };
     });
 
-    get().savePresentations();
+    setTimeout(() => {
+      get().savePresentations();
+    }, 0);
   },
 
   deleteElement: (elementId: string) => {
@@ -482,7 +516,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
       };
     });
 
-    get().savePresentations();
+    setTimeout(() => {
+      get().savePresentations();
+    }, 0);
   },
 
   selectElement: (elementId: string | null) => {
