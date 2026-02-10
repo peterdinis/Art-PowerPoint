@@ -23,26 +23,26 @@ interface SlideBackgroundEditorProps {
 }
 
 const PRESET_GRADIENTS = [
-	{ name: "Modrá", value: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
+	{ name: "Blue", value: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
 	{
-		name: "Oranžová",
+		name: "Orange",
 		value: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
 	},
 	{
-		name: "Zelená",
+		name: "Green",
 		value: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
 	},
 	{
-		name: "Fialová",
+		name: "Purple",
 		value: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
 	},
-	{ name: "Teplá", value: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" },
+	{ name: "Warm", value: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" },
 	{
-		name: "Chladná",
+		name: "Cool",
 		value: "linear-gradient(135deg, #30cfd0 0%, #330867 100%)",
 	},
-	{ name: "Slnko", value: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)" },
-	{ name: "Oceán", value: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
+	{ name: "Sun", value: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)" },
+	{ name: "Ocean", value: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
 ];
 
 const PRESET_COLORS = [
@@ -107,7 +107,7 @@ export default function SlideBackgroundEditor({
 				<TabsList className="grid w-full grid-cols-3">
 					<TabsTrigger value="color" className="gap-2">
 						<Palette className="w-4 h-4" />
-						Farba
+						Color
 					</TabsTrigger>
 					<TabsTrigger value="gradient" className="gap-2">
 						<Sparkles className="w-4 h-4" />
@@ -115,13 +115,13 @@ export default function SlideBackgroundEditor({
 					</TabsTrigger>
 					<TabsTrigger value="image" className="gap-2">
 						<Image className="w-4 h-4" />
-						Obrázok
+						Image
 					</TabsTrigger>
 				</TabsList>
 
 				<TabsContent value="color" className="space-y-4 mt-4">
 					<div>
-						<Label>Vlastná farba</Label>
+						<Label>Custom Color</Label>
 						<div className="flex items-center gap-2 mt-2">
 							<Input
 								type="color"
@@ -140,7 +140,7 @@ export default function SlideBackgroundEditor({
 					</div>
 
 					<div>
-						<Label className="mb-2 block">Prednastavené farby</Label>
+						<Label className="mb-2 block">Preset Colors</Label>
 						<div className="grid grid-cols-6 gap-2">
 							{PRESET_COLORS.map((presetColor) => (
 								<Button
@@ -163,7 +163,7 @@ export default function SlideBackgroundEditor({
 
 				<TabsContent value="gradient" className="space-y-4 mt-4">
 					<div>
-						<Label className="mb-2 block">Prednastavené gradienty</Label>
+						<Label className="mb-2 block">Preset Gradients</Label>
 						<div className="grid grid-cols-2 gap-2">
 							{PRESET_GRADIENTS.map((gradient) => (
 								<Button
@@ -187,7 +187,7 @@ export default function SlideBackgroundEditor({
 					</div>
 
 					<div>
-						<Label>Vlastný gradient</Label>
+						<Label>Custom Gradient</Label>
 						<Input
 							type="text"
 							value={selectedGradient}
@@ -206,7 +206,7 @@ export default function SlideBackgroundEditor({
 
 				<TabsContent value="image" className="space-y-4 mt-4">
 					<div>
-						<Label>Nahrať obrázok</Label>
+						<Label>Upload Image</Label>
 						<div className="mt-2">
 							<Input
 								type="file"
@@ -218,7 +218,7 @@ export default function SlideBackgroundEditor({
 					</div>
 
 					<div>
-						<Label>URL obrázka</Label>
+						<Label>Image URL</Label>
 						<div className="flex gap-2 mt-2">
 							<Input
 								type="text"
