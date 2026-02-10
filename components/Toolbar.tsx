@@ -38,7 +38,7 @@ import {
 	Mic,
 	FileText,
 	Download,
-	Upload,
+	Upload as UploadIcon,
 	Palette,
 	Type as FontIcon,
 	Sparkles,
@@ -55,8 +55,9 @@ import {
 	PanelBottom,
 	Table2,
 	TrendingUp,
+	FileUp,
 } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ThemeProvider";
 import { Input } from "@/components/ui/input";
@@ -91,6 +92,21 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { SlideElementType } from "@/lib/types/presentation";
+import { FilePond, registerPlugin } from 'react-filepond';
+import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
+import FilePondPluginFileValidateSize from 'filepond-plugin-file-validate-size';
+import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
+import FilePondPluginFileEncode from 'filepond-plugin-file-encode';
+import 'filepond/dist/filepond.min.css';
+import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
+
+// Register plugins
+registerPlugin(
+	FilePondPluginFileValidateType,
+	FilePondPluginFileValidateSize,
+	FilePondPluginImagePreview,
+	FilePondPluginFileEncode
+);
 
 const CHART_TEMPLATES = [
 	{
@@ -166,6 +182,12 @@ export default function Toolbar() {
 	const [fontFamily, setFontFamily] = useState("Arial");
 	const [textColor, setTextColor] = useState("#212121");
 	const [layoutType, setLayoutType] = useState("two-columns");
+	
+	// FilePond states
+	const [imageFiles, setImageFiles] = useState<any[]>([]);
+	const [csvFiles, setCsvFiles] = useState<any[]>([]);
+	const [documentFiles, setDocumentFiles] = useState<any[]>([]);
+	const [isFileProcessing, setIsFileProcessing] = useState(false);
 
 	// Get default text color based on theme
 	const getDefaultTextColor = () => {
@@ -173,6 +195,20 @@ export default function Toolbar() {
 		const isDark = document.documentElement.classList.contains("dark");
 		return isDark ? "#e5e5e5" : "#212121";
 	};
+
+	// Reset FilePond files when dialog closes
+	useEffect(() => {
+		if (!imageDialogOpen) {
+			setTimeout(() => {
+				setImageFiles([]);
+			}, 300);
+		}
+		if (!chartDialogOpen) {
+			setTimeout(() => {
+				setCsvFiles([]);
+			}, 300);
+		}
+	}, [imageDialogOpen, chartDialogOpen]);
 
 	if (!currentPresentation) return null;
 
@@ -242,13 +278,14 @@ export default function Toolbar() {
 		});
 	};
 
-	const handleAddImage = () => {
-		if (imageUrl) {
+	const handleAddImage = (imageUrl?: string) => {
+		const url = imageUrl || this?.imageUrl;
+		if (url) {
 			addElement({
 				type: "image",
 				position: { x: 100, y: 100 },
 				size: { width: 400, height: 300 },
-				content: imageUrl,
+				content: url,
 				style: {
 					borderRadius: "8px",
 				},
@@ -258,23 +295,30 @@ export default function Toolbar() {
 		}
 	};
 
-	const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (file) {
-			const reader = new FileReader();
-			reader.onload = (event) => {
-				const result = event.target?.result as string;
-				addElement({
-					type: "image",
-					position: { x: 100, y: 100 },
-					size: { width: 400, height: 300 },
-					content: result,
-					style: {
-						borderRadius: "8px",
-					},
-				});
-			};
-			reader.readAsDataURL(file);
+	// Process uploaded image file from FilePond
+	const handleImageUploadComplete = (file: any) => {
+		setIsFileProcessing(true);
+		try {
+			// FilePond already gives us the base64 encoded file
+			if (file && file.getFileEncodeDataURL) {
+				const base64 = file.getFileEncodeDataURL();
+				if (base64) {
+					addElement({
+						type: "image",
+						position: { x: 100, y: 100 },
+						size: { width: 400, height: 300 },
+						content: base64,
+						style: {
+							borderRadius: "8px",
+						},
+					});
+					setImageDialogOpen(false);
+				}
+			}
+		} catch (error) {
+			console.error("Error processing image:", error);
+		} finally {
+			setIsFileProcessing(false);
 		}
 	};
 
@@ -464,33 +508,43 @@ export default function Toolbar() {
 		setChartValues(template.data.values.join(", "));
 	};
 
-	const handleCSVUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-		const file = event.target.files?.[0];
-		if (!file) return;
+	// Process CSV file from FilePond
+	const handleCSVUploadComplete = (file: any) => {
+		setIsFileProcessing(true);
+		try {
+			// FilePond gives us the file object
+			if (file && file.file) {
+				const reader = new FileReader();
+				reader.onload = (e) => {
+					try {
+						const content = e.target?.result as string;
+						const lines = content.split("\n");
 
-		const reader = new FileReader();
-		reader.onload = (e) => {
-			try {
-				const content = e.target?.result as string;
-				const lines = content.split("\n");
+						if (lines.length >= 2) {
+							const labels = lines[0].split(",").map((l) => l.trim());
+							const values = lines[1].split(",").map((v) => v.trim());
 
-				if (lines.length >= 2) {
-					const labels = lines[0].split(",").map((l) => l.trim());
-					const values = lines[1].split(",").map((v) => v.trim());
+							setChartLabels(labels.join(", "));
+							setChartValues(values.join(", "));
 
-					setChartLabels(labels.join(", "));
-					setChartValues(values.join(", "));
-
-					// Try to detect chart type from filename
-					if (file.name.toLowerCase().includes("line")) setChartType("line");
-					if (file.name.toLowerCase().includes("pie")) setChartType("pie");
-					if (file.name.toLowerCase().includes("area")) setChartType("area");
-				}
-			} catch (error) {
-				console.error("Error parsing CSV:", error);
+							// Try to detect chart type from filename
+							const filename = file.file.name.toLowerCase();
+							if (filename.includes("line")) setChartType("line");
+							if (filename.includes("pie")) setChartType("pie");
+							if (filename.includes("area")) setChartType("area");
+						}
+					} catch (error) {
+						console.error("Error parsing CSV:", error);
+					} finally {
+						setIsFileProcessing(false);
+					}
+				};
+				reader.readAsText(file.file);
 			}
-		};
-		reader.readAsText(file);
+		} catch (error) {
+			console.error("Error processing CSV:", error);
+			setIsFileProcessing(false);
+		}
 	};
 
 	const handleAddLayout = (type: string) => {
@@ -637,6 +691,11 @@ export default function Toolbar() {
 		}
 	};
 
+	// Quick upload button for images
+	const handleQuickImageUpload = () => {
+		setImageDialogOpen(true);
+	};
+
 	return (
 		<div className="bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b border-border shadow-sm">
 			<div className="px-4 py-3">
@@ -646,11 +705,190 @@ export default function Toolbar() {
 						ref={fileInputRef}
 						className="hidden"
 						accept="image/*"
-						onChange={handleFileUpload}
+						onChange={handleImageUpload}
 					/>
 
 					{/* Quick Add Buttons */}
 					<div className="flex items-center gap-2">
+						{/* Quick Upload Button */}
+						<Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
+							<DialogTrigger asChild>
+								<motion.div
+									whileHover={{ scale: 1.05 }}
+									whileTap={{ scale: 0.95 }}
+								>
+									<Button
+										variant="outline"
+										size="sm"
+										className="gap-2"
+										title="Quick Upload"
+									>
+										<FileUp className="w-4 h-4" />
+										<span className="hidden sm:inline">Upload</span>
+									</Button>
+								</motion.div>
+							</DialogTrigger>
+							<DialogContent className="max-w-lg">
+								<DialogHeader>
+									<DialogTitle>Upload Files</DialogTitle>
+									<DialogDescription>
+										Upload images, documents, or data files
+									</DialogDescription>
+								</DialogHeader>
+								<Tabs defaultValue="images" className="w-full">
+									<TabsList className="grid w-full grid-cols-3">
+										<TabsTrigger value="images">Images</TabsTrigger>
+										<TabsTrigger value="documents">Documents</TabsTrigger>
+										<TabsTrigger value="data">Data Files</TabsTrigger>
+									</TabsList>
+									
+									<TabsContent value="images" className="space-y-4 py-4">
+										<div className="space-y-4">
+											<div className="border-2 border-dashed border-border rounded-lg p-4">
+												<FilePond
+													files={imageFiles}
+													onupdatefiles={setImageFiles}
+													allowMultiple={false}
+													maxFiles={1}
+													acceptedFileTypes={['image/*']}
+													maxFileSize="5MB"
+													labelIdle='Drag & Drop your image or <span class="filepond--label-action">Browse</span>'
+													labelFileProcessing='Processing'
+													labelFileProcessingComplete='Upload complete'
+													labelFileProcessingError='Upload error'
+													labelTapToCancel='tap to cancel'
+													labelTapToRetry='tap to retry'
+													labelTapToUndo='tap to undo'
+													onprocessfile={(error, file) => {
+														if (!error) {
+															handleImageUploadComplete(file);
+														}
+													}}
+													server={{
+														process: (_fieldName, file, _metadata, load) => {
+															// Simulujeme serverový upload
+															setTimeout(() => {
+																load(file.name);
+															}, 1000);
+														}
+													}}
+												/>
+											</div>
+											
+											<div className="text-center">
+												<p className="text-sm text-muted-foreground mb-4">
+													Or use image URL
+												</p>
+												<div className="flex gap-2">
+													<Input
+														value={imageUrl}
+														onChange={(e) => setImageUrl(e.target.value)}
+														placeholder="https://example.com/image.jpg"
+														className="flex-1"
+													/>
+													<Button 
+														onClick={() => handleAddImage(imageUrl)} 
+														disabled={!imageUrl}
+													>
+														Add
+													</Button>
+												</div>
+											</div>
+										</div>
+									</TabsContent>
+									
+									<TabsContent value="documents" className="space-y-4 py-4">
+										<div className="border-2 border-dashed border-border rounded-lg p-4">
+											<FilePond
+												files={documentFiles}
+												onupdatefiles={setDocumentFiles}
+												allowMultiple={true}
+												maxFiles={5}
+												acceptedFileTypes={['.pdf', '.doc', '.docx', '.txt', '.ppt', '.pptx']}
+												maxFileSize="10MB"
+												labelIdle='Drag & Drop documents or <span class="filepond--label-action">Browse</span>'
+												labelFileProcessing='Processing'
+												labelFileProcessingComplete='Upload complete'
+												labelFileProcessingError='Upload error'
+												server={{
+													process: (_fieldName, file, _metadata, load) => {
+														setTimeout(() => {
+															load(file.name);
+														}, 1000);
+													}
+												}}
+											/>
+										</div>
+										<div className="text-center">
+											<p className="text-sm text-muted-foreground">
+												Supported formats: PDF, DOC, DOCX, TXT, PPT, PPTX
+											</p>
+										</div>
+									</TabsContent>
+									
+									<TabsContent value="data" className="space-y-4 py-4">
+										<div className="space-y-4">
+											<div className="border-2 border-dashed border-border rounded-lg p-4">
+												<FilePond
+													files={csvFiles}
+													onupdatefiles={setCsvFiles}
+													allowMultiple={false}
+													maxFiles={1}
+													acceptedFileTypes={['.csv', '.json', '.xlsx']}
+													maxFileSize="2MB"
+													labelIdle='Drag & Drop data file or <span class="filepond--label-action">Browse</span>'
+													labelFileProcessing='Processing'
+													onprocessfile={(error, file) => {
+														if (!error) {
+															handleCSVUploadComplete(file);
+														}
+													}}
+													server={{
+														process: (_fieldName, file, _metadata, load) => {
+															setTimeout(() => {
+																load(file.name);
+															}, 1000);
+														}
+													}}
+												/>
+											</div>
+											
+											<div className="bg-muted/30 rounded-lg p-4">
+												<h4 className="text-sm font-medium mb-2">Supported Data Formats:</h4>
+												<ul className="text-sm text-muted-foreground space-y-1">
+													<li>• CSV - Comma separated values</li>
+													<li>• JSON - JavaScript Object Notation</li>
+													<li>• XLSX - Excel spreadsheets</li>
+												</ul>
+											</div>
+										</div>
+									</TabsContent>
+								</Tabs>
+								
+								<DialogFooter>
+									<Button
+										variant="outline"
+										onClick={() => setImageDialogOpen(false)}
+										disabled={isFileProcessing}
+									>
+										Cancel
+									</Button>
+									<Button 
+										onClick={() => {
+											if (imageFiles.length > 0 && imageFiles[0].status === 5) {
+												handleImageUploadComplete(imageFiles[0]);
+											} else if (imageUrl) {
+												handleAddImage(imageUrl);
+											}
+										}}
+										disabled={isFileProcessing || (imageFiles.length === 0 && !imageUrl)}
+									>
+										{isFileProcessing ? "Processing..." : "Add to Slide"}
+									</Button>
+								</DialogFooter>
+							</DialogContent>
+						</Dialog>
+
 						<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
 							<Button
 								onClick={() => handleAddText("title")}
@@ -673,87 +911,7 @@ export default function Toolbar() {
 								<span className="hidden sm:inline">Text</span>
 							</Button>
 						</motion.div>
-						<Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
-							<DialogTrigger asChild>
-								<motion.div
-									whileHover={{ scale: 1.05 }}
-									whileTap={{ scale: 0.95 }}
-								>
-									<Button variant="outline" size="sm" className="gap-2">
-										<Image className="w-4 h-4" />
-										<span className="hidden sm:inline">Image</span>
-									</Button>
-								</motion.div>
-							</DialogTrigger>
-							<DialogContent>
-								<DialogHeader>
-									<DialogTitle>Add Image</DialogTitle>
-									<DialogDescription>
-										Enter image URL or use direct link
-									</DialogDescription>
-								</DialogHeader>
-								<Tabs defaultValue="url" className="w-full">
-									<TabsList className="grid w-full grid-cols-2">
-										<TabsTrigger value="url">From URL</TabsTrigger>
-										<TabsTrigger value="upload">Upload</TabsTrigger>
-									</TabsList>
-									<TabsContent value="url" className="space-y-4 py-4">
-										<div className="space-y-2">
-											<Label htmlFor="image-url-quick">Image URL</Label>
-											<Input
-												id="image-url-quick"
-												value={imageUrl}
-												onChange={(e) => setImageUrl(e.target.value)}
-												placeholder="https://example.com/image.jpg"
-											/>
-										</div>
-										{imageUrl && (
-											<div className="rounded-lg overflow-hidden border">
-												<img
-													src={imageUrl}
-													alt="Preview"
-													className="w-full h-48 object-cover"
-													onError={(e) => {
-														(e.target as HTMLImageElement).style.display =
-															"none";
-													}}
-												/>
-											</div>
-										)}
-										<Button
-											onClick={handleAddImage}
-											disabled={!imageUrl}
-											className="w-full"
-										>
-											Add Image
-										</Button>
-									</TabsContent>
-									<TabsContent value="upload" className="space-y-4 py-4">
-										<div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-											<Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-											<p className="text-sm text-muted-foreground mb-4">
-												Drag & drop or click to upload
-											</p>
-											<Button
-												variant="secondary"
-												className="w-full"
-												onClick={() => fileInputRef.current?.click()}
-											>
-												Select File
-											</Button>
-										</div>
-									</TabsContent>
-								</Tabs>
-								<DialogFooter>
-									<Button
-										variant="outline"
-										onClick={() => setImageDialogOpen(false)}
-									>
-										Cancel
-									</Button>
-								</DialogFooter>
-							</DialogContent>
-						</Dialog>
+						
 						<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
 							<Button
 								onClick={() => handleAddShape("star")}
@@ -789,7 +947,7 @@ export default function Toolbar() {
 									<TabsList className="grid w-full grid-cols-3">
 										<TabsTrigger value="templates">Templates</TabsTrigger>
 										<TabsTrigger value="custom">Custom</TabsTrigger>
-										<TabsTrigger value="import">Import</TabsTrigger>
+										<TabsTrigger value="import">Import Data</TabsTrigger>
 									</TabsList>
 
 									<TabsContent value="templates" className="space-y-4 py-4">
@@ -908,50 +1066,47 @@ export default function Toolbar() {
 													/>
 												</div>
 											</div>
-
-											<div className="space-y-2">
-												<Label>Preview</Label>
-												<div className="border rounded-lg p-4 bg-muted/30">
-													<div className="text-sm text-muted-foreground">
-														<div>Type: {chartType}</div>
-														<div>Labels: {chartLabels}</div>
-														<div>Values: {chartValues}</div>
-														{chartTitle && <div>Title: {chartTitle}</div>}
-													</div>
-												</div>
-											</div>
 										</div>
 									</TabsContent>
 
 									<TabsContent value="import" className="space-y-4 py-4">
 										<div className="space-y-4">
-											<div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-												<Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-												<p className="text-sm text-muted-foreground mb-4">
-													Upload CSV file with your data
-												</p>
-												<div className="space-y-2">
-													<Input
-														type="file"
-														accept=".csv"
-														onChange={handleCSVUpload}
-														className="cursor-pointer"
-													/>
-													<p className="text-xs text-muted-foreground">
-														Expected format: First row labels, second row values
-													</p>
-												</div>
+											<div className="border-2 border-dashed border-border rounded-lg p-4">
+												<FilePond
+													files={csvFiles}
+													onupdatefiles={setCsvFiles}
+													allowMultiple={false}
+													maxFiles={1}
+													acceptedFileTypes={['.csv', '.json']}
+													maxFileSize="2MB"
+													labelIdle='Drag & Drop data file or <span class="filepond--label-action">Browse</span>'
+													labelFileProcessing='Processing'
+													onprocessfile={(error, file) => {
+														if (!error) {
+															handleCSVUploadComplete(file);
+														}
+													}}
+													server={{
+														process: (_fieldName, file, _metadata, load) => {
+															setTimeout(() => {
+																load(file.name);
+															}, 1000);
+														}
+													}}
+												/>
 											</div>
 
-											<div className="space-y-2">
-												<Label>CSV Format Example</Label>
-												<div className="border rounded-lg p-4 bg-muted/30 font-mono text-sm">
-													<div>Quarter, Sales, Expenses, Profit</div>
-													<div>Q1, 45000, 30000, 15000</div>
-													<div>Q2, 52000, 35000, 17000</div>
-													<div>Q3, 48000, 32000, 16000</div>
-													<div>Q4, 61000, 40000, 21000</div>
-												</div>
+											<div className="bg-muted/30 rounded-lg p-4">
+												<h4 className="text-sm font-medium mb-2">CSV Format Example:</h4>
+												<pre className="text-xs font-mono bg-background p-3 rounded overflow-x-auto">
+{`Quarter,Sales,Expenses,Profit
+Q1,45000,30000,15000
+Q2,52000,35000,17000
+Q3,48000,32000,16000
+Q4,61000,40000,21000`}</pre>
+												<p className="text-xs text-muted-foreground mt-2">
+													First row: labels, following rows: data values
+												</p>
 											</div>
 										</div>
 									</TabsContent>
@@ -961,58 +1116,19 @@ export default function Toolbar() {
 									<Button
 										variant="outline"
 										onClick={() => setChartDialogOpen(false)}
+										disabled={isFileProcessing}
 									>
 										Cancel
 									</Button>
-									<Button onClick={handleAddChart}>Add Chart to Slide</Button>
+									<Button 
+										onClick={handleAddChart}
+										disabled={isFileProcessing}
+									>
+										{isFileProcessing ? "Processing..." : "Add Chart to Slide"}
+									</Button>
 								</DialogFooter>
 							</DialogContent>
 						</Dialog>
-
-						{/* Chart templates dropdown for quick access */}
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button variant="ghost" size="icon" className="h-8 w-8">
-									<TrendingUp className="w-4 h-4" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="w-64">
-								<DropdownMenuLabel>Quick Chart Templates</DropdownMenuLabel>
-								<DropdownMenuSeparator />
-								{CHART_TEMPLATES.map((template) => (
-									<DropdownMenuItem
-										key={template.name}
-										onClick={() => {
-											handleChartTemplateSelect(template);
-											setTimeout(() => setChartDialogOpen(true), 100);
-										}}
-										className="gap-3"
-									>
-										{template.type === "bar" && (
-											<BarChart className="w-4 h-4 text-blue-500" />
-										)}
-										{template.type === "line" && (
-											<LineChart className="w-4 h-4 text-red-500" />
-										)}
-										{template.type === "pie" && (
-											<PieChart className="w-4 h-4 text-green-500" />
-										)}
-										{template.type === "area" && (
-											<TrendingUp className="w-4 h-4 text-purple-500" />
-										)}
-										<span>{template.name}</span>
-									</DropdownMenuItem>
-								))}
-								<DropdownMenuSeparator />
-								<DropdownMenuItem
-									onClick={() => setChartDialogOpen(true)}
-									className="gap-3"
-								>
-									<Download className="w-4 h-4" />
-									<span>Import from CSV</span>
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
 					</div>
 
 					<Separator orientation="vertical" className="h-6" />
@@ -1035,6 +1151,16 @@ export default function Toolbar() {
 							align="start"
 							className="w-80 max-h-[80vh] overflow-y-auto"
 						>
+							{/* Upload Option in Dropdown */}
+							<DropdownMenuItem
+								onClick={handleQuickImageUpload}
+								className="gap-3 text-primary"
+							>
+								<FileUp className="w-4 h-4" />
+								<span>Upload Files</span>
+							</DropdownMenuItem>
+							<DropdownMenuSeparator />
+
 							<DropdownMenuLabel className="text-xs text-muted-foreground flex items-center justify-between">
 								<span>Text Elements</span>
 								<FontIcon className="w-3 h-3" />
@@ -1175,75 +1301,10 @@ export default function Toolbar() {
 							<DropdownMenuSeparator />
 
 							<DropdownMenuLabel className="text-xs text-muted-foreground flex items-center justify-between">
-								<span>Shapes & Icons</span>
-								<Square className="w-3 h-3" />
-							</DropdownMenuLabel>
-							<div className="grid grid-cols-3 gap-1 p-2">
-								<DropdownMenuItem
-									onClick={() => handleAddShape("square")}
-									className="flex-col gap-2 h-auto py-3"
-								>
-									<Square className="w-6 h-6" />
-									<span className="text-xs">Square</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={() => handleAddShape("circle")}
-									className="flex-col gap-2 h-auto py-3"
-								>
-									<Circle className="w-6 h-6" />
-									<span className="text-xs">Circle</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={() => handleAddShape("heart")}
-									className="flex-col gap-2 h-auto py-3"
-								>
-									<Heart className="w-6 h-6" />
-									<span className="text-xs">Heart</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={() => handleAddIcon("star")}
-									className="flex-col gap-2 h-auto py-3"
-								>
-									<Star className="w-6 h-6" />
-									<span className="text-xs">Star Icon</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={() => handleAddIcon("sparkles")}
-									className="flex-col gap-2 h-auto py-3"
-								>
-									<Sparkles className="w-6 h-6" />
-									<span className="text-xs">Sparkles</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={() => handleAddIcon("zap")}
-									className="flex-col gap-2 h-auto py-3"
-								>
-									<Zap className="w-6 h-6" />
-									<span className="text-xs">Zap</span>
-								</DropdownMenuItem>
-							</div>
-
-							<DropdownMenuSeparator />
-
-							<DropdownMenuLabel className="text-xs text-muted-foreground flex items-center justify-between">
-								<span>Data & Tables</span>
-								<Table2 className="w-3 h-3" />
+								<span>Data & Charts</span>
+								<BarChart className="w-3 h-3" />
 							</DropdownMenuLabel>
 							<div className="grid grid-cols-2 gap-1 p-2">
-								<Dialog
-									open={tableDialogOpen}
-									onOpenChange={setTableDialogOpen}
-								>
-									<DialogTrigger asChild>
-										<DropdownMenuItem
-											onSelect={(e) => e.preventDefault()}
-											className="flex-col gap-2 h-auto py-3"
-										>
-											<Table className="w-6 h-6" />
-											<span className="text-xs">Table</span>
-										</DropdownMenuItem>
-									</DialogTrigger>
-								</Dialog>
 								<Dialog
 									open={chartDialogOpen}
 									onOpenChange={setChartDialogOpen}
@@ -1258,203 +1319,16 @@ export default function Toolbar() {
 										</DropdownMenuItem>
 									</DialogTrigger>
 								</Dialog>
-							</div>
-
-							<DropdownMenuSeparator />
-
-							<DropdownMenuLabel className="text-xs text-muted-foreground flex items-center justify-between">
-								<span>Layouts</span>
-								<Grid className="w-3 h-3" />
-							</DropdownMenuLabel>
-							<div className="grid grid-cols-2 gap-1 p-2">
 								<DropdownMenuItem
-									onClick={() => handleAddLayout("two-columns")}
+									onClick={() => setChartDialogOpen(true)}
 									className="flex-col gap-2 h-auto py-3"
 								>
-									<Columns className="w-6 h-6" />
-									<span className="text-xs">Two Columns</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={() => handleAddLayout("three-columns")}
-									className="flex-col gap-2 h-auto py-3"
-								>
-									<Layers className="w-6 h-6" />
-									<span className="text-xs">Three Columns</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={() => handleAddLayout("header-content")}
-									className="flex-col gap-2 h-auto py-3 col-span-2"
-								>
-									<PanelTop className="w-6 h-6" />
-									<span className="text-xs">Header-Content-Footer</span>
+									<UploadIcon className="w-6 h-6" />
+									<span className="text-xs">Import Data</span>
 								</DropdownMenuItem>
 							</div>
-
-							<DropdownMenuSeparator />
-
-							<Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
-								<DialogTrigger asChild>
-									<DropdownMenuItem
-										onSelect={(e) => e.preventDefault()}
-										className="gap-3"
-									>
-										<Link2 className="w-4 h-4" />
-										<span>Link</span>
-									</DropdownMenuItem>
-								</DialogTrigger>
-							</Dialog>
 						</DropdownMenuContent>
 					</DropdownMenu>
-
-					{/* Table Dialog */}
-					<Dialog open={tableDialogOpen} onOpenChange={setTableDialogOpen}>
-						<DialogContent>
-							<DialogHeader>
-								<DialogTitle>Add Table</DialogTitle>
-								<DialogDescription>
-									Configure your table dimensions
-								</DialogDescription>
-							</DialogHeader>
-							<div className="space-y-6 py-4">
-								<div className="space-y-4">
-									<div className="space-y-2">
-										<Label htmlFor="table-rows">Rows: {tableRows}</Label>
-										<Slider
-											id="table-rows"
-											min={1}
-											max={10}
-											step={1}
-											value={[tableRows]}
-											onValueChange={(value) => setTableRows(value[0])}
-										/>
-									</div>
-									<div className="space-y-2">
-										<Label htmlFor="table-columns">
-											Columns: {tableColumns}
-										</Label>
-										<Slider
-											id="table-columns"
-											min={1}
-											max={8}
-											step={1}
-											value={[tableColumns]}
-											onValueChange={(value) => setTableColumns(value[0])}
-										/>
-									</div>
-								</div>
-								<div className="border rounded-lg p-4 bg-muted/30">
-									<div className="text-sm text-muted-foreground mb-2">
-										Preview:
-									</div>
-									<div className="inline-block border">
-										{Array(tableRows)
-											.fill(null)
-											.map((_, rowIndex) => (
-												<div key={rowIndex} className="flex">
-													{Array(tableColumns)
-														.fill(null)
-														.map((_, colIndex) => (
-															<div
-																key={colIndex}
-																className="w-16 h-8 border flex items-center justify-center text-xs"
-															>
-																{rowIndex + 1}-{colIndex + 1}
-															</div>
-														))}
-												</div>
-											))}
-									</div>
-								</div>
-							</div>
-							<DialogFooter>
-								<Button
-									variant="outline"
-									onClick={() => setTableDialogOpen(false)}
-								>
-									Cancel
-								</Button>
-								<Button onClick={handleAddTable}>Add Table</Button>
-							</DialogFooter>
-						</DialogContent>
-					</Dialog>
-
-					{/* Video Dialog */}
-					<Dialog open={videoDialogOpen} onOpenChange={setVideoDialogOpen}>
-						<DialogContent>
-							<DialogHeader>
-								<DialogTitle>Add Video</DialogTitle>
-								<DialogDescription>
-									Enter video URL (YouTube, Vimeo, etc.)
-								</DialogDescription>
-							</DialogHeader>
-							<div className="space-y-4 py-4">
-								<div className="space-y-2">
-									<Label htmlFor="video-url">Video URL</Label>
-									<Input
-										id="video-url"
-										value={videoUrl}
-										onChange={(e) => setVideoUrl(e.target.value)}
-										placeholder="https://youtube.com/watch?v=..."
-									/>
-								</div>
-							</div>
-							<DialogFooter>
-								<Button
-									variant="outline"
-									onClick={() => setVideoDialogOpen(false)}
-								>
-									Cancel
-								</Button>
-								<Button onClick={handleAddVideo} disabled={!videoUrl}>
-									Add Video
-								</Button>
-							</DialogFooter>
-						</DialogContent>
-					</Dialog>
-
-					{/* Link Dialog */}
-					<Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
-						<DialogContent>
-							<DialogHeader>
-								<DialogTitle>Add Link</DialogTitle>
-								<DialogDescription>Enter link text and URL</DialogDescription>
-							</DialogHeader>
-							<div className="space-y-4 py-4">
-								<div className="space-y-2">
-									<Label htmlFor="link-text">Link Text</Label>
-									<Input
-										id="link-text"
-										value={linkText}
-										onChange={(e) => setLinkText(e.target.value)}
-										placeholder="Click here"
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label htmlFor="link-url">URL</Label>
-									<Input
-										id="link-url"
-										value={linkUrl}
-										onChange={(e) => setLinkUrl(e.target.value)}
-										placeholder="https://example.com"
-									/>
-								</div>
-							</div>
-							<DialogFooter>
-								<Button
-									variant="outline"
-									onClick={() => setLinkDialogOpen(false)}
-								>
-									Cancel
-								</Button>
-								<Button
-									onClick={handleAddLink}
-									disabled={!linkUrl || !linkText}
-								>
-									Add Link
-								</Button>
-							</DialogFooter>
-						</DialogContent>
-					</Dialog>
 
 					{/* Text Formatting Tools */}
 					{selectedElement && selectedElement.type === "text" && (
@@ -1537,121 +1411,6 @@ export default function Toolbar() {
 											<Underline className="w-4 h-4" />
 										</Button>
 									</motion.div>
-								</div>
-
-								<Separator orientation="vertical" className="h-6" />
-								<div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
-									<motion.div
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.9 }}
-									>
-										<Button
-											variant={
-												selectedElement.style?.textAlign === "left"
-													? "default"
-													: "ghost"
-											}
-											size="icon"
-											className="h-8 w-8"
-											onClick={() => handleTextStyle("textAlign", "left")}
-											title="Align left"
-										>
-											<AlignLeft className="w-4 h-4" />
-										</Button>
-									</motion.div>
-									<motion.div
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.9 }}
-									>
-										<Button
-											variant={
-												selectedElement.style?.textAlign === "center"
-													? "default"
-													: "ghost"
-											}
-											size="icon"
-											className="h-8 w-8"
-											onClick={() => handleTextStyle("textAlign", "center")}
-											title="Align center"
-										>
-											<AlignCenter className="w-4 h-4" />
-										</Button>
-									</motion.div>
-									<motion.div
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.9 }}
-									>
-										<Button
-											variant={
-												selectedElement.style?.textAlign === "right"
-													? "default"
-													: "ghost"
-											}
-											size="icon"
-											className="h-8 w-8"
-											onClick={() => handleTextStyle("textAlign", "right")}
-											title="Align right"
-										>
-											<AlignRight className="w-4 h-4" />
-										</Button>
-									</motion.div>
-								</div>
-
-								{/* Font Size Control */}
-								<Separator orientation="vertical" className="h-6" />
-								<div className="flex items-center gap-2">
-									<span className="text-sm text-muted-foreground">Size:</span>
-									<Select
-										value={selectedElement.style?.fontSize?.toString() || "24"}
-										onValueChange={(value) =>
-											handleTextStyle("fontSize", parseInt(value))
-										}
-									>
-										<SelectTrigger className="w-20 h-8">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											{[12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48, 56, 64].map(
-												(size) => (
-													<SelectItem key={size} value={size.toString()}>
-														{size}px
-													</SelectItem>
-												),
-											)}
-										</SelectContent>
-									</Select>
-								</div>
-
-								{/* Font Family Control */}
-								<Separator orientation="vertical" className="h-6" />
-								<div className="flex items-center gap-2">
-									<span className="text-sm text-muted-foreground">Font:</span>
-									<Select
-										value={selectedElement.style?.fontFamily || "Arial"}
-										onValueChange={(value) =>
-											handleTextStyle("fontFamily", value)
-										}
-									>
-										<SelectTrigger className="w-32 h-8">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="Arial">Arial</SelectItem>
-											<SelectItem value="Helvetica">Helvetica</SelectItem>
-											<SelectItem value="Times New Roman">
-												Times New Roman
-											</SelectItem>
-											<SelectItem value="Georgia">Georgia</SelectItem>
-											<SelectItem value="Courier New">Courier New</SelectItem>
-											<SelectItem value="Verdana">Verdana</SelectItem>
-											<SelectItem value="Tahoma">Tahoma</SelectItem>
-											<SelectItem value="Trebuchet MS">Trebuchet MS</SelectItem>
-											<SelectItem value="Comic Sans MS">
-												Comic Sans MS
-											</SelectItem>
-											<SelectItem value="Impact">Impact</SelectItem>
-										</SelectContent>
-									</Select>
 								</div>
 							</div>
 						</>
