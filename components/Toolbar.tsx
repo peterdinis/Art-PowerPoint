@@ -217,6 +217,27 @@ export default function Toolbar() {
 		(el) => el.id === selectedElementId,
 	);
 
+	// **PRIDANÁ CHYBIAJÚCA FUNKCIA**
+	const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (file) {
+			const reader = new FileReader();
+			reader.onload = (event) => {
+				const result = event.target?.result as string;
+				addElement({
+					type: "image",
+					position: { x: 100, y: 100 },
+					size: { width: 400, height: 300 },
+					content: result,
+					style: {
+						borderRadius: "8px",
+					},
+				});
+			};
+			reader.readAsDataURL(file);
+		}
+	};
+
 	const handleAddText = (
 		textType:
 			| "heading1"
