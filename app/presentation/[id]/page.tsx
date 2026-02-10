@@ -342,13 +342,14 @@ function PresentationElement({
 			case "text":
 				// Determine text color based on slide background
 				const bgColor = slideBackground?.color || "#ffffff";
-				const isDarkBg = bgColor && (
-					bgColor === "#000000" || 
-					bgColor.toLowerCase().includes("dark") ||
-					(bgColor.startsWith("#") && parseInt(bgColor.slice(1), 16) < 0x808080)
-				);
+				const isDarkBg =
+					bgColor &&
+					(bgColor === "#000000" ||
+						bgColor.toLowerCase().includes("dark") ||
+						(bgColor.startsWith("#") &&
+							parseInt(bgColor.slice(1), 16) < 0x808080));
 				const defaultTextColor = isDarkBg ? "#ffffff" : "#212121";
-				
+
 				return (
 					<div
 						style={{
