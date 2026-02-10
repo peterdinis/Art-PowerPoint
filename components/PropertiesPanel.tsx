@@ -33,7 +33,7 @@ import type { SlideElement } from "@/lib/types/presentation";
 import SlideBackgroundEditor from "./SlideBackgroundEditor";
 import { useTheme } from "@/components/ThemeProvider";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 // Extended type definitions for better type safety
 type AnimationType = 'none' | 'fadeIn' | 'slideIn' | 'zoomIn' | 'bounce' | 'rotate' | 'fadeOut' | 'slideOut' | 'zoomOut' | 'pulse' | 'shake';
@@ -44,8 +44,34 @@ type TextDecorationType = 'none' | 'underline' | 'line-through' | 'overline';
 type TextAlignType = 'left' | 'center' | 'right' | 'justify';
 type ShapeType = 'square' | 'circle' | 'triangle' | 'rectangle' | 'rounded' | 'star' | 'ellipse' | 'hexagon' | 'arrow' | 'heart';
 type FontFamilyType = 'Arial' | 'Helvetica' | 'Times New Roman' | 'Courier New' | 'Verdana' | 'Georgia' | 'Palatino' | 'Garamond' | 'Roboto' | 'Open Sans' | 'Montserrat' | 'Lato';
+type BorderStyleType = 'solid' | 'dashed' | 'dotted' | 'double';
+type ObjectFitType = 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
 
-interface ExtendedSlideElement extends SlideElement {
+// Create a proper type for element styling
+interface ElementStyle {
+  color?: string;
+  backgroundColor?: string;
+  borderColor?: string;
+  borderWidth?: number;
+  fontSize?: number;
+  fontFamily?: FontFamilyType;
+  fontWeight?: FontWeightType;
+  fontStyle?: FontStyleType;
+  textDecoration?: TextDecorationType;
+  textAlign?: TextAlignType;
+  opacity?: number;
+  borderRadius?: number;
+  borderStyle?: BorderStyleType;
+  boxShadow?: string;
+  lineHeight?: number;
+  letterSpacing?: number;
+  gradient?: string;
+  objectFit?: ObjectFitType;
+}
+
+// Create a proper extended element type
+interface ExtendedSlideElement extends Omit<SlideElement, 'style' | 'content'> {
+  content: string;
   animation?: {
     type: AnimationType;
     duration: number;
@@ -53,30 +79,11 @@ interface ExtendedSlideElement extends SlideElement {
     easing?: string;
     direction?: 'normal' | 'reverse' | 'alternate' | 'alternate-reverse';
   };
-  style?: {
-    color?: string;
-    backgroundColor?: string;
-    borderColor?: string;
-    borderWidth?: number;
-    fontSize?: number;
-    fontFamily?: FontFamilyType;
-    fontWeight?: FontWeightType;
-    fontStyle?: FontStyleType;
-    textDecoration?: TextDecorationType;
-    textAlign?: TextAlignType;
-    opacity?: number;
-    borderRadius?: number;
-    borderStyle?: 'solid' | 'dashed' | 'dotted' | 'double';
-    boxShadow?: string;
-    lineHeight?: number;
-    letterSpacing?: number;
-    gradient?: string;
-  };
-  transition?: {
-    type: SlideTransitionType;
-    duration: number;
-    direction?: 'left' | 'right' | 'up' | 'down';
-  };
+  style?: ElementStyle;
+  autoplay?: boolean;
+  controls?: boolean;
+  loop?: boolean;
+  rotation?: number;
 }
 
 export default function PropertiesPanel() {
@@ -103,13 +110,45 @@ export default function PropertiesPanel() {
   const currentSlide = currentPresentation.slides[currentSlideIndex];
   if (!currentSlide) return null;
 
-  const selectedElement = currentSlide.elements.find(
-    (el) => el.id === selectedElementId,
-  ) as ExtendedSlideElement | undefined;
+  // Safe type casting with proper checks
+  const selectedElement = selectedElementId 
+    ? currentSlide.elements.find((el) => el.id === selectedElementId)
+    : undefined;
+
+  // Helper function to cast element to extended type
+  const getExtendedElement = (): ExtendedSlideElement | undefined => {
+    if (!selectedElement) return undefined;
+    
+    // Type guard to ensure we have a proper element
+    const baseElement = selectedElement as any;
+    
+    return {
+      ...baseElement,
+      content: baseElement.content || '',
+      style: baseElement.style || {},
+      animation: baseElement.animation || undefined,
+      autoplay: baseElement.autoplay || false,
+      controls: baseElement.controls ?? true, // Default to true for videos
+      loop: baseElement.loop || false,
+      rotation: baseElement.rotation || 0,
+    };
+  };
+
+  const extendedElement = getExtendedElement();
 
   const handleUpdate = (updates: Partial<ExtendedSlideElement>) => {
-    if (selectedElement) {
-      updateElement(selectedElement.id, updates);
+    if (selectedElement && extendedElement) {
+      // Merge updates properly
+      const mergedUpdates = {
+        ...updates,
+        style: { ...extendedElement.style, ...updates.style },
+        animation: updates.animation ? { 
+          ...extendedElement.animation, 
+          ...updates.animation 
+        } : extendedElement.animation,
+      };
+      
+      updateElement(selectedElement.id, mergedUpdates);
     }
   };
 
@@ -120,13 +159,19 @@ export default function PropertiesPanel() {
   }) => {
     const updatedSlides = currentPresentation.slides.map((slide, index) =>
       index === currentSlideIndex
-        ? { ...slide, background: { ...slide.background, ...updates } }
+        ? { 
+            ...slide, 
+            background: { 
+              ...(slide.background || { type: 'color', color: '#ffffff' }), 
+              ...updates 
+            } 
+          }
         : slide,
     );
     updatePresentation(currentPresentation.id, { slides: updatedSlides });
   };
 
-  if (!selectedElement) {
+  if (!extendedElement) {
     return (
       <motion.div
         initial={{ x: 320, opacity: 0 }}
@@ -147,7 +192,7 @@ export default function PropertiesPanel() {
 
           <div className="space-y-4">
             <SlideBackgroundEditor
-              currentBackground={currentSlide.background}
+              currentBackground={currentSlide.background || { type: 'color', color: '#ffffff' }}
               onUpdate={handleSlideBackgroundUpdate}
             />
 
@@ -299,7 +344,7 @@ export default function PropertiesPanel() {
   }
 
   const getElementIcon = () => {
-    switch (selectedElement.type) {
+    switch (extendedElement.type) {
       case "text":
         return <Type className="w-5 h-5" />;
       case "image":
@@ -315,7 +360,7 @@ export default function PropertiesPanel() {
 
   return (
     <motion.div
-      key={selectedElement.id}
+      key={extendedElement.id}
       initial={{ x: 320, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -332,7 +377,7 @@ export default function PropertiesPanel() {
             size="icon"
             onClick={() => {
               if (confirm("Are you sure you want to delete this element?")) {
-                deleteElement(selectedElement.id);
+                deleteElement(extendedElement.id);
                 selectElement(null);
               }
             }}
@@ -341,9 +386,9 @@ export default function PropertiesPanel() {
           </Button>
         </div>
         <p className="text-sm text-muted-foreground capitalize mt-1">
-          {selectedElement.type === "shape"
-            ? `Shape: ${selectedElement.content || "square"}`
-            : selectedElement.type}
+          {extendedElement.type === "shape"
+            ? `Shape: ${extendedElement.content || "square"}`
+            : extendedElement.type}
         </p>
       </CardHeader>
 
@@ -359,11 +404,11 @@ export default function PropertiesPanel() {
               <Input
                 id="pos-x"
                 type="number"
-                value={selectedElement.position.x}
+                value={extendedElement.position.x}
                 onChange={(e) =>
                   handleUpdate({
                     position: {
-                      ...selectedElement.position,
+                      ...extendedElement.position,
                       x: Number(e.target.value),
                     },
                   })
@@ -378,11 +423,11 @@ export default function PropertiesPanel() {
               <Input
                 id="pos-y"
                 type="number"
-                value={selectedElement.position.y}
+                value={extendedElement.position.y}
                 onChange={(e) =>
                   handleUpdate({
                     position: {
-                      ...selectedElement.position,
+                      ...extendedElement.position,
                       y: Number(e.target.value),
                     },
                   })
@@ -406,11 +451,11 @@ export default function PropertiesPanel() {
               <Input
                 id="size-w"
                 type="number"
-                value={selectedElement.size.width}
+                value={extendedElement.size.width}
                 onChange={(e) =>
                   handleUpdate({
                     size: {
-                      ...selectedElement.size,
+                      ...extendedElement.size,
                       width: Math.max(50, Number(e.target.value)),
                     },
                   })
@@ -426,11 +471,11 @@ export default function PropertiesPanel() {
               <Input
                 id="size-h"
                 type="number"
-                value={selectedElement.size.height}
+                value={extendedElement.size.height}
                 onChange={(e) =>
                   handleUpdate({
                     size: {
-                      ...selectedElement.size,
+                      ...extendedElement.size,
                       height: Math.max(50, Number(e.target.value)),
                     },
                   })
@@ -451,7 +496,7 @@ export default function PropertiesPanel() {
               type="range"
               min="0"
               max="360"
-              value={selectedElement.rotation || 0}
+              value={extendedElement.rotation || 0}
               onChange={(e) =>
                 handleUpdate({
                   rotation: Number(e.target.value),
@@ -460,7 +505,7 @@ export default function PropertiesPanel() {
               className="flex-1"
             />
             <span className="text-sm w-12 text-right">
-              {selectedElement.rotation || 0}°
+              {extendedElement.rotation || 0}°
             </span>
           </div>
         </div>
@@ -474,11 +519,11 @@ export default function PropertiesPanel() {
               type="range"
               min="0"
               max="100"
-              value={(selectedElement.style?.opacity || 1) * 100}
+              value={((extendedElement.style?.opacity || 1) * 100)}
               onChange={(e) =>
                 handleUpdate({
                   style: {
-                    ...selectedElement.style,
+                    ...extendedElement.style,
                     opacity: Number(e.target.value) / 100,
                   },
                 })
@@ -486,20 +531,20 @@ export default function PropertiesPanel() {
               className="flex-1"
             />
             <span className="text-sm w-12 text-right">
-              {Math.round((selectedElement.style?.opacity || 1) * 100)}%
+              {Math.round((extendedElement.style?.opacity || 1) * 100)}%
             </span>
           </div>
         </div>
 
         {/* Text-specific properties */}
-        {selectedElement.type === "text" && (
+        {extendedElement.type === "text" && (
           <>
             <Separator />
             <div>
               <Label htmlFor="text-content">Text</Label>
               <Textarea
                 id="text-content"
-                value={selectedElement.content}
+                value={extendedElement.content}
                 onChange={(e) => handleUpdate({ content: e.target.value })}
                 className="mt-2 resize-none"
                 rows={4}
@@ -512,11 +557,11 @@ export default function PropertiesPanel() {
                 <Input
                   id="font-size"
                   type="number"
-                  value={selectedElement.style?.fontSize || 16}
+                  value={extendedElement.style?.fontSize || 16}
                   onChange={(e) =>
                     handleUpdate({
                       style: {
-                        ...selectedElement.style,
+                        ...extendedElement.style,
                         fontSize: Math.max(8, Number(e.target.value)),
                       },
                     })
@@ -534,10 +579,10 @@ export default function PropertiesPanel() {
                 <Input
                   id="text-color"
                   type="color"
-                  value={selectedElement.style?.color || getDefaultTextColor()}
+                  value={extendedElement.style?.color || getDefaultTextColor()}
                   onChange={(e) =>
                     handleUpdate({
-                      style: { ...selectedElement.style, color: e.target.value },
+                      style: { ...extendedElement.style, color: e.target.value },
                     })
                   }
                   className="w-full h-10 mt-2 cursor-pointer"
@@ -549,11 +594,11 @@ export default function PropertiesPanel() {
                 <Input
                   id="background-color"
                   type="color"
-                  value={selectedElement.style?.backgroundColor || "transparent"}
+                  value={extendedElement.style?.backgroundColor || "transparent"}
                   onChange={(e) =>
                     handleUpdate({
                       style: {
-                        ...selectedElement.style,
+                        ...extendedElement.style,
                         backgroundColor: e.target.value,
                       },
                     })
@@ -566,10 +611,10 @@ export default function PropertiesPanel() {
             <div>
               <Label htmlFor="font-family">Font Family</Label>
               <Select
-                value={selectedElement.style?.fontFamily || "Arial"}
+                value={extendedElement.style?.fontFamily || "Arial"}
                 onValueChange={(value: FontFamilyType) =>
                   handleUpdate({
-                    style: { ...selectedElement.style, fontFamily: value },
+                    style: { ...extendedElement.style, fontFamily: value },
                   })
                 }
               >
@@ -600,14 +645,14 @@ export default function PropertiesPanel() {
                   size="icon"
                   className={cn(
                     "h-8 w-full rounded-none",
-                    selectedElement.style?.fontWeight === "bold" && "bg-accent",
+                    extendedElement.style?.fontWeight === "bold" && "bg-accent",
                   )}
                   onClick={() =>
                     handleUpdate({
                       style: {
-                        ...selectedElement.style,
+                        ...extendedElement.style,
                         fontWeight:
-                          selectedElement.style?.fontWeight === "bold"
+                          extendedElement.style?.fontWeight === "bold"
                             ? "normal"
                             : "bold",
                       },
@@ -622,14 +667,14 @@ export default function PropertiesPanel() {
                   size="icon"
                   className={cn(
                     "h-8 w-full rounded-none border-l",
-                    selectedElement.style?.fontStyle === "italic" && "bg-accent",
+                    extendedElement.style?.fontStyle === "italic" && "bg-accent",
                   )}
                   onClick={() =>
                     handleUpdate({
                       style: {
-                        ...selectedElement.style,
+                        ...extendedElement.style,
                         fontStyle:
-                          selectedElement.style?.fontStyle === "italic"
+                          extendedElement.style?.fontStyle === "italic"
                             ? "normal"
                             : "italic",
                       },
@@ -644,15 +689,15 @@ export default function PropertiesPanel() {
                   size="icon"
                   className={cn(
                     "h-8 w-full rounded-none border-l",
-                    selectedElement.style?.textDecoration === "underline" &&
+                    extendedElement.style?.textDecoration === "underline" &&
                       "bg-accent",
                   )}
                   onClick={() =>
                     handleUpdate({
                       style: {
-                        ...selectedElement.style,
+                        ...extendedElement.style,
                         textDecoration:
-                          selectedElement.style?.textDecoration === "underline"
+                          extendedElement.style?.textDecoration === "underline"
                             ? "none"
                             : "underline",
                       },
@@ -670,13 +715,13 @@ export default function PropertiesPanel() {
                   size="icon"
                   className={cn(
                     "h-8 w-full rounded-none",
-                    (!selectedElement.style?.textAlign ||
-                      selectedElement.style?.textAlign === "left") &&
+                    (!extendedElement.style?.textAlign ||
+                      extendedElement.style?.textAlign === "left") &&
                       "bg-accent",
                   )}
                   onClick={() =>
                     handleUpdate({
-                      style: { ...selectedElement.style, textAlign: "left" },
+                      style: { ...extendedElement.style, textAlign: "left" },
                     })
                   }
                   title="Align left"
@@ -688,11 +733,11 @@ export default function PropertiesPanel() {
                   size="icon"
                   className={cn(
                     "h-8 w-full rounded-none border-l",
-                    selectedElement.style?.textAlign === "center" && "bg-accent",
+                    extendedElement.style?.textAlign === "center" && "bg-accent",
                   )}
                   onClick={() =>
                     handleUpdate({
-                      style: { ...selectedElement.style, textAlign: "center" },
+                      style: { ...extendedElement.style, textAlign: "center" },
                     })
                   }
                   title="Align center"
@@ -704,11 +749,11 @@ export default function PropertiesPanel() {
                   size="icon"
                   className={cn(
                     "h-8 w-full rounded-none border-l",
-                    selectedElement.style?.textAlign === "right" && "bg-accent",
+                    extendedElement.style?.textAlign === "right" && "bg-accent",
                   )}
                   onClick={() =>
                     handleUpdate({
-                      style: { ...selectedElement.style, textAlign: "right" },
+                      style: { ...extendedElement.style, textAlign: "right" },
                     })
                   }
                   title="Align right"
@@ -726,11 +771,11 @@ export default function PropertiesPanel() {
                   id="line-height"
                   type="number"
                   step="0.1"
-                  value={selectedElement.style?.lineHeight || 1.5}
+                  value={extendedElement.style?.lineHeight || 1.5}
                   onChange={(e) =>
                     handleUpdate({
                       style: {
-                        ...selectedElement.style,
+                        ...extendedElement.style,
                         lineHeight: Number(e.target.value),
                       },
                     })
@@ -745,11 +790,11 @@ export default function PropertiesPanel() {
                 <Input
                   id="letter-spacing"
                   type="number"
-                  value={selectedElement.style?.letterSpacing || 0}
+                  value={extendedElement.style?.letterSpacing || 0}
                   onChange={(e) =>
                     handleUpdate({
                       style: {
-                        ...selectedElement.style,
+                        ...extendedElement.style,
                         letterSpacing: Number(e.target.value),
                       },
                     })
@@ -764,7 +809,7 @@ export default function PropertiesPanel() {
         )}
 
         {/* Image-specific properties */}
-        {selectedElement.type === "image" && (
+        {extendedElement.type === "image" && (
           <>
             <Separator />
             <div>
@@ -772,15 +817,15 @@ export default function PropertiesPanel() {
               <Input
                 id="image-url"
                 type="text"
-                value={selectedElement.content}
+                value={extendedElement.content}
                 onChange={(e) => handleUpdate({ content: e.target.value })}
                 className="mt-2"
                 placeholder="https://..."
               />
-              {selectedElement.content && (
+              {extendedElement.content && (
                 <div className="mt-3 rounded-lg overflow-hidden border">
                   <img
-                    src={selectedElement.content}
+                    src={extendedElement.content}
                     alt="Preview"
                     className="w-full h-32 object-cover"
                     onError={(e) => {
@@ -794,10 +839,10 @@ export default function PropertiesPanel() {
             <div>
               <Label htmlFor="image-fit">Image Fit</Label>
               <Select
-                value={selectedElement.style?.objectFit || "cover"}
-                onValueChange={(value: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down') =>
+                value={extendedElement.style?.objectFit || "cover"}
+                onValueChange={(value: ObjectFitType) =>
                   handleUpdate({
-                    style: { ...selectedElement.style, objectFit: value },
+                    style: { ...extendedElement.style, objectFit: value },
                   })
                 }
               >
@@ -817,7 +862,7 @@ export default function PropertiesPanel() {
         )}
 
         {/* Video-specific properties */}
-        {selectedElement.type === "video" && (
+        {extendedElement.type === "video" && (
           <>
             <Separator />
             <div>
@@ -825,7 +870,7 @@ export default function PropertiesPanel() {
               <Input
                 id="video-url"
                 type="text"
-                value={selectedElement.content}
+                value={extendedElement.content}
                 onChange={(e) => handleUpdate({ content: e.target.value })}
                 className="mt-2"
                 placeholder="https://youtube.com/watch?v=..."
@@ -836,7 +881,7 @@ export default function PropertiesPanel() {
               <div>
                 <Label htmlFor="video-autoplay">Autoplay</Label>
                 <Select
-                  value={selectedElement.autoplay ? "true" : "false"}
+                  value={extendedElement.autoplay ? "true" : "false"}
                   onValueChange={(value) =>
                     handleUpdate({ autoplay: value === "true" })
                   }
@@ -854,7 +899,7 @@ export default function PropertiesPanel() {
               <div>
                 <Label htmlFor="video-controls">Show Controls</Label>
                 <Select
-                  value={selectedElement.controls ? "true" : "false"}
+                  value={extendedElement.controls ? "true" : "false"}
                   onValueChange={(value) =>
                     handleUpdate({ controls: value === "true" })
                   }
@@ -873,7 +918,7 @@ export default function PropertiesPanel() {
             <div>
               <Label htmlFor="video-loop">Loop</Label>
               <Select
-                value={selectedElement.loop ? "true" : "false"}
+                value={extendedElement.loop ? "true" : "false"}
                 onValueChange={(value) =>
                   handleUpdate({ loop: value === "true" })
                 }
@@ -891,13 +936,13 @@ export default function PropertiesPanel() {
         )}
 
         {/* Shape-specific properties */}
-        {selectedElement.type === "shape" && (
+        {extendedElement.type === "shape" && (
           <>
             <Separator />
             <div>
               <Label htmlFor="shape-type">Shape Type</Label>
               <Select
-                value={selectedElement.content || "square"}
+                value={(extendedElement.content as ShapeType) || "square"}
                 onValueChange={(value: ShapeType) => handleUpdate({ content: value })}
               >
                 <SelectTrigger id="shape-type" className="mt-2">
@@ -924,11 +969,11 @@ export default function PropertiesPanel() {
                 <Input
                   id="shape-bg"
                   type="color"
-                  value={selectedElement.style?.backgroundColor || "#3b82f6"}
+                  value={extendedElement.style?.backgroundColor || "#3b82f6"}
                   onChange={(e) =>
                     handleUpdate({
                       style: {
-                        ...selectedElement.style,
+                        ...extendedElement.style,
                         backgroundColor: e.target.value,
                       },
                     })
@@ -942,11 +987,11 @@ export default function PropertiesPanel() {
                 <Input
                   id="shape-border-color"
                   type="color"
-                  value={selectedElement.style?.borderColor || "#000000"}
+                  value={extendedElement.style?.borderColor || "#000000"}
                   onChange={(e) =>
                     handleUpdate({
                       style: {
-                        ...selectedElement.style,
+                        ...extendedElement.style,
                         borderColor: e.target.value,
                       },
                     })
@@ -962,11 +1007,11 @@ export default function PropertiesPanel() {
                 <Input
                   id="shape-border-width"
                   type="number"
-                  value={selectedElement.style?.borderWidth || 0}
+                  value={extendedElement.style?.borderWidth || 0}
                   onChange={(e) =>
                     handleUpdate({
                       style: {
-                        ...selectedElement.style,
+                        ...extendedElement.style,
                         borderWidth: Math.max(0, Number(e.target.value)),
                       },
                     })
@@ -981,11 +1026,11 @@ export default function PropertiesPanel() {
                 <Input
                   id="shape-border-radius"
                   type="number"
-                  value={selectedElement.style?.borderRadius || 0}
+                  value={extendedElement.style?.borderRadius || 0}
                   onChange={(e) =>
                     handleUpdate({
                       style: {
-                        ...selectedElement.style,
+                        ...extendedElement.style,
                         borderRadius: Math.max(0, Number(e.target.value)),
                       },
                     })
@@ -999,11 +1044,11 @@ export default function PropertiesPanel() {
             <div>
               <Label htmlFor="shape-border-style">Border Style</Label>
               <Select
-                value={selectedElement.style?.borderStyle || "solid"}
-                onValueChange={(value: 'solid' | 'dashed' | 'dotted' | 'double') =>
+                value={extendedElement.style?.borderStyle || "solid"}
+                onValueChange={(value: BorderStyleType) =>
                   handleUpdate({
                     style: {
-                      ...selectedElement.style,
+                      ...extendedElement.style,
                       borderStyle: value,
                     },
                   })
@@ -1026,11 +1071,11 @@ export default function PropertiesPanel() {
               <Input
                 id="shape-shadow"
                 type="text"
-                value={selectedElement.style?.boxShadow || ""}
+                value={extendedElement.style?.boxShadow || ""}
                 onChange={(e) =>
                   handleUpdate({
                     style: {
-                      ...selectedElement.style,
+                      ...extendedElement.style,
                       boxShadow: e.target.value,
                     },
                   })
@@ -1055,15 +1100,15 @@ export default function PropertiesPanel() {
                 Animation Type
               </Label>
               <Select
-                value={selectedElement.animation?.type || "none"}
+                value={extendedElement.animation?.type || "none"}
                 onValueChange={(value: AnimationType) =>
                   handleUpdate({
                     animation: {
                       type: value,
-                      duration: selectedElement.animation?.duration || 500,
-                      delay: selectedElement.animation?.delay || 0,
-                      easing: selectedElement.animation?.easing || "ease-in-out",
-                      direction: selectedElement.animation?.direction || "normal",
+                      duration: extendedElement.animation?.duration || 500,
+                      delay: extendedElement.animation?.delay || 0,
+                      easing: extendedElement.animation?.easing || "ease-in-out",
+                      direction: extendedElement.animation?.direction || "normal",
                     },
                   })
                 }
@@ -1086,8 +1131,8 @@ export default function PropertiesPanel() {
                 </SelectContent>
               </Select>
             </div>
-            {selectedElement.animation &&
-              selectedElement.animation.type !== "none" && (
+            {extendedElement.animation &&
+              extendedElement.animation.type !== "none" && (
                 <>
                   <div>
                     <Label
@@ -1099,11 +1144,11 @@ export default function PropertiesPanel() {
                     <Input
                       id="animation-duration"
                       type="number"
-                      value={selectedElement.animation.duration || 500}
+                      value={extendedElement.animation.duration || 500}
                       onChange={(e) =>
                         handleUpdate({
                           animation: {
-                            ...selectedElement.animation!,
+                            ...extendedElement.animation!,
                             duration: Number(e.target.value),
                           },
                         })
@@ -1124,11 +1169,11 @@ export default function PropertiesPanel() {
                     <Input
                       id="animation-delay"
                       type="number"
-                      value={selectedElement.animation.delay || 0}
+                      value={extendedElement.animation.delay || 0}
                       onChange={(e) =>
                         handleUpdate({
                           animation: {
-                            ...selectedElement.animation!,
+                            ...extendedElement.animation!,
                             delay: Number(e.target.value),
                           },
                         })
@@ -1147,11 +1192,11 @@ export default function PropertiesPanel() {
                       Easing
                     </Label>
                     <Select
-                      value={selectedElement.animation.easing || "ease-in-out"}
-                      onValueChange={(value) =>
+                      value={extendedElement.animation?.easing || "ease-in-out"}
+                      onValueChange={(value: string) =>
                         handleUpdate({
                           animation: {
-                            ...selectedElement.animation!,
+                            ...extendedElement.animation!,
                             easing: value,
                           },
                         })
@@ -1170,7 +1215,7 @@ export default function PropertiesPanel() {
                       </SelectContent>
                     </Select>
                   </div>
-                  {selectedElement.animation.type.includes('slide') && (
+                  {extendedElement.animation.type.includes('slide') && (
                     <div>
                       <Label
                         htmlFor="animation-direction"
@@ -1179,11 +1224,11 @@ export default function PropertiesPanel() {
                         Direction
                       </Label>
                       <Select
-                        value={selectedElement.animation.direction || "normal"}
+                        value={extendedElement.animation.direction || "normal"}
                         onValueChange={(value: 'normal' | 'reverse' | 'alternate' | 'alternate-reverse') =>
                           handleUpdate({
                             animation: {
-                              ...selectedElement.animation!,
+                              ...extendedElement.animation!,
                               direction: value,
                             },
                           })
