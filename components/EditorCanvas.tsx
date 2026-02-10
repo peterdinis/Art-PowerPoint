@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { usePresentationStore } from "@/lib/store/presentationStore";
 import SlideElement from "./SlideElement";
+import ChartElement from "./ChartElement";
 import { useDrop } from "react-dnd";
 import { cn } from "@/lib/utils";
 import { Sparkles } from "lucide-react";
@@ -61,6 +62,12 @@ export default function EditorCanvas() {
 
   drop(dropRef);
 
+  const handleElementResize = (elementId: string, width: number, height: number) => {
+    updateElement(elementId, {
+      size: { width, height },
+    });
+  };
+
   if (!currentPresentation) return null;
 
   const currentSlide = currentPresentation.slides[currentSlideIndex];
@@ -104,14 +111,27 @@ export default function EditorCanvas() {
             }
           }}
         >
-          {currentSlide.elements.map((element) => (
-            <SlideElement
-              key={element.id}
-              element={element}
-              isSelected={selectedElementId === element.id}
-              onSelect={() => selectElement(element.id)}
-            />
-          ))}
+          {currentSlide.elements.map((element) => {
+            if (element.type === "chart") {
+              return (
+                <ChartElement
+                  key={element.id}
+                  element={element}
+                  isSelected={selectedElementId === element.id}
+                />
+              );
+            }
+            
+            return (
+              <SlideElement
+                key={element.id}
+                element={element}
+                isSelected={selectedElementId === element.id}
+                onSelect={() => selectElement(element.id)}
+                onResize={(width, height) => handleElementResize(element.id, width, height)}
+              />
+            );
+          })}
 
           {currentSlide.elements.length === 0 && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground pointer-events-none">

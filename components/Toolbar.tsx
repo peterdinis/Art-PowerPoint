@@ -54,6 +54,7 @@ import {
   PanelTop,
   PanelBottom,
   Table2,
+  TrendingUp,
 } from "lucide-react";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
@@ -88,7 +89,47 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { SlideElementType } from "@/lib/types/presentation";
+
+const CHART_TEMPLATES = [
+  {
+    name: "Sales Q1-Q4",
+    type: "bar",
+    data: {
+      labels: ["Q1", "Q2", "Q3", "Q4"],
+      values: [45000, 52000, 48000, 61000],
+      colors: ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6"]
+    }
+  },
+  {
+    name: "Monthly Traffic",
+    type: "line",
+    data: {
+      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+      values: [65, 59, 80, 81, 56, 55],
+      colors: ["#ef4444"]
+    }
+  },
+  {
+    name: "Market Share",
+    type: "pie",
+    data: {
+      labels: ["Product A", "Product B", "Product C", "Product D"],
+      values: [35, 25, 20, 20],
+      colors: ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6"]
+    }
+  },
+  {
+    name: "Revenue Growth",
+    type: "area",
+    data: {
+      labels: ["2019", "2020", "2021", "2022", "2023"],
+      values: [100, 150, 200, 180, 250],
+      colors: ["#8b5cf6"]
+    }
+  }
+];
 
 export default function Toolbar() {
   const {
@@ -115,7 +156,10 @@ export default function Toolbar() {
   const [tableRows, setTableRows] = useState(3);
   const [tableColumns, setTableColumns] = useState(3);
   const [chartType, setChartType] = useState("bar");
-  const [chartData, setChartData] = useState("Jan,Feb,Mar\n10,20,15");
+  const [chartTitle, setChartTitle] = useState("");
+  const [chartLabels, setChartLabels] = useState("Q1, Q2, Q3, Q4");
+  const [chartValues, setChartValues] = useState("30, 45, 25, 60");
+  const [selectedChartTemplate, setSelectedChartTemplate] = useState(CHART_TEMPLATES[0]);
   const [fontSize, setFontSize] = useState(24);
   const [fontFamily, setFontFamily] = useState("Arial");
   const [textColor, setTextColor] = useState("#212121");
@@ -363,22 +407,79 @@ export default function Toolbar() {
   };
 
   const handleAddChart = () => {
-    const chartContent = `Chart Type: ${chartType}\nData:\n${chartData}`;
-    
-    addElement({
-      type: "text",
-      position: { x: 100, y: 100 },
-      size: { width: 400, height: 300 },
-      content: chartContent,
-      style: {
-        fontSize: 12,
-        color: getDefaultTextColor(),
-        fontFamily: "Arial",
-        textAlign: "center",
-        backgroundColor: "#f8fafc",
-      },
-    });
-    setChartDialogOpen(false);
+    try {
+      const parsedLabels = chartLabels.split(',').map(l => l.trim());
+      const parsedValues = chartValues.split(',').map(v => parseFloat(v.trim()));
+      
+      const chartData = {
+        type: chartType,
+        chartTitle,
+        labels: parsedLabels,
+        values: parsedValues,
+        colors: selectedChartTemplate.data.colors
+      };
+
+      addElement({
+        type: "chart",
+        position: { x: 100, y: 100 },
+        size: { width: 500, height: 350 },
+        content: JSON.stringify(chartData),
+        style: {
+          chartType,
+          chartTitle,
+          backgroundColor: "#ffffff",
+          borderRadius: "8px",
+          borderWidth: 1,
+          borderColor: "#e5e7eb"
+        }
+      });
+
+      setChartDialogOpen(false);
+      // Reset form
+      setChartTitle("");
+      setChartLabels("Q1, Q2, Q3, Q4");
+      setChartValues("30, 45, 25, 60");
+      setSelectedChartTemplate(CHART_TEMPLATES[0]);
+    } catch (error) {
+      console.error("Error adding chart:", error);
+    }
+  };
+
+  const handleChartTemplateSelect = (template: typeof CHART_TEMPLATES[0]) => {
+    setSelectedChartTemplate(template);
+    setChartType(template.type);
+    setChartTitle(template.name);
+    setChartLabels(template.data.labels.join(", "));
+    setChartValues(template.data.values.join(", "));
+  };
+
+  const handleCSVUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const lines = content.split('\n');
+        
+        if (lines.length >= 2) {
+          const labels = lines[0].split(',').map(l => l.trim());
+          const values = lines[1].split(',').map(v => v.trim());
+          
+          setChartLabels(labels.join(", "));
+          setChartValues(values.join(", "));
+          
+          // Try to detect chart type from filename
+          if (file.name.toLowerCase().includes('line')) setChartType('line');
+          if (file.name.toLowerCase().includes('pie')) setChartType('pie');
+          if (file.name.toLowerCase().includes('area')) setChartType('area');
+        }
+      } catch (error) {
+        console.error("Error parsing CSV:", error);
+      }
+    };
+    reader.readAsText(file);
   };
 
   const handleAddLayout = (type: string) => {
@@ -653,39 +754,163 @@ export default function Toolbar() {
                   </Button>
                 </motion.div>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-w-2xl">
                 <DialogHeader>
                   <DialogTitle>Add Chart</DialogTitle>
                   <DialogDescription>
-                    Configure your chart settings
+                    Create beautiful data visualizations for your presentation
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="chart-type">Chart Type</Label>
-                    <Select value={chartType} onValueChange={setChartType}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select chart type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="bar">Bar Chart</SelectItem>
-                        <SelectItem value="line">Line Chart</SelectItem>
-                        <SelectItem value="pie">Pie Chart</SelectItem>
-                        <SelectItem value="area">Area Chart</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="chart-data">Chart Data (CSV format)</Label>
-                    <textarea
-                      id="chart-data"
-                      value={chartData}
-                      onChange={(e) => setChartData(e.target.value)}
-                      className="w-full min-h-25 p-2 border rounded-md"
-                      placeholder="Labels: Jan,Feb,Mar&#10;Values: 10,20,15"
-                    />
-                  </div>
-                </div>
+                
+                <Tabs defaultValue="templates" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="templates">Templates</TabsTrigger>
+                    <TabsTrigger value="custom">Custom</TabsTrigger>
+                    <TabsTrigger value="import">Import</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="templates" className="space-y-4 py-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      {CHART_TEMPLATES.map((template) => (
+                        <div
+                          key={template.name}
+                          className={`border rounded-lg p-4 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${
+                            selectedChartTemplate.name === template.name
+                              ? 'border-primary ring-2 ring-primary/20 bg-primary/5'
+                              : 'border-border'
+                          }`}
+                          onClick={() => handleChartTemplateSelect(template)}
+                        >
+                          <div className="flex items-center gap-3 mb-2">
+                            {template.type === 'bar' && <BarChart className="w-5 h-5 text-blue-500" />}
+                            {template.type === 'line' && <LineChart className="w-5 h-5 text-red-500" />}
+                            {template.type === 'pie' && <PieChart className="w-5 h-5 text-green-500" />}
+                            {template.type === 'area' && <TrendingUp className="w-5 h-5 text-purple-500" />}
+                            <span className="font-medium">{template.name}</span>
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            <div>Labels: {template.data.labels.join(", ")}</div>
+                            <div>Values: {template.data.values.join(", ")}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="custom" className="space-y-4 py-4">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="chart-title">Chart Title</Label>
+                        <Input
+                          id="chart-title"
+                          value={chartTitle}
+                          onChange={(e) => setChartTitle(e.target.value)}
+                          placeholder="Sales Performance 2023"
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="chart-type">Chart Type</Label>
+                          <Select value={chartType} onValueChange={setChartType}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="bar">Bar Chart</SelectItem>
+                              <SelectItem value="line">Line Chart</SelectItem>
+                              <SelectItem value="pie">Pie Chart</SelectItem>
+                              <SelectItem value="area">Area Chart</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="chart-size">Chart Size</Label>
+                          <Select defaultValue="medium">
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="small">Small (400×300)</SelectItem>
+                              <SelectItem value="medium">Medium (500×350)</SelectItem>
+                              <SelectItem value="large">Large (600×400)</SelectItem>
+                              <SelectItem value="custom">Custom Size</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="chart-labels">Labels (comma separated)</Label>
+                          <Input
+                            id="chart-labels"
+                            value={chartLabels}
+                            onChange={(e) => setChartLabels(e.target.value)}
+                            placeholder="Q1, Q2, Q3, Q4"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="chart-values">Values (comma separated)</Label>
+                          <Input
+                            id="chart-values"
+                            value={chartValues}
+                            onChange={(e) => setChartValues(e.target.value)}
+                            placeholder="30, 45, 25, 60"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label>Preview</Label>
+                        <div className="border rounded-lg p-4 bg-muted/30">
+                          <div className="text-sm text-muted-foreground">
+                            <div>Type: {chartType}</div>
+                            <div>Labels: {chartLabels}</div>
+                            <div>Values: {chartValues}</div>
+                            {chartTitle && <div>Title: {chartTitle}</div>}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="import" className="space-y-4 py-4">
+                    <div className="space-y-4">
+                      <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                        <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Upload CSV file with your data
+                        </p>
+                        <div className="space-y-2">
+                          <Input
+                            type="file"
+                            accept=".csv"
+                            onChange={handleCSVUpload}
+                            className="cursor-pointer"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Expected format: First row labels, second row values
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label>CSV Format Example</Label>
+                        <div className="border rounded-lg p-4 bg-muted/30 font-mono text-sm">
+                          <div>Quarter, Sales, Expenses, Profit</div>
+                          <div>Q1, 45000, 30000, 15000</div>
+                          <div>Q2, 52000, 35000, 17000</div>
+                          <div>Q3, 48000, 32000, 16000</div>
+                          <div>Q4, 61000, 40000, 21000</div>
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+                
                 <DialogFooter>
                   <Button
                     variant="outline"
@@ -694,11 +919,45 @@ export default function Toolbar() {
                     Cancel
                   </Button>
                   <Button onClick={handleAddChart}>
-                    Add Chart
+                    Add Chart to Slide
                   </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+
+            {/* Chart templates dropdown for quick access */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <TrendingUp className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel>Quick Chart Templates</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {CHART_TEMPLATES.map((template) => (
+                  <DropdownMenuItem
+                    key={template.name}
+                    onClick={() => {
+                      handleChartTemplateSelect(template);
+                      setTimeout(() => setChartDialogOpen(true), 100);
+                    }}
+                    className="gap-3"
+                  >
+                    {template.type === 'bar' && <BarChart className="w-4 h-4 text-blue-500" />}
+                    {template.type === 'line' && <LineChart className="w-4 h-4 text-red-500" />}
+                    {template.type === 'pie' && <PieChart className="w-4 h-4 text-green-500" />}
+                    {template.type === 'area' && <TrendingUp className="w-4 h-4 text-purple-500" />}
+                    <span>{template.name}</span>
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setChartDialogOpen(true)} className="gap-3">
+                  <Download className="w-4 h-4" />
+                  <span>Import from CSV</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           <Separator orientation="vertical" className="h-6" />

@@ -1,71 +1,50 @@
-export type SlideElementType = "text" | "image" | "shape" | "video";
-
-export type TransitionType = "none" | "fade" | "slide" | "zoom" | "blur";
-export type AnimationType =
-	| "none"
-	| "fadeIn"
-	| "slideIn"
-	| "zoomIn"
-	| "bounce"
-	| "rotate";
-
-export interface Position {
-	x: number;
-	y: number;
-}
-
-export interface Size {
-	width: number;
-	height: number;
-}
+export type SlideElementType = 'text' | 'image' | 'shape' | 'video' | 'chart';
 
 export interface SlideElement {
-	id: string;
-	type: SlideElementType;
-	position: Position;
-	size: Size;
-	content: string;
-	style?: {
-		fontSize?: number;
-		color?: string;
-		backgroundColor?: string;
-		fontFamily?: string;
-		fontWeight?: string | number;
-		fontStyle?: string;
-		textDecoration?: string;
-		textAlign?: "left" | "center" | "right";
-		borderColor?: string;
-		borderWidth?: number;
-		borderRadius?: string;
-	};
-	animation?: {
-		type: AnimationType;
-		duration?: number;
-		delay?: number;
-	};
-}
-
-export interface Slide {
-	id: string;
-	elements: SlideElement[];
-	background?: {
-		color?: string;
-		image?: string;
-		gradient?: string;
-	};
-	notes?: string;
-	transition?: {
-		type: TransitionType;
-		duration?: number;
-	};
-}
-
-export interface Presentation {
-	id: string;
-	title: string;
-	description?: string;
-	slides: Slide[];
-	createdAt: Date;
-	updatedAt: Date;
-	thumbnail?: string;
+  id: string;
+  type: SlideElementType;
+  content: string;
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  rotation?: number;
+  style?: {
+    // Text styles
+    color?: string;
+    fontSize?: number;
+    fontFamily?: string;
+    fontWeight?: string;
+    fontStyle?: string;
+    textDecoration?: string;
+    textAlign?: string;
+    lineHeight?: number;
+    letterSpacing?: number;
+    
+    // Shape and image styles
+    backgroundColor?: string;
+    borderColor?: string;
+    borderWidth?: number;
+    borderStyle?: string;
+    borderRadius?: number;
+    boxShadow?: string;
+    
+    // Image specific
+    objectFit?: string;
+    
+    // Common
+    opacity?: number;
+    padding?: string;
+    
+    // Chart specific
+    chartType?: 'bar' | 'line' | 'pie' | 'area';
+    chartTitle?: string;
+  };
+  animation?: {
+    type: string;
+    duration: number;
+    delay?: number;
+    easing?: string;
+  };
+  autoplay?: boolean;
+  controls?: boolean;
+  loop?: boolean;
 }
