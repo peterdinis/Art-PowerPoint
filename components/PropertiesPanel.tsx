@@ -69,9 +69,15 @@ interface ElementStyle {
   objectFit?: ObjectFitType;
 }
 
-// Create a proper extended element type
-interface ExtendedSlideElement extends Omit<SlideElement, 'style' | 'content'> {
+// Create a proper extended element type based on what SlideElement probably contains
+// Instead of extending, create a type that works with our store functions
+interface ExtendedSlideElement {
+  id: string;
+  type: 'text' | 'image' | 'shape' | 'video';
   content: string;
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  style?: ElementStyle;
   animation?: {
     type: AnimationType;
     duration: number;
@@ -79,11 +85,12 @@ interface ExtendedSlideElement extends Omit<SlideElement, 'style' | 'content'> {
     easing?: string;
     direction?: 'normal' | 'reverse' | 'alternate' | 'alternate-reverse';
   };
-  style?: ElementStyle;
   autoplay?: boolean;
   controls?: boolean;
   loop?: boolean;
   rotation?: number;
+  // Add other properties that might exist in SlideElement
+  [key: string]: any;
 }
 
 export default function PropertiesPanel() {
@@ -115,40 +122,58 @@ export default function PropertiesPanel() {
     ? currentSlide.elements.find((el) => el.id === selectedElementId)
     : undefined;
 
-  // Helper function to cast element to extended type
+  // Helper function to get element with proper typing
   const getExtendedElement = (): ExtendedSlideElement | undefined => {
     if (!selectedElement) return undefined;
     
-    // Type guard to ensure we have a proper element
-    const baseElement = selectedElement as any;
+    // Create a properly typed element based on what we have
+    const element = selectedElement as any;
     
-    return {
-      ...baseElement,
-      content: baseElement.content || '',
-      style: baseElement.style || {},
-      animation: baseElement.animation || undefined,
-      autoplay: baseElement.autoplay || false,
-      controls: baseElement.controls ?? true, // Default to true for videos
-      loop: baseElement.loop || false,
-      rotation: baseElement.rotation || 0,
+    // Ensure all required properties exist with defaults
+    const extendedElement: ExtendedSlideElement = {
+      id: element.id || '',
+      type: element.type || 'text',
+      content: element.content || '',
+      position: element.position || { x: 0, y: 0 },
+      size: element.size || { width: 100, height: 100 },
+      style: element.style || {},
+      rotation: element.rotation || 0,
+      // Copy any other properties
+      ...element,
     };
+    
+    // Ensure nested objects exist
+    if (!extendedElement.position) extendedElement.position = { x: 0, y: 0 };
+    if (!extendedElement.size) extendedElement.size = { width: 100, height: 100 };
+    if (!extendedElement.style) extendedElement.style = {};
+    
+    return extendedElement;
   };
 
   const extendedElement = getExtendedElement();
 
   const handleUpdate = (updates: Partial<ExtendedSlideElement>) => {
-    if (selectedElement && extendedElement) {
-      // Merge updates properly
-      const mergedUpdates = {
-        ...updates,
-        style: { ...extendedElement.style, ...updates.style },
-        animation: updates.animation ? { 
-          ...extendedElement.animation, 
-          ...updates.animation 
-        } : extendedElement.animation,
-      };
+    if (selectedElement) {
+      // Prepare the update object
+      const updateData: any = { ...updates };
       
-      updateElement(selectedElement.id, mergedUpdates);
+      // Special handling for style updates to merge properly
+      if (updates.style) {
+        updateData.style = {
+          ...extendedElement?.style,
+          ...updates.style,
+        };
+      }
+      
+      // Special handling for animation updates to merge properly
+      if (updates.animation) {
+        updateData.animation = {
+          ...extendedElement?.animation,
+          ...updates.animation,
+        };
+      }
+      
+      updateElement(selectedElement.id, updateData);
     }
   };
 
@@ -899,7 +924,7 @@ export default function PropertiesPanel() {
               <div>
                 <Label htmlFor="video-controls">Show Controls</Label>
                 <Select
-                  value={extendedElement.controls ? "true" : "false"}
+                  value={extendedElement.controls !== false ? "true" : "false"}
                   onValueChange={(value) =>
                     handleUpdate({ controls: value === "true" })
                   }
@@ -1148,7 +1173,7 @@ export default function PropertiesPanel() {
                       onChange={(e) =>
                         handleUpdate({
                           animation: {
-                            ...extendedElement.animation!,
+                            ...extendedElement.animation,
                             duration: Number(e.target.value),
                           },
                         })
@@ -1173,7 +1198,7 @@ export default function PropertiesPanel() {
                       onChange={(e) =>
                         handleUpdate({
                           animation: {
-                            ...extendedElement.animation!,
+                            ...extendedElement.animation,
                             delay: Number(e.target.value),
                           },
                         })
@@ -1196,7 +1221,7 @@ export default function PropertiesPanel() {
                       onValueChange={(value: string) =>
                         handleUpdate({
                           animation: {
-                            ...extendedElement.animation!,
+                            ...extendedElement.animation,
                             easing: value,
                           },
                         })
@@ -1228,7 +1253,7 @@ export default function PropertiesPanel() {
                         onValueChange={(value: 'normal' | 'reverse' | 'alternate' | 'alternate-reverse') =>
                           handleUpdate({
                             animation: {
-                              ...extendedElement.animation!,
+                              ...extendedElement.animation,
                               direction: value,
                             },
                           })
