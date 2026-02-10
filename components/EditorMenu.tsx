@@ -14,6 +14,7 @@ import {
 	Layers,
 	FileText,
 	Play,
+	BarChart3, // Pridaná ikona pre chart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -32,14 +33,19 @@ import { Separator } from "@/components/ui/separator";
 interface EditorMenuProps {
 	onSave: () => void;
 	onExport: () => void;
+	onUploadChart: () => void; // Pridaná prop pre upload chartu
 }
 
-export default function EditorMenu({ onSave, onExport }: EditorMenuProps) {
+export default function EditorMenu({ 
+	onSave, 
+	onExport, 
+	onUploadChart 
+}: EditorMenuProps) {
 	const { currentPresentation } = usePresentationStore();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
 	return (
-		<header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border sticky top-0 z-50 shadow-sm">
+		<header className="bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b border-border sticky top-0 z-50 shadow-sm">
 			<div className="px-4 py-3">
 				<div className="flex items-center justify-between">
 					{/* Left Side */}
@@ -77,6 +83,17 @@ export default function EditorMenu({ onSave, onExport }: EditorMenuProps) {
 
 					{/* Right Side - Desktop */}
 					<div className="hidden md:flex items-center gap-2">
+						{/* Pridané tlačidlo pre upload chartu */}
+						<Button
+							onClick={onUploadChart}
+							variant="ghost"
+							size="sm"
+							className="gap-2"
+						>
+							<BarChart3 className="w-4 h-4" />
+							<span className="hidden lg:inline">Upload Chart</span>
+						</Button>
+
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="ghost" size="icon" className="hover:bg-accent">
@@ -185,6 +202,19 @@ export default function EditorMenu({ onSave, onExport }: EditorMenuProps) {
 								<Separator />
 
 								<div className="space-y-2">
+									{/* Pridaný button pre upload chartu v mobile menu */}
+									<Button
+										onClick={() => {
+											onUploadChart();
+											setMobileMenuOpen(false);
+										}}
+										className="w-full justify-start gap-2"
+										variant="outline"
+									>
+										<BarChart3 className="w-4 h-4" />
+										Upload Chart
+									</Button>
+
 									<Button
 										onClick={() => {
 											if (currentPresentation) {

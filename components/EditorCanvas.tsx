@@ -2,11 +2,11 @@
 
 import { useRef } from "react";
 import { usePresentationStore } from "@/lib/store/presentationStore";
-import SlideElement from "./SlideElement";
-import ChartElement from "./ChartElement";
 import { useDrop } from "react-dnd";
 import { cn } from "@/lib/utils";
 import { Sparkles } from "lucide-react";
+import ChartElement from "./elements/ChartElement";
+import SlideElement from "./SlideElement";
 
 export default function EditorCanvas() {
 	const {
@@ -26,7 +26,7 @@ export default function EditorCanvas() {
 				if (delta) {
 					const element = currentPresentation.slides[
 						currentSlideIndex
-					]?.elements.find((el) => el.id === item.id);
+					]?.elements.find((el: { id: string; }) => el.id === item.id);
 					if (element) {
 						const slideElement = dropRef.current;
 						const rect = slideElement.getBoundingClientRect();
@@ -115,7 +115,7 @@ export default function EditorCanvas() {
 						}
 					}}
 				>
-					{currentSlide.elements.map((element) => {
+					{currentSlide.elements.map((element: any) => {
 						if (element.type === "chart") {
 							return (
 								<ChartElement

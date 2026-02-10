@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import type { SlideElement as SlideElementType } from "@/lib/types/presentation";
-import ChartElement from "./ChartElement";
+import ChartElement from "./elements/ChartElement";
 
 interface SlideElementProps {
 	element: SlideElementType;
