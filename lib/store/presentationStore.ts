@@ -538,4 +538,26 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	selectElement: (elementId: string | null) => {
 		set({ selectedElementId: elementId });
 	},
+	previousSlide: () => {
+  const state = get();
+  if (state.currentPresentation && state.currentSlideIndex > 0) {
+    set({
+      currentSlideIndex: state.currentSlideIndex - 1,
+      selectedElementId: null,
+    });
+  }
+},
+
+nextSlide: () => {
+  const state = get();
+  if (
+    state.currentPresentation &&
+    state.currentSlideIndex < state.currentPresentation.slides.length - 1
+  ) {
+    set({
+      currentSlideIndex: state.currentSlideIndex + 1,
+      selectedElementId: null,
+    });
+  }
+}
 }));
