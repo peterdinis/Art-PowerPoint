@@ -186,7 +186,9 @@ export default function TemplateSelector({
 																			width: `${(el.size.width / 960) * 100}%`,
 																			height: `${(el.size.height / 540) * 100}%`,
 																			fontSize: `${(el.style?.fontSize || 16) * 0.3}px`,
-																			color: el.style?.color || getDefaultTextColor(),
+																			color:
+																				el.style?.color ||
+																				getDefaultTextColor(),
 																			textAlign: el.style?.textAlign || "left",
 																			overflow: "hidden",
 																			textOverflow: "ellipsis",

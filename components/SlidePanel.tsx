@@ -175,7 +175,11 @@ export default function SlidePanel() {
 													className="h-7 w-7 bg-background/95 hover:bg-destructive hover:text-destructive-foreground"
 													onClick={(e) => {
 														e.stopPropagation();
-														if (confirm("Are you sure you want to delete this slide?")) {
+														if (
+															confirm(
+																"Are you sure you want to delete this slide?",
+															)
+														) {
 															deleteSlide(slide.id);
 														}
 													}}
