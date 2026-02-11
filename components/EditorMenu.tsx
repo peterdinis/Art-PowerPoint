@@ -14,6 +14,7 @@ import {
 	Layers,
 	FileText,
 	Play,
+	BarChart3, // Pridaná ikona pre chart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -32,14 +33,19 @@ import { Separator } from "@/components/ui/separator";
 interface EditorMenuProps {
 	onSave: () => void;
 	onExport: () => void;
+	onUploadChart: () => void; // Pridaná prop pre upload chartu
 }
 
-export default function EditorMenu({ onSave, onExport }: EditorMenuProps) {
+export default function EditorMenu({ 
+	onSave, 
+	onExport, 
+	onUploadChart 
+}: EditorMenuProps) {
 	const { currentPresentation } = usePresentationStore();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
 	return (
-		<header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border sticky top-0 z-50 shadow-sm">
+		<header className="bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b border-border sticky top-0 z-50 shadow-sm">
 			<div className="px-4 py-3">
 				<div className="flex items-center justify-between">
 					{/* Left Side */}
@@ -64,11 +70,11 @@ export default function EditorMenu({ onSave, onExport }: EditorMenuProps) {
 								</div>
 								<div>
 									<h1 className="font-semibold text-foreground text-base leading-tight">
-										{currentPresentation?.title || "Prezentácia"}
+										{currentPresentation?.title || "Presentation"}
 									</h1>
 									<p className="text-xs text-muted-foreground">
 										{currentPresentation?.slides.length || 0} slide
-										{currentPresentation?.slides.length !== 1 ? "ov" : ""}
+										{currentPresentation?.slides.length !== 1 ? "s" : ""}
 									</p>
 								</div>
 							</div>
@@ -77,6 +83,17 @@ export default function EditorMenu({ onSave, onExport }: EditorMenuProps) {
 
 					{/* Right Side - Desktop */}
 					<div className="hidden md:flex items-center gap-2">
+						{/* Pridané tlačidlo pre upload chartu */}
+						<Button
+							onClick={onUploadChart}
+							variant="ghost"
+							size="sm"
+							className="gap-2"
+						>
+							<BarChart3 className="w-4 h-4" />
+							<span className="hidden lg:inline">Upload Chart</span>
+						</Button>
+
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="ghost" size="icon" className="hover:bg-accent">
@@ -86,16 +103,16 @@ export default function EditorMenu({ onSave, onExport }: EditorMenuProps) {
 							<DropdownMenuContent align="end" className="w-48">
 								<DropdownMenuItem>
 									<ZoomIn className="w-4 h-4 mr-2" />
-									Priblížiť
+									Zoom In
 								</DropdownMenuItem>
 								<DropdownMenuItem>
 									<ZoomOut className="w-4 h-4 mr-2" />
-									Oddialiť
+									Zoom Out
 								</DropdownMenuItem>
 								<DropdownMenuSeparator />
 								<DropdownMenuItem>
 									<Layers className="w-4 h-4 mr-2" />
-									Zobraziť mriežku
+									Show Grid
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
@@ -132,7 +149,7 @@ export default function EditorMenu({ onSave, onExport }: EditorMenuProps) {
 							disabled={!currentPresentation}
 						>
 							<Play className="w-4 h-4" />
-							<span className="hidden lg:inline">Spustiť</span>
+							<span className="hidden lg:inline">Play</span>
 						</Button>
 
 						<Button
@@ -142,7 +159,7 @@ export default function EditorMenu({ onSave, onExport }: EditorMenuProps) {
 							className="gap-2"
 						>
 							<Save className="w-4 h-4" />
-							<span className="hidden lg:inline">Uložiť</span>
+							<span className="hidden lg:inline">Save</span>
 						</Button>
 
 						<Button
@@ -152,7 +169,7 @@ export default function EditorMenu({ onSave, onExport }: EditorMenuProps) {
 							className="gap-2"
 						>
 							<Download className="w-4 h-4" />
-							<span className="hidden lg:inline">Exportovať</span>
+							<span className="hidden lg:inline">Export</span>
 						</Button>
 					</div>
 
@@ -172,11 +189,11 @@ export default function EditorMenu({ onSave, onExport }: EditorMenuProps) {
 										</div>
 										<div>
 											<h2 className="font-semibold text-lg">
-												{currentPresentation?.title || "Prezentácia"}
+												{currentPresentation?.title || "Presentation"}
 											</h2>
 											<p className="text-sm text-muted-foreground">
 												{currentPresentation?.slides.length || 0} slide
-												{currentPresentation?.slides.length !== 1 ? "ov" : ""}
+												{currentPresentation?.slides.length !== 1 ? "s" : ""}
 											</p>
 										</div>
 									</div>
@@ -185,6 +202,19 @@ export default function EditorMenu({ onSave, onExport }: EditorMenuProps) {
 								<Separator />
 
 								<div className="space-y-2">
+									{/* Pridaný button pre upload chartu v mobile menu */}
+									<Button
+										onClick={() => {
+											onUploadChart();
+											setMobileMenuOpen(false);
+										}}
+										className="w-full justify-start gap-2"
+										variant="outline"
+									>
+										<BarChart3 className="w-4 h-4" />
+										Upload Chart
+									</Button>
+
 									<Button
 										onClick={() => {
 											if (currentPresentation) {
@@ -199,7 +229,7 @@ export default function EditorMenu({ onSave, onExport }: EditorMenuProps) {
 										variant="default"
 									>
 										<Play className="w-4 h-4" />
-										Spustiť prezentáciu
+										Play Presentation
 									</Button>
 									<Button
 										onClick={() => {
@@ -210,7 +240,7 @@ export default function EditorMenu({ onSave, onExport }: EditorMenuProps) {
 										variant="outline"
 									>
 										<Save className="w-4 h-4" />
-										Uložiť
+										Save
 									</Button>
 									<Button
 										onClick={() => {
@@ -221,7 +251,7 @@ export default function EditorMenu({ onSave, onExport }: EditorMenuProps) {
 										variant="outline"
 									>
 										<Download className="w-4 h-4" />
-										Exportovať
+										Export
 									</Button>
 								</div>
 
@@ -238,11 +268,11 @@ export default function EditorMenu({ onSave, onExport }: EditorMenuProps) {
 											onClick={() => setMobileMenuOpen(false)}
 										>
 											<Settings className="w-4 h-4" />
-											Nastavenia
+											Settings
 										</Link>
 									</Button>
 									<div className="flex items-center justify-between px-3 py-2 rounded-md bg-muted/50">
-										<span className="text-sm font-medium">Téma</span>
+										<span className="text-sm font-medium">Theme</span>
 										<ThemeToggle />
 									</div>
 								</div>
