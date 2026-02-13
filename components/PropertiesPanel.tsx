@@ -361,7 +361,7 @@ export default function PropertiesPanel() {
 			initial={{ x: 320, opacity: 0 }}
 			animate={{ x: 0, opacity: 1 }}
 			transition={{ type: "spring", stiffness: 300, damping: 30 }}
-			className="w-80 bg-background border-l border-border flex flex-col"
+			className="w-80 h-full bg-background border-l border-border flex flex-col overflow-hidden"
 		>
 			<CardHeader>
 				<div className="flex items-center justify-between">

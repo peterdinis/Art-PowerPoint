@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { usePresentationStore } from "@/lib/store/presentationStore";
 import { useDrop } from "react-dnd";
 import { cn } from "@/lib/utils";
-import { Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
+import { Sparkles, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import ChartElement from "./elements/ChartElement";
 import SlideElement from "./SlideElement";
 
@@ -17,6 +17,7 @@ export default function EditorCanvas() {
 		updateElement,
 		previousSlide,
 		nextSlide,
+		deleteElement,
 	} = usePresentationStore();
 	const dropRef = useRef<HTMLDivElement>(null);
 
@@ -85,11 +86,22 @@ export default function EditorCanvas() {
 			previousSlide();
 		} else if (e.key === "ArrowRight") {
 			nextSlide();
+		} else if ((e.key === "Delete" || e.key === "Backspace") && selectedElementId) {
+			// Don't delete if we're in an input or textarea
+			const activeElement = document.activeElement;
+			if (activeElement?.tagName === "INPUT" || activeElement?.tagName === "TEXTAREA" || activeElement?.isContentEditable) {
+				return;
+			}
+
+			if (confirm("Delete this element?")) {
+				deleteElement(selectedElementId);
+				selectElement(null);
+			}
 		}
 	};
 
 	return (
-		<div 
+		<div
 			className="flex items-center justify-center h-full p-4 lg:p-8 overflow-auto"
 			tabIndex={0}
 			onKeyDown={handleKeyDown}
@@ -161,15 +173,31 @@ export default function EditorCanvas() {
 						}
 
 						return (
-							<SlideElement
-								key={element.id}
-								element={element}
-								isSelected={selectedElementId === element.id}
-								onSelect={() => selectElement(element.id)}
-								onResize={(width, height) =>
-									handleElementResize(element.id, width, height)
-								}
-							/>
+							<div key={element.id} className="relative group">
+								<SlideElement
+									element={element}
+									isSelected={selectedElementId === element.id}
+									onSelect={() => selectElement(element.id)}
+									onResize={(width, height) =>
+										handleElementResize(element.id, width, height)
+									}
+								/>
+								{selectedElementId === element.id && (
+									<button
+										onClick={(e) => {
+											e.stopPropagation();
+											if (confirm("Are you sure you want to delete this element?")) {
+												deleteElement(element.id);
+												selectElement(null);
+											}
+										}}
+										className="absolute -top-10 left-1/2 -translate-x-1/2 p-2 bg-destructive text-destructive-foreground rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50 hover:scale-110 active:scale-95"
+										title="Delete element"
+									>
+										<Trash2 className="w-4 h-4" />
+									</button>
+								)}
+							</div>
 						);
 					})}
 

@@ -185,7 +185,7 @@ export default function PresentationPage() {
 				style={{
 					transitionDuration: `${transitionDuration}ms`,
 					background: (() => {
-						if (currentSlide.background?.type === "gradient" || currentSlide.background?.gradientStops) {
+						if (currentSlide.background?.type === "gradient" || (currentSlide.background?.gradientStops && currentSlide.background.gradientStops.length > 0)) {
 							const type = currentSlide.background.gradientType || "linear";
 							const angle = currentSlide.background.gradientAngle || 135;
 							const stops = currentSlide.background.gradientStops
@@ -194,13 +194,13 @@ export default function PresentationPage() {
 									.join(", ")
 								: currentSlide.background.gradient;
 
-							if (!stops) return currentSlide.background.color || "#ffffff";
+							if (!stops) return currentSlide.background.color || "hsl(var(--background))";
 
 							return type === "linear"
 								? `linear-gradient(${angle}deg, ${stops})`
 								: `radial-gradient(circle, ${stops})`;
 						}
-						return currentSlide.background?.color || "#ffffff";
+						return currentSlide.background?.color || "hsl(var(--background))";
 					})(),
 					backgroundImage: currentSlide.background?.image
 						? `url(${currentSlide.background.image})`
