@@ -195,7 +195,7 @@ export default function SlideBackgroundEditor({
 											? "border-primary ring-2 ring-primary/20"
 											: "border-border",
 									)}
-									style={{ background: gradient.value }}
+									style={{ backgroundImage: gradient.value }}
 								>
 									<span className="absolute bottom-1 left-2 text-xs font-medium text-white drop-shadow">
 										{gradient.name}

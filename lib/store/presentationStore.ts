@@ -58,7 +58,7 @@ interface PresentationStore {
 const createDefaultSlide = (): Slide => ({
 	id: uuidv4(),
 	elements: [],
-	background: { color: "#ffffff" },
+	background: { color: undefined },
 });
 
 export const usePresentationStore = create<PresentationStore>((set, get) => ({

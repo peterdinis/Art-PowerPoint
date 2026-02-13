@@ -611,9 +611,9 @@ export default function Toolbar() {
 			size: { width: 200, height: 120 },
 			content: "rounded",
 			style: {
-				backgroundColor: "hsl(var(--card))",
+				backgroundColor: "var(--card)",
 				borderWidth: 1,
-				borderColor: "hsl(var(--border))",
+				borderColor: "var(--border)",
 				borderRadius: 12,
 				boxShadow: "var(--shadow-md)",
 			},
@@ -628,7 +628,7 @@ export default function Toolbar() {
 				style: {
 					fontSize: 36,
 					fontWeight: "bold",
-					color: "hsl(var(--primary))",
+					color: "var(--primary)",
 					textAlign: "center",
 				},
 			});
@@ -639,7 +639,7 @@ export default function Toolbar() {
 				content: "Success Rate",
 				style: {
 					fontSize: 14,
-					color: "hsl(var(--muted-foreground))",
+					color: "var(--muted-foreground)",
 					textAlign: "center",
 				},
 			});
@@ -653,7 +653,7 @@ export default function Toolbar() {
 			size: direction === "horizontal" ? { width: 400, height: 2 } : { width: 2, height: 400 },
 			content: "square",
 			style: {
-				backgroundColor: "hsl(var(--border))",
+				backgroundColor: "var(--border)",
 			},
 		});
 	};

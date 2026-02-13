@@ -143,7 +143,7 @@ export default function EditorCanvas() {
 						width: "100%",
 						maxWidth: "960px",
 						aspectRatio: "16/9",
-						backgroundColor: currentSlide.background?.color || "hsl(var(--background))",
+						backgroundColor: currentSlide.background?.color || "var(--background)",
 						backgroundImage: (() => {
 							const stops = currentSlide.background?.gradientStops && currentSlide.background.gradientStops.length > 0
 								? currentSlide.background.gradientStops
@@ -186,10 +186,10 @@ export default function EditorCanvas() {
 						<div
 							className="absolute inset-0 pointer-events-none z-[5]"
 							style={{
-								backgroundImage: `
-									linear-gradient(to right, hsl(var(--foreground)/0.1) 1px, transparent 1px),
-									linear-gradient(to bottom, hsl(var(--foreground)/0.1) 1px, transparent 1px)
-								`,
+								backgroundImage: showGrid
+									? `linear-gradient(to right, color-mix(in srgb, var(--foreground), transparent 90%) 1px, transparent 1px),
+									   linear-gradient(to bottom, color-mix(in srgb, var(--foreground), transparent 90%) 1px, transparent 1px)`
+									: "none",
 								backgroundSize: '20px 20px'
 							}}
 						/>

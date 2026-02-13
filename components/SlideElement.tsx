@@ -77,6 +77,10 @@ export default function SlideElement({
 			} : {};
 
 			const getBackgroundStyle = () => {
+				const style: React.CSSProperties = {
+					backgroundColor: element.style?.backgroundColor
+				};
+
 				if (element.style?.gradientStops && element.style.gradientStops.length > 0) {
 					const type = element.style.gradientType || "linear";
 					const angle = element.style.gradientAngle || 135;
@@ -84,15 +88,12 @@ export default function SlideElement({
 						.map((s) => `${s.color} ${s.offset}%`)
 						.join(", ");
 
-					return {
-						background: type === "linear"
-							? `linear-gradient(${angle}deg, ${stops})`
-							: `radial-gradient(circle, ${stops})`
-					};
+					style.backgroundImage = type === "linear"
+						? `linear-gradient(${angle}deg, ${stops})`
+						: `radial-gradient(circle, ${stops})`;
 				}
-				return {
-					backgroundColor: element.style?.backgroundColor
-				};
+
+				return style;
 			};
 
 			return (
@@ -171,7 +172,7 @@ export default function SlideElement({
 			} : {};
 
 			const getShapeStyle = (): React.CSSProperties => {
-				const getBackground = () => {
+				const getBackgroundImage = () => {
 					if (element.style?.gradientStops && element.style.gradientStops.length > 0) {
 						const type = element.style.gradientType || "linear";
 						const angle = element.style.gradientAngle || 135;
@@ -183,11 +184,12 @@ export default function SlideElement({
 							? `linear-gradient(${angle}deg, ${stops})`
 							: `radial-gradient(circle, ${stops})`;
 					}
-					return element.style?.backgroundColor || "#3b82f6";
+					return undefined;
 				};
 
 				const baseStyle: React.CSSProperties = {
-					background: getBackground(),
+					backgroundColor: element.style?.backgroundColor || "#3b82f6",
+					backgroundImage: getBackgroundImage(),
 					borderColor: element.style?.borderColor,
 					borderWidth: element.style?.borderWidth || 0,
 					borderStyle: (element.style?.borderStyle as any) || "solid",
@@ -204,7 +206,7 @@ export default function SlideElement({
 					return {
 						...baseStyle,
 						backgroundColor: "transparent",
-						background: "none",
+						backgroundImage: "none",
 						borderLeft: `${element.size.width / 2}px solid transparent`,
 						borderRight: `${element.size.width / 2}px solid transparent`,
 						borderBottom: `${element.size.height}px solid ${element.style?.backgroundColor || "#3b82f6"}`,
@@ -216,7 +218,7 @@ export default function SlideElement({
 						...baseStyle,
 						position: "relative",
 						backgroundColor: "transparent",
-						background: "none",
+						backgroundImage: "none",
 					};
 				}
 

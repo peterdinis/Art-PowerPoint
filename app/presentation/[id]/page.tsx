@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { usePresentationStore } from "@/lib/store/presentationStore";
 import { X, ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Loading } from "@/components/ui/loading";
+import { LoadingPresentation } from "@/components/ui/LoadingPresentation";
 import { cn } from "@/lib/utils";
 import type { SlideElement, GradientStop } from "@/lib/types/presentation";
 import IconElement from "@/components/elements/IconElement";
@@ -130,7 +130,7 @@ export default function PresentationPage() {
 	}, [isFullscreen]);
 
 	if (isLoading) {
-		return <Loading message="Loading presentation..." fullScreen size="lg" />;
+		return <LoadingPresentation message="Loading presentation..." />;
 	}
 
 	if (!presentation) {
@@ -184,7 +184,7 @@ export default function PresentationPage() {
 				)}
 				style={{
 					transitionDuration: `${transitionDuration}ms`,
-					backgroundColor: currentSlide.background?.color || "hsl(var(--background))",
+					backgroundColor: currentSlide.background?.color || "var(--background)",
 					backgroundImage: (() => {
 						const stops = currentSlide.background?.gradientStops && currentSlide.background.gradientStops.length > 0
 							? currentSlide.background.gradientStops
@@ -383,6 +383,10 @@ function PresentationElement({
 				} : {};
 
 				const getBackgroundStyle = () => {
+					const style: React.CSSProperties = {
+						backgroundColor: element.style?.backgroundColor
+					};
+
 					if (element.style?.gradientStops && element.style.gradientStops.length > 0) {
 						const type = element.style.gradientType || "linear";
 						const angle = element.style.gradientAngle || 135;
@@ -390,15 +394,12 @@ function PresentationElement({
 							.map((s) => `${s.color} ${s.offset}%`)
 							.join(", ");
 
-						return {
-							background: type === "linear"
-								? `linear-gradient(${angle}deg, ${stops})`
-								: `radial-gradient(circle, ${stops})`
-						};
+						style.backgroundImage = type === "linear"
+							? `linear-gradient(${angle}deg, ${stops})`
+							: `radial-gradient(circle, ${stops})`;
 					}
-					return {
-						backgroundColor: element.style?.backgroundColor
-					};
+
+					return style;
 				};
 
 				return (
@@ -408,7 +409,7 @@ function PresentationElement({
 							height: "100%",
 							padding: element.style?.padding || "8px",
 							fontSize: `${(element.style?.fontSize || 24) * scale}px`,
-							color: element.style?.color || "hsl(var(--foreground))",
+							color: element.style?.color || "var(--foreground)",
 							fontFamily: element.style?.fontFamily || "Arial",
 							fontWeight: element.style?.fontWeight || "normal",
 							fontStyle: element.style?.fontStyle || "normal",
@@ -478,25 +479,24 @@ function PresentationElement({
 					].join(" ")
 				} : {};
 
-				const getShapeBackground = () => {
-					if (element.style?.gradientStops && element.style.gradientStops.length > 0) {
-						const type = element.style.gradientType || "linear";
-						const angle = element.style.gradientAngle || 135;
-						const stops = element.style.gradientStops
-							.map((s: GradientStop) => `${s.color} ${s.offset}%`)
-							.join(", ");
-
-						return type === "linear"
-							? `linear-gradient(${angle}deg, ${stops})`
-							: `radial-gradient(circle, ${stops})`;
-					}
-					return element.style?.backgroundColor || "#3b82f6";
-				};
-
 				const shapeStyle: React.CSSProperties = {
 					width: "100%",
 					height: "100%",
-					background: getShapeBackground(),
+					backgroundColor: element.style?.backgroundColor || "#3b82f6",
+					backgroundImage: (() => {
+						if (element.style?.gradientStops && element.style.gradientStops.length > 0) {
+							const type = element.style.gradientType || "linear";
+							const angle = element.style.gradientAngle || 135;
+							const stops = element.style.gradientStops
+								.map((s: GradientStop) => `${s.color} ${s.offset}%`)
+								.join(", ");
+
+							return type === "linear"
+								? `linear-gradient(${angle}deg, ${stops})`
+								: `radial-gradient(circle, ${stops})`;
+						}
+						return undefined;
+					})(),
 					borderColor: element.style?.borderColor,
 					borderWidth: element.style?.borderWidth || 0,
 					borderStyle: (element.style?.borderStyle as any) || "solid",

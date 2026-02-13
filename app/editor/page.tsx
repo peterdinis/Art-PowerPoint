@@ -423,7 +423,7 @@ function EditorContent() {
 	}
 
 	return (
-		<DndProvider backend={HTML5Backend}>
+		<DndProvider backend={HTML5Backend} context={window}>
 			<div className="h-screen flex flex-col bg-background">
 				{/* Header */}
 				<EditorMenu
