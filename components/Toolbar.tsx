@@ -1,6 +1,7 @@
 "use client";
 
 import { usePresentationStore } from "@/lib/store/presentationStore";
+import * as Icons from "lucide-react";
 import {
 	Type,
 	Image,
@@ -454,27 +455,32 @@ export default function Toolbar() {
 	};
 
 	const handleAddTable = () => {
-		const tableContent = Array(tableRows)
+		const rows = tableRows;
+		const cols = tableColumns;
+		const tableData = Array(rows)
 			.fill(null)
 			.map((_, rowIndex) =>
-				Array(tableColumns)
+				Array(cols)
 					.fill(null)
-					.map((_, colIndex) => `Cell ${rowIndex + 1}-${colIndex + 1}`)
-					.join("\t"),
-			)
-			.join("\n");
+					.map((_, colIndex) => ({
+						content: `Cell ${rowIndex + 1}-${colIndex + 1}`,
+					})),
+			);
 
 		addElement({
-			type: "text",
+			type: "table",
 			position: { x: 100, y: 100 },
-			size: { width: 400, height: 200 },
-			content: tableContent,
+			size: { width: 500, height: 300 },
+			content: "",
 			style: {
-				fontSize: 14,
-				color: getDefaultTextColor(),
-				fontFamily: "Arial",
-				textAlign: "left",
-				backgroundColor: "#f9fafb",
+				rows,
+				cols,
+				tableData,
+				headerRow: true,
+				stripeRows: true,
+				borderColor: "#e5e7eb",
+				borderWidth: 1,
+				backgroundColor: "#ffffff",
 			},
 		});
 		setTableDialogOpen(false);
@@ -610,35 +616,42 @@ export default function Toolbar() {
 		});
 	};
 
-	const handleAddIcon = (iconType: string) => {
-		const icons = {
-			calendar: "📅",
-			clock: "⏰",
-			location: "📍",
-			phone: "📞",
-			email: "📧",
-			globe: "🌐",
-			music: "🎵",
-			film: "🎬",
-			mic: "🎤",
-			star: "⭐",
-			heart: "❤️",
-			sparkles: "✨",
-			zap: "⚡",
+	const handleAddIcon = (iconName: string) => {
+		addElement({
+			type: "icon",
+			position: { x: 100, y: 100 },
+			size: { width: 100, height: 100 },
+			content: "",
+			style: {
+				iconName: iconName,
+				color: "#3b82f6",
+			},
+		});
+		setIconDialogOpen(false);
+	};
+
+	const handleAddCode = (language: string = "javascript") => {
+		const codeSamples = {
+			javascript: "function hello() {\n  console.log('Hello, World!');\n}",
+			typescript: "interface User {\n  id: number;\n  name: string;\n}",
+			html: "<div class=\"container\">\n  <h1>Hello</h1>\n</div>",
+			css: ".container {\n  display: flex;\n  color: blue;\n}",
+			python: "def hello_world():\n    print(\"Hello world!\")",
 		};
 
-		const icon = icons[iconType as keyof typeof icons] || "⭐";
-
 		addElement({
-			type: "text",
+			type: "code",
 			position: { x: 100, y: 100 },
-			size: { width: 60, height: 60 },
-			content: icon,
+			size: { width: 400, height: 250 },
+			content: codeSamples[language as keyof typeof codeSamples] || "Paste your code here...",
 			style: {
-				fontSize: 40,
-				color: "#3b82f6",
-				fontFamily: "Arial",
-				textAlign: "center",
+				language,
+				theme: "dark",
+				lineNumbers: true,
+				backgroundColor: "#1e1e1e",
+				color: "#d4d4d4",
+				fontFamily: "Courier New",
+				fontSize: 14,
 			},
 		});
 	};
@@ -944,6 +957,85 @@ export default function Toolbar() {
 								<Star className="w-4 h-4" />
 							</Button>
 						</motion.div>
+
+						<Dialog open={iconDialogOpen} onOpenChange={setIconDialogOpen}>
+							<DialogTrigger asChild>
+								<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+									<Button variant="outline" size="sm" className="gap-2">
+										<Sparkles className="w-4 h-4" />
+										<span className="hidden sm:inline">Icon</span>
+									</Button>
+								</motion.div>
+							</DialogTrigger>
+							<DialogContent className="max-w-md">
+								<DialogHeader>
+									<DialogTitle>Icons</DialogTitle>
+									<DialogDescription>
+										Select an icon to add to your slide
+									</DialogDescription>
+								</DialogHeader>
+								<div className="grid grid-cols-4 gap-4 p-4 max-h-[400px] overflow-y-auto">
+									{["Calendar", "Clock", "MapPin", "Phone", "Mail", "Globe", "Music", "Film", "Mic", "Star", "Heart", "Sparkles", "Zap", "Layers", "Grid", "Columns", "Rows", "PanelLeft", "PanelRight", "PanelTop", "PanelBottom"].map((name) => {
+										const IconComp = (Icons as any)[name] || Icons.HelpCircle;
+										return (
+											<Button
+												key={name}
+												variant="outline"
+												className="h-20 flex-col gap-2"
+												onClick={() => handleAddIcon(name)}
+											>
+												<IconComp className="w-6 h-6" />
+												<span className="text-[10px] truncate w-full">{name}</span>
+											</Button>
+										);
+									})}
+								</div>
+							</DialogContent>
+						</Dialog>
+
+						<Dialog open={tableDialogOpen} onOpenChange={setTableDialogOpen}>
+							<DialogTrigger asChild>
+								<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+									<Button variant="outline" size="sm" className="gap-2">
+										<Table2 className="w-4 h-4" />
+										<span className="hidden sm:inline">Table</span>
+									</Button>
+								</motion.div>
+							</DialogTrigger>
+							<DialogContent className="max-w-sm">
+								<DialogHeader>
+									<DialogTitle>Insert Table</DialogTitle>
+									<DialogDescription>
+										Choose grid dimensions for your new table
+									</DialogDescription>
+								</DialogHeader>
+								<div className="space-y-4 py-4">
+									<div className="space-y-2">
+										<Label>Rows: {tableRows}</Label>
+										<Slider
+											value={[tableRows]}
+											min={1}
+											max={10}
+											step={1}
+											onValueChange={([val]) => setTableRows(val)}
+										/>
+									</div>
+									<div className="space-y-2">
+										<Label>Columns: {tableColumns}</Label>
+										<Slider
+											value={[tableColumns]}
+											min={1}
+											max={10}
+											step={1}
+											onValueChange={([val]) => setTableColumns(val)}
+										/>
+									</div>
+								</div>
+								<DialogFooter>
+									<Button onClick={handleAddTable}>Create Table</Button>
+								</DialogFooter>
+							</DialogContent>
+						</Dialog>
 						<Dialog open={chartDialogOpen} onOpenChange={setChartDialogOpen}>
 							<DialogTrigger asChild>
 								<motion.div
@@ -1222,11 +1314,34 @@ Q4,61000,40000,21000`}</pre>
 									<span className="text-xs">Quote</span>
 								</DropdownMenuItem>
 								<DropdownMenuItem
-									onClick={() => handleAddText("code")}
+									onClick={() => handleAddCode("javascript")}
 									className="flex-col gap-2 h-auto py-3"
 								>
 									<Code className="w-6 h-6" />
-									<span className="text-xs">Code Block</span>
+									<span className="text-xs">Code Snippet</span>
+								</DropdownMenuItem>
+							</div>
+
+							<DropdownMenuSeparator />
+
+							<DropdownMenuLabel className="text-xs text-muted-foreground flex items-center justify-between">
+								<span>Interactive Elements</span>
+								<Sparkles className="w-3 h-3" />
+							</DropdownMenuLabel>
+							<div className="grid grid-cols-2 gap-1 p-2">
+								<DropdownMenuItem
+									onClick={() => setIconDialogOpen(true)}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<Sparkles className="w-6 h-6" />
+									<span className="text-xs">Icons</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => setTableDialogOpen(true)}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<Table2 className="w-6 h-6" />
+									<span className="text-xs">Table</span>
 								</DropdownMenuItem>
 							</div>
 
@@ -1436,7 +1551,7 @@ Q4,61000,40000,21000`}</pre>
 						</>
 					)}
 				</div>
-			</div>
-		</div>
+			</div >
+		</div >
 	);
 }

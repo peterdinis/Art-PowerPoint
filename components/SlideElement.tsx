@@ -5,8 +5,11 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
-import type { SlideElement as SlideElementType } from "@/lib/types/presentation";
+import type { SlideElement as SlideElementType, GradientStop } from "@/lib/types/presentation";
 import ChartElement from "./elements/ChartElement";
+import IconElement from "./elements/IconElement";
+import TableElement from "./elements/TableElement";
+import CodeElement from "./elements/CodeElement";
 
 interface SlideElementProps {
 	element: SlideElementType;
@@ -43,7 +46,51 @@ export default function SlideElement({
 			return <ChartElement element={element} isSelected={isSelected} />;
 		}
 
+		if (element.type === "icon") {
+			return <IconElement element={element} isSelected={isSelected} />;
+		}
+
+		if (element.type === "table") {
+			return <TableElement element={element} isSelected={isSelected} />;
+		}
+
+		if (element.type === "code") {
+			return <CodeElement element={element} isSelected={isSelected} />;
+		}
+
 		if (element.type === "text") {
+			const filterStyles = element.style?.filters ? {
+				filter: [
+					element.style.filters.blur ? `blur(${element.style.filters.blur}px)` : "",
+					element.style.filters.brightness ? `brightness(${element.style.filters.brightness})` : "",
+					element.style.filters.contrast ? `contrast(${element.style.filters.contrast})` : "",
+					element.style.filters.grayscale ? `grayscale(${element.style.filters.grayscale})` : "",
+					element.style.filters.sepia ? `sepia(${element.style.filters.sepia})` : "",
+					element.style.filters.hueRotate ? `hue-rotate(${element.style.filters.hueRotate}deg)` : "",
+					element.style.filters.saturate ? `saturate(${element.style.filters.saturate})` : "",
+					element.style.filters.invert ? `invert(${element.style.filters.invert})` : "",
+				].join(" ")
+			} : {};
+
+			const getBackgroundStyle = () => {
+				if (element.style?.gradientStops && element.style.gradientStops.length > 0) {
+					const type = element.style.gradientType || "linear";
+					const angle = element.style.gradientAngle || 135;
+					const stops = element.style.gradientStops
+						.map((s) => `${s.color} ${s.offset}%`)
+						.join(", ");
+
+					return {
+						background: type === "linear"
+							? `linear-gradient(${angle}deg, ${stops})`
+							: `radial-gradient(circle, ${stops})`
+					};
+				}
+				return {
+					backgroundColor: element.style?.backgroundColor
+				};
+			};
+
 			return (
 				<div
 					className={cn(
@@ -58,7 +105,7 @@ export default function SlideElement({
 						fontStyle: element.style?.fontStyle,
 						textDecoration: element.style?.textDecoration,
 						textAlign: element.style?.textAlign as any,
-						backgroundColor: element.style?.backgroundColor,
+						...getBackgroundStyle(),
 						lineHeight: element.style?.lineHeight,
 						letterSpacing: element.style?.letterSpacing,
 						borderColor: element.style?.borderColor,
@@ -69,6 +116,7 @@ export default function SlideElement({
 						opacity: element.style?.opacity,
 						padding: element.style?.padding || "8px",
 						whiteSpace: "pre-wrap",
+						...filterStyles
 					}}
 				>
 					{element.content}
@@ -77,28 +125,71 @@ export default function SlideElement({
 		}
 
 		if (element.type === "image") {
+			const filterStyles = element.style?.filters ? {
+				filter: [
+					element.style.filters.blur ? `blur(${element.style.filters.blur}px)` : "",
+					element.style.filters.brightness ? `brightness(${element.style.filters.brightness})` : "",
+					element.style.filters.contrast ? `contrast(${element.style.filters.contrast})` : "",
+					element.style.filters.grayscale ? `grayscale(${element.style.filters.grayscale})` : "",
+					element.style.filters.sepia ? `sepia(${element.style.filters.sepia})` : "",
+					element.style.filters.hueRotate ? `hue-rotate(${element.style.filters.hueRotate}deg)` : "",
+					element.style.filters.saturate ? `saturate(${element.style.filters.saturate})` : "",
+					element.style.filters.invert ? `invert(${element.style.filters.invert})` : "",
+				].join(" ")
+			} : {};
+
 			return (
 				<img
 					src={element.content}
 					alt="Slide element"
-					className="w-full h-full object-cover"
+					className="w-full h-full"
 					style={{
 						borderRadius: element.style?.borderRadius,
 						objectFit: element.style?.objectFit as any,
+						...filterStyles
 					}}
 				/>
 			);
 		}
 
 		if (element.type === "shape") {
+			const filterStyles = element.style?.filters ? {
+				filter: [
+					element.style.filters.blur ? `blur(${element.style.filters.blur}px)` : "",
+					element.style.filters.brightness ? `brightness(${element.style.filters.brightness})` : "",
+					element.style.filters.contrast ? `contrast(${element.style.filters.contrast})` : "",
+					element.style.filters.grayscale ? `grayscale(${element.style.filters.grayscale})` : "",
+					element.style.filters.sepia ? `sepia(${element.style.filters.sepia})` : "",
+					element.style.filters.hueRotate ? `hue-rotate(${element.style.filters.hueRotate}deg)` : "",
+					element.style.filters.saturate ? `saturate(${element.style.filters.saturate})` : "",
+					element.style.filters.invert ? `invert(${element.style.filters.invert})` : "",
+				].join(" ")
+			} : {};
+
 			const getShapeStyle = (): React.CSSProperties => {
+				const getBackground = () => {
+					if (element.style?.gradientStops && element.style.gradientStops.length > 0) {
+						const type = element.style.gradientType || "linear";
+						const angle = element.style.gradientAngle || 135;
+						const stops = element.style.gradientStops
+							.map((s: GradientStop) => `${s.color} ${s.offset}%`)
+							.join(", ");
+
+						return type === "linear"
+							? `linear-gradient(${angle}deg, ${stops})`
+							: `radial-gradient(circle, ${stops})`;
+					}
+					return element.style?.backgroundColor || "#3b82f6";
+				};
+
 				const baseStyle: React.CSSProperties = {
-					backgroundColor: element.style?.backgroundColor || "#3b82f6",
+					background: getBackground(),
 					borderColor: element.style?.borderColor,
 					borderWidth: element.style?.borderWidth || 0,
 					borderStyle: (element.style?.borderStyle as any) || "solid",
 					borderRadius: element.style?.borderRadius || 0,
 					boxShadow: element.style?.boxShadow,
+					...filterStyles
 				};
 
 				if (element.content === "circle") {
@@ -109,6 +200,7 @@ export default function SlideElement({
 					return {
 						...baseStyle,
 						backgroundColor: "transparent",
+						background: "none",
 						borderLeft: `${element.size.width / 2}px solid transparent`,
 						borderRight: `${element.size.width / 2}px solid transparent`,
 						borderBottom: `${element.size.height}px solid ${element.style?.backgroundColor || "#3b82f6"}`,
@@ -120,6 +212,7 @@ export default function SlideElement({
 						...baseStyle,
 						position: "relative",
 						backgroundColor: "transparent",
+						background: "none",
 					};
 				}
 
