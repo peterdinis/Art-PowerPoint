@@ -16,10 +16,14 @@ import {
 	Clock,
 	GripVertical,
 	X,
+	FileUp,
 } from "lucide-react";
-import { usePresentationStore } from "@/lib/store/presentationStore";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { usePresentationStore, Slide, Presentation } from "@/lib/store/presentationStore";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { importPPTX } from "@/lib/utils/pptxImport";
+import { toast } from "sonner";
+import { v4 as uuidv4 } from "uuid";
 import { Input } from "@/components/ui/input";
 import {
 	Card,
@@ -388,6 +392,37 @@ export default function Home() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [localOrder, setLocalOrder] = useState<string[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	const handleImportPPTX = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		try {
+			toast.loading("Importing PowerPoint...", { id: "import-pptx" });
+			const importedData = await importPPTX(file);
+
+			const newPresentationId = createPresentation(
+				importedData.title || "Imported Presentation",
+				"Imported from PowerPoint"
+			);
+
+			// We need to update the newly created presentation with the imported slides
+			const store = usePresentationStore.getState();
+			store.updatePresentation(newPresentationId, {
+				slides: (importedData.slides || []).map((slide: Slide) => ({
+					...slide,
+					id: uuidv4()
+				}))
+			});
+
+			toast.success("Presentation imported successfully!", { id: "import-pptx" });
+			router.push(`/editor?id=${newPresentationId}`);
+		} catch (error) {
+			console.error("Failed to import PPTX:", error);
+			toast.error("Failed to import PowerPoint file.", { id: "import-pptx" });
+		}
+	};
 
 	// Load presentations
 	useEffect(() => {
@@ -626,14 +661,32 @@ export default function Home() {
 										Create and manage professional presentations
 									</p>
 								</div>
-								<Button
-									onClick={handleCreateNew}
-									size="lg"
-									className="w-full sm:w-auto rounded-lg"
-								>
-									<Plus className="w-4 h-4 mr-2" />
-									New Presentation
-								</Button>
+								<div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+									<input
+										type="file"
+										accept=".pptx"
+										className="hidden"
+										ref={fileInputRef}
+										onChange={handleImportPPTX}
+									/>
+									<Button
+										onClick={() => fileInputRef.current?.click()}
+										variant="outline"
+										size="lg"
+										className="rounded-lg shadow-sm hover:shadow-md transition-all border-primary/20 hover:border-primary/50 text-primary"
+									>
+										<FileUp className="w-4 h-4 mr-2" />
+										Import PowerPoint
+									</Button>
+									<Button
+										onClick={handleCreateNew}
+										size="lg"
+										className="rounded-lg shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all bg-gradient-to-r from-primary to-primary/90"
+									>
+										<Plus className="w-4 h-4 mr-2" />
+										New Presentation
+									</Button>
+								</div>
 							</div>
 
 							{/* Statistics */}
