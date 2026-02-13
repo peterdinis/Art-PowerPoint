@@ -244,9 +244,9 @@ export default function SlideElement({
 
 		if (element.type === "video") {
 			return (
-				<div className="w-full h-full bg-black rounded-lg overflow-hidden">
+				<div className="w-full h-full bg-muted rounded-lg overflow-hidden border border-border">
 					<div className="w-full h-full flex items-center justify-center">
-						<div className="text-white text-center">
+						<div className="text-muted-foreground text-center">
 							<div className="text-4xl mb-2">▶️</div>
 							<div className="text-sm">Video: {element.content}</div>
 						</div>

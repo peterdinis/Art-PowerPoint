@@ -64,6 +64,7 @@ import {
 	Archive,
 	Minus,
 } from "lucide-react";
+import { exportToPPTX } from "@/lib/utils/pptxExport";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ThemeProvider";
@@ -1478,6 +1479,19 @@ Q4,61000,40000,21000`}</pre>
 						>
 							<Archive className="w-4 h-4" />
 							Compress
+						</Button>
+					</motion.div>
+
+					<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+						<Button
+							variant="outline"
+							size="sm"
+							className="gap-2"
+							onClick={() => currentPresentation && exportToPPTX(currentPresentation)}
+							title="Export as PowerPoint (.pptx)"
+						>
+							<FileDown className="w-4 h-4" />
+							Export PPTX
 						</Button>
 					</motion.div>
 

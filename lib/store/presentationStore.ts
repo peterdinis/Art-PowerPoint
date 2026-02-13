@@ -618,17 +618,29 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 			const compressedSlides = state.currentPresentation.slides.map((slide: Slide) => ({
 				...slide,
-				elements: slide.elements.map((el: SlideElement) => {
-					// Remove default or empty properties to save space
-					const compressedEl = { ...el };
+				elements: slide.elements
+					.filter((el: SlideElement) => {
+						// Remove empty text elements
+						if (el.type === 'text' && !el.content?.trim()) return false;
+						return true;
+					})
+					.map((el: SlideElement) => {
+						const cleanedEl = { ...el };
 
-					// If it's text and empty, or other properties that can be trimmed
-					if (compressedEl.type === 'text' && !compressedEl.content) {
-						compressedEl.content = '';
-					}
+						// Remove potential large/unnecessary properties if they are default
+						if (cleanedEl.style) {
+							const style = { ...cleanedEl.style };
+							// Remove properties that are null or undefined to save space
+							Object.keys(style).forEach(key => {
+								if (style[key as keyof typeof style] === undefined || style[key as keyof typeof style] === null) {
+									delete style[key as keyof typeof style];
+								}
+							});
+							cleanedEl.style = style;
+						}
 
-					return compressedEl;
-				}),
+						return cleanedEl;
+					}),
 			}));
 
 			const updatedPresentation = {

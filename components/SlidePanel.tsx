@@ -111,15 +111,30 @@ export default function SlidePanel() {
 									<div
 										className="aspect-video bg-background relative h-full"
 										style={{
-											backgroundColor: slide.background?.gradient
-												? undefined
-												: slide.background?.color || "#ffffff",
-											background: slide.background?.gradient
-												? slide.background.gradient
-												: undefined,
-											backgroundImage: slide.background?.image
-												? `url(${slide.background.image})`
-												: undefined,
+											backgroundColor: slide.background?.color || "hsl(var(--background))",
+											backgroundImage: (() => {
+												const stops = slide.background?.gradientStops && slide.background.gradientStops.length > 0
+													? slide.background.gradientStops
+														.map((s: any) => `${s.color} ${s.offset}%`)
+														.join(", ")
+													: slide.background?.gradient;
+
+												const image = slide.background?.image
+													? `url(${slide.background.image})`
+													: undefined;
+
+												if (stops) {
+													const type = slide.background?.gradientType || "linear";
+													const angle = slide.background?.gradientAngle || 135;
+													const gradient = type === "linear"
+														? `linear-gradient(${angle}deg, ${stops})`
+														: `radial-gradient(circle, ${stops})`;
+
+													return image ? `${gradient}, ${image}` : gradient;
+												}
+
+												return image;
+											})(),
 											backgroundSize: "cover",
 											backgroundPosition: "center",
 										}}
@@ -245,12 +260,12 @@ export default function SlidePanel() {
         }
         
         .slide-panel-scroll::-webkit-scrollbar-thumb {
-          background: #888;
+          background: hsl(var(--muted-foreground) / 0.3);
           border-radius: 3px;
         }
         
         .slide-panel-scroll::-webkit-scrollbar-thumb:hover {
-          background: #555;
+          background: hsl(var(--muted-foreground) / 0.5);
         }
       `}</style>
 		</div>

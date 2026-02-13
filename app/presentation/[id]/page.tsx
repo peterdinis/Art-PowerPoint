@@ -130,16 +130,16 @@ export default function PresentationPage() {
 	}, [isFullscreen]);
 
 	if (isLoading) {
-		return <Loading message="Načítavanie prezentácie" fullScreen size="lg" />;
+		return <Loading message="Loading presentation..." fullScreen size="lg" />;
 	}
 
 	if (!presentation) {
 		return (
 			<div className="flex items-center justify-center h-screen bg-background">
 				<div className="text-center">
-					<p className="mb-4 text-foreground">Prezentácia sa nenašla</p>
+					<p className="mb-4 text-foreground">Presentation not found</p>
 					<Button onClick={() => router.push("/")} variant="outline">
-						Späť na dashboard
+						Back to dashboard
 					</Button>
 				</div>
 			</div>
@@ -150,12 +150,12 @@ export default function PresentationPage() {
 		return (
 			<div className="flex items-center justify-center h-screen bg-background">
 				<div className="text-center">
-					<p className="mb-4 text-foreground">Prezentácia nemá žiadne slajdy</p>
+					<p className="mb-4 text-foreground">Presentation has no slides</p>
 					<Button
 						onClick={() => router.push(`/editor?id=${presentation.id}`)}
 						variant="outline"
 					>
-						Späť do editora
+						Back to editor
 					</Button>
 				</div>
 			</div>
@@ -271,7 +271,7 @@ export default function PresentationPage() {
 							size="icon"
 							onClick={toggleFullscreen}
 							className="text-white hover:bg-white/20"
-							title="Celá obrazovka (F)"
+							title="Fullscreen (F)"
 						>
 							<span className="text-xs">⛶</span>
 						</Button>
@@ -280,7 +280,7 @@ export default function PresentationPage() {
 							size="icon"
 							onClick={() => router.push(`/editor?id=${presentation.id}`)}
 							className="text-white hover:bg-white/20"
-							title="Zavrieť"
+							title="Close"
 						>
 							<X className="w-5 h-5" />
 						</Button>
@@ -408,7 +408,7 @@ function PresentationElement({
 							height: "100%",
 							padding: element.style?.padding || "8px",
 							fontSize: `${(element.style?.fontSize || 24) * scale}px`,
-							color: element.style?.color || "#000000",
+							color: element.style?.color || "hsl(var(--foreground))",
 							fontFamily: element.style?.fontFamily || "Arial",
 							fontWeight: element.style?.fontWeight || "normal",
 							fontStyle: element.style?.fontStyle || "normal",
