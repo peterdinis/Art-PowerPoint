@@ -140,12 +140,12 @@ export default function PropertiesPanel() {
 		const updatedSlides = currentPresentation.slides.map((slide, index) =>
 			index === currentSlideIndex
 				? {
-					...slide,
-					background: {
-						...(slide.background || { type: "color", color: "#ffffff" }),
-						...updates,
-					},
-				}
+						...slide,
+						background: {
+							...(slide.background || { type: "color", color: "#ffffff" }),
+							...updates,
+						},
+					}
 				: slide,
 		);
 		updatePresentation(currentPresentation.id, { slides: updatedSlides });
@@ -218,13 +218,13 @@ export default function PropertiesPanel() {
 										(slide, index) =>
 											index === currentSlideIndex
 												? {
-													...slide,
-													transition: {
-														type: value,
-														duration: slide.transition?.duration || 500,
-														direction: slide.transition?.direction || "right",
-													},
-												}
+														...slide,
+														transition: {
+															type: value,
+															duration: slide.transition?.duration || 500,
+															direction: slide.transition?.direction || "right",
+														},
+													}
 												: slide,
 									);
 									updatePresentation(currentPresentation.id, {
@@ -261,12 +261,12 @@ export default function PropertiesPanel() {
 														(slide, index) =>
 															index === currentSlideIndex
 																? {
-																	...slide,
-																	transition: {
-																		...slide.transition!,
-																		duration: Number(e.target.value),
-																	},
-																}
+																		...slide,
+																		transition: {
+																			...slide.transition!,
+																			duration: Number(e.target.value),
+																		},
+																	}
 																: slide,
 													);
 													updatePresentation(currentPresentation.id, {
@@ -281,50 +281,50 @@ export default function PropertiesPanel() {
 										</div>
 										{(currentSlide.transition.type === "slide" ||
 											currentSlide.transition.type === "cube") && (
-												<div>
-													<Label
-														htmlFor="transition-direction"
-														className="text-xs"
-													>
-														Direction
-													</Label>
-													<Select
-														value={currentSlide.transition.direction || "right"}
-														onValueChange={(
-															value: "left" | "right" | "up" | "down",
-														) => {
-															const updatedSlides =
-																currentPresentation.slides.map((slide, index) =>
-																	index === currentSlideIndex
-																		? {
+											<div>
+												<Label
+													htmlFor="transition-direction"
+													className="text-xs"
+												>
+													Direction
+												</Label>
+												<Select
+													value={currentSlide.transition.direction || "right"}
+													onValueChange={(
+														value: "left" | "right" | "up" | "down",
+													) => {
+														const updatedSlides =
+															currentPresentation.slides.map((slide, index) =>
+																index === currentSlideIndex
+																	? {
 																			...slide,
 																			transition: {
 																				...slide.transition!,
 																				direction: value,
 																			},
 																		}
-																		: slide,
-																);
-															updatePresentation(currentPresentation.id, {
-																slides: updatedSlides,
-															});
-														}}
+																	: slide,
+															);
+														updatePresentation(currentPresentation.id, {
+															slides: updatedSlides,
+														});
+													}}
+												>
+													<SelectTrigger
+														id="transition-direction"
+														className="mt-1"
 													>
-														<SelectTrigger
-															id="transition-direction"
-															className="mt-1"
-														>
-															<SelectValue placeholder="Select direction" />
-														</SelectTrigger>
-														<SelectContent>
-															<SelectItem value="left">Left</SelectItem>
-															<SelectItem value="right">Right</SelectItem>
-															<SelectItem value="up">Up</SelectItem>
-															<SelectItem value="down">Down</SelectItem>
-														</SelectContent>
-													</Select>
-												</div>
-											)}
+														<SelectValue placeholder="Select direction" />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value="left">Left</SelectItem>
+														<SelectItem value="right">Right</SelectItem>
+														<SelectItem value="up">Up</SelectItem>
+														<SelectItem value="down">Down</SelectItem>
+													</SelectContent>
+												</Select>
+											</div>
+										)}
 									</div>
 								)}
 						</div>
@@ -672,7 +672,7 @@ export default function PropertiesPanel() {
 									className={cn(
 										"h-8 w-full rounded-none border-l",
 										extendedElement.style?.fontStyle === "italic" &&
-										"bg-accent",
+											"bg-accent",
 									)}
 									onClick={() =>
 										handleUpdate({
@@ -695,7 +695,7 @@ export default function PropertiesPanel() {
 									className={cn(
 										"h-8 w-full rounded-none border-l",
 										extendedElement.style?.textDecoration === "underline" &&
-										"bg-accent",
+											"bg-accent",
 									)}
 									onClick={() =>
 										handleUpdate({
@@ -722,7 +722,7 @@ export default function PropertiesPanel() {
 										"h-8 w-full rounded-none",
 										(!extendedElement.style?.textAlign ||
 											extendedElement.style?.textAlign === "left") &&
-										"bg-accent",
+											"bg-accent",
 									)}
 									onClick={() =>
 										handleUpdate({
@@ -739,7 +739,7 @@ export default function PropertiesPanel() {
 									className={cn(
 										"h-8 w-full rounded-none border-l",
 										extendedElement.style?.textAlign === "center" &&
-										"bg-accent",
+											"bg-accent",
 									)}
 									onClick={() =>
 										handleUpdate({
@@ -1115,11 +1115,17 @@ export default function PropertiesPanel() {
 									})
 								}
 							>
-								<SelectTrigger id="icon-name" className="mt-2 text-left h-auto py-2">
+								<SelectTrigger
+									id="icon-name"
+									className="mt-2 text-left h-auto py-2"
+								>
 									<div className="flex items-center gap-2">
 										<div className="p-1.5 bg-muted rounded">
 											{(() => {
-												const IconComp = (Icons as any)[extendedElement.style?.iconName || "HelpCircle"] || Icons.HelpCircle;
+												const IconComp =
+													(Icons as any)[
+														extendedElement.style?.iconName || "HelpCircle"
+													] || Icons.HelpCircle;
 												return <IconComp size={16} />;
 											})()}
 										</div>
@@ -1127,7 +1133,67 @@ export default function PropertiesPanel() {
 									</div>
 								</SelectTrigger>
 								<SelectContent className="max-h-[300px]">
-									{["Calendar", "Clock", "MapPin", "Phone", "Mail", "Globe", "Music", "Film", "Mic", "Star", "Heart", "Sparkles", "Zap", "Layers", "Grid", "Columns", "Rows", "PanelLeft", "PanelRight", "PanelTop", "PanelBottom", "Check", "X", "Plus", "Minus", "ChevronRight", "ChevronLeft", "ArrowRight", "ArrowLeft", "Search", "Settings", "Bell", "User", "Home", "Camera", "Play", "Pause", "Volume2", "Shield", "Lock", "Unlock", "Cloud", "Sun", "Moon", "Wind", "Umbrella", "Smile", "Wink", "Hand", "ThumbsUp", "Anchor", "Activity", "BarChart2", "Database", "Terminal", "Cpu", "HardDrive", "Layout", "Box"].map((name) => {
+									{[
+										"Calendar",
+										"Clock",
+										"MapPin",
+										"Phone",
+										"Mail",
+										"Globe",
+										"Music",
+										"Film",
+										"Mic",
+										"Star",
+										"Heart",
+										"Sparkles",
+										"Zap",
+										"Layers",
+										"Grid",
+										"Columns",
+										"Rows",
+										"PanelLeft",
+										"PanelRight",
+										"PanelTop",
+										"PanelBottom",
+										"Check",
+										"X",
+										"Plus",
+										"Minus",
+										"ChevronRight",
+										"ChevronLeft",
+										"ArrowRight",
+										"ArrowLeft",
+										"Search",
+										"Settings",
+										"Bell",
+										"User",
+										"Home",
+										"Camera",
+										"Play",
+										"Pause",
+										"Volume2",
+										"Shield",
+										"Lock",
+										"Unlock",
+										"Cloud",
+										"Sun",
+										"Moon",
+										"Wind",
+										"Umbrella",
+										"Smile",
+										"Wink",
+										"Hand",
+										"ThumbsUp",
+										"Anchor",
+										"Activity",
+										"BarChart2",
+										"Database",
+										"Terminal",
+										"Cpu",
+										"HardDrive",
+										"Layout",
+										"Box",
+									].map((name) => {
 										const IconComp = (Icons as any)[name] || Icons.HelpCircle;
 										return (
 											<SelectItem key={name} value={name}>
@@ -1179,13 +1245,19 @@ export default function PropertiesPanel() {
 										const val = Number(e.target.value);
 										const oldRows = extendedElement.style?.rows || 3;
 										const cols = extendedElement.style?.cols || 3;
-										let tableData = [...(extendedElement.style?.tableData || [])];
+										let tableData = [
+											...(extendedElement.style?.tableData || []),
+										];
 
 										if (val > oldRows) {
 											// Add rows
-											const newRows = Array(val - oldRows).fill(null).map(() =>
-												Array(cols).fill(null).map(() => ({ content: "" }))
-											);
+											const newRows = Array(val - oldRows)
+												.fill(null)
+												.map(() =>
+													Array(cols)
+														.fill(null)
+														.map(() => ({ content: "" })),
+												);
 											tableData = [...tableData, ...newRows];
 										} else if (val < oldRows) {
 											// Remove rows
@@ -1196,7 +1268,7 @@ export default function PropertiesPanel() {
 											style: {
 												...extendedElement.style,
 												rows: val,
-												tableData
+												tableData,
 											},
 										});
 									}}
@@ -1215,11 +1287,15 @@ export default function PropertiesPanel() {
 										const val = Number(e.target.value);
 										const rows = extendedElement.style?.rows || 3;
 										const oldCols = extendedElement.style?.cols || 3;
-										let tableData = (extendedElement.style?.tableData || []).map((row: any) => {
+										let tableData = (
+											extendedElement.style?.tableData || []
+										).map((row: any) => {
 											let newRow = [...row];
 											if (val > oldCols) {
 												// Add columns
-												const newCols = Array(val - oldCols).fill(null).map(() => ({ content: "" }));
+												const newCols = Array(val - oldCols)
+													.fill(null)
+													.map(() => ({ content: "" }));
 												newRow = [...newRow, ...newCols];
 											} else if (val < oldCols) {
 												// Remove columns
@@ -1232,7 +1308,7 @@ export default function PropertiesPanel() {
 											style: {
 												...extendedElement.style,
 												cols: val,
-												tableData
+												tableData,
 											},
 										});
 									}}
@@ -1367,19 +1443,28 @@ export default function PropertiesPanel() {
 						</Label>
 						<input
 							type="checkbox"
-							checked={!!(extendedElement.style?.gradientStops && extendedElement.style.gradientStops.length > 0)}
+							checked={
+								!!(
+									extendedElement.style?.gradientStops &&
+									extendedElement.style.gradientStops.length > 0
+								)
+							}
 							onChange={(e) => {
 								if (e.target.checked) {
 									handleUpdate({
 										style: {
 											...extendedElement.style,
 											gradientStops: [
-												{ color: extendedElement.style?.backgroundColor || "#3b82f6", offset: 0 },
-												{ color: "#ffffff", offset: 100 }
+												{
+													color:
+														extendedElement.style?.backgroundColor || "#3b82f6",
+													offset: 0,
+												},
+												{ color: "#ffffff", offset: 100 },
 											],
 											gradientType: "linear",
-											gradientAngle: 135
-										}
+											gradientAngle: 135,
+										},
 									});
 								} else {
 									handleUpdate({
@@ -1387,8 +1472,8 @@ export default function PropertiesPanel() {
 											...extendedElement.style,
 											gradientStops: undefined,
 											gradientType: undefined,
-											gradientAngle: undefined
-										}
+											gradientAngle: undefined,
+										},
 									});
 								}
 							}}
@@ -1396,106 +1481,150 @@ export default function PropertiesPanel() {
 						/>
 					</div>
 
-					{extendedElement.style?.gradientStops && extendedElement.style.gradientStops.length > 0 && (
-						<div className="space-y-4 pt-2">
-							<div>
-								<Label className="text-xs">Type</Label>
-								<Select
-									value={extendedElement.style.gradientType || "linear"}
-									onValueChange={(value: "linear" | "radial") =>
-										handleUpdate({
-											style: { ...extendedElement.style, gradientType: value }
-										})
-									}
-								>
-									<SelectTrigger className="mt-1 h-8">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="linear">Linear</SelectItem>
-										<SelectItem value="radial">Radial</SelectItem>
-									</SelectContent>
-								</Select>
-							</div>
-
-							{extendedElement.style.gradientType !== "radial" && (
+					{extendedElement.style?.gradientStops &&
+						extendedElement.style.gradientStops.length > 0 && (
+							<div className="space-y-4 pt-2">
 								<div>
-									<Label className="text-xs">Angle: {extendedElement.style.gradientAngle || 135}°</Label>
-									<Input
-										type="range"
-										min="0"
-										max="360"
-										value={extendedElement.style.gradientAngle || 135}
-										onChange={(e) =>
+									<Label className="text-xs">Type</Label>
+									<Select
+										value={extendedElement.style.gradientType || "linear"}
+										onValueChange={(value: "linear" | "radial") =>
 											handleUpdate({
-												style: { ...extendedElement.style, gradientAngle: Number(e.target.value) }
+												style: {
+													...extendedElement.style,
+													gradientType: value,
+												},
 											})
 										}
-										className="mt-1"
-									/>
-								</div>
-							)}
-
-							<div className="space-y-2">
-								<Label className="text-xs flex items-center justify-between">
-									Stops
-									<Button
-										variant="ghost"
-										size="sm"
-										className="h-6 w-6 p-0"
-										onClick={() => {
-											const stops = [...(extendedElement.style?.gradientStops || [])];
-											stops.push({ color: "#ffffff", offset: 100 });
-											handleUpdate({ style: { ...extendedElement.style, gradientStops: stops } });
-										}}
 									>
-										<Plus className="w-3 h-3" />
-									</Button>
-								</Label>
+										<SelectTrigger className="mt-1 h-8">
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="linear">Linear</SelectItem>
+											<SelectItem value="radial">Radial</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+
+								{extendedElement.style.gradientType !== "radial" && (
+									<div>
+										<Label className="text-xs">
+											Angle: {extendedElement.style.gradientAngle || 135}°
+										</Label>
+										<Input
+											type="range"
+											min="0"
+											max="360"
+											value={extendedElement.style.gradientAngle || 135}
+											onChange={(e) =>
+												handleUpdate({
+													style: {
+														...extendedElement.style,
+														gradientAngle: Number(e.target.value),
+													},
+												})
+											}
+											className="mt-1"
+										/>
+									</div>
+								)}
+
 								<div className="space-y-2">
-									{extendedElement.style.gradientStops.map((stop, idx) => (
-										<div key={idx} className="flex items-center gap-2">
-											<Input
-												type="color"
-												value={stop.color}
-												onChange={(e) => {
-													const stops = [...(extendedElement.style?.gradientStops || [])];
-													stops[idx] = { ...stops[idx], color: e.target.value };
-													handleUpdate({ style: { ...extendedElement.style, gradientStops: stops } });
-												}}
-												className="w-8 h-8 p-0 border-none bg-transparent"
-											/>
-											<Input
-												type="number"
-												min="0"
-												max="100"
-												value={stop.offset}
-												onChange={(e) => {
-													const stops = [...(extendedElement.style?.gradientStops || [])];
-													stops[idx] = { ...stops[idx], offset: Number(e.target.value) };
-													handleUpdate({ style: { ...extendedElement.style, gradientStops: stops } });
-												}}
-												className="h-8 flex-1"
-											/>
-											{extendedElement.style!.gradientStops!.length > 2 && (
-												<Button
-													variant="ghost"
-													size="sm"
-													className="h-8 w-8 p-0"
-													onClick={() => {
-														const stops = extendedElement.style!.gradientStops!.filter((_, i) => i !== idx);
-														handleUpdate({ style: { ...extendedElement.style, gradientStops: stops } });
+									<Label className="text-xs flex items-center justify-between">
+										Stops
+										<Button
+											variant="ghost"
+											size="sm"
+											className="h-6 w-6 p-0"
+											onClick={() => {
+												const stops = [
+													...(extendedElement.style?.gradientStops || []),
+												];
+												stops.push({ color: "#ffffff", offset: 100 });
+												handleUpdate({
+													style: {
+														...extendedElement.style,
+														gradientStops: stops,
+													},
+												});
+											}}
+										>
+											<Plus className="w-3 h-3" />
+										</Button>
+									</Label>
+									<div className="space-y-2">
+										{extendedElement.style.gradientStops.map((stop, idx) => (
+											<div key={idx} className="flex items-center gap-2">
+												<Input
+													type="color"
+													value={stop.color}
+													onChange={(e) => {
+														const stops = [
+															...(extendedElement.style?.gradientStops || []),
+														];
+														stops[idx] = {
+															...stops[idx],
+															color: e.target.value,
+														};
+														handleUpdate({
+															style: {
+																...extendedElement.style,
+																gradientStops: stops,
+															},
+														});
 													}}
-												>
-													<Minus className="w-3 h-3" />
-												</Button>
-											)}
-										</div>
-									))}
+													className="w-8 h-8 p-0 border-none bg-transparent"
+												/>
+												<Input
+													type="number"
+													min="0"
+													max="100"
+													value={stop.offset}
+													onChange={(e) => {
+														const stops = [
+															...(extendedElement.style?.gradientStops || []),
+														];
+														stops[idx] = {
+															...stops[idx],
+															offset: Number(e.target.value),
+														};
+														handleUpdate({
+															style: {
+																...extendedElement.style,
+																gradientStops: stops,
+															},
+														});
+													}}
+													className="h-8 flex-1"
+												/>
+												{extendedElement.style!.gradientStops!.length > 2 && (
+													<Button
+														variant="ghost"
+														size="sm"
+														className="h-8 w-8 p-0"
+														onClick={() => {
+															const stops =
+																extendedElement.style!.gradientStops!.filter(
+																	(_, i) => i !== idx,
+																);
+															handleUpdate({
+																style: {
+																	...extendedElement.style,
+																	gradientStops: stops,
+																},
+															});
+														}}
+													>
+														<Minus className="w-3 h-3" />
+													</Button>
+												)}
+											</div>
+										))}
+									</div>
 								</div>
 							</div>
-						</div>
-					)}
+						)}
 				</div>
 
 				{/* Filters section */}
@@ -1521,13 +1650,13 @@ export default function PropertiesPanel() {
 												sepia: 0,
 												hueRotate: 0,
 												saturate: 1,
-												invert: 0
-											}
-										}
+												invert: 0,
+											},
+										},
 									});
 								} else {
 									handleUpdate({
-										style: { ...extendedElement.style, filters: undefined }
+										style: { ...extendedElement.style, filters: undefined },
 									});
 								}
 							}}
@@ -1538,20 +1667,78 @@ export default function PropertiesPanel() {
 					{extendedElement.style?.filters && (
 						<div className="space-y-4 pt-2">
 							{[
-								{ label: "Blur", key: "blur", min: 0, max: 20, step: 0.1, unit: "px" },
-								{ label: "Brightness", key: "brightness", min: 0, max: 3, step: 0.1, unit: "" },
-								{ label: "Contrast", key: "contrast", min: 0, max: 3, step: 0.1, unit: "" },
-								{ label: "Grayscale", key: "grayscale", min: 0, max: 1, step: 0.1, unit: "" },
-								{ label: "Sepia", key: "sepia", min: 0, max: 1, step: 0.1, unit: "" },
-								{ label: "Hue Rotate", key: "hueRotate", min: 0, max: 360, step: 1, unit: "deg" },
-								{ label: "Saturate", key: "saturate", min: 0, max: 5, step: 0.1, unit: "" },
-								{ label: "Invert", key: "invert", min: 0, max: 1, step: 0.1, unit: "" },
+								{
+									label: "Blur",
+									key: "blur",
+									min: 0,
+									max: 20,
+									step: 0.1,
+									unit: "px",
+								},
+								{
+									label: "Brightness",
+									key: "brightness",
+									min: 0,
+									max: 3,
+									step: 0.1,
+									unit: "",
+								},
+								{
+									label: "Contrast",
+									key: "contrast",
+									min: 0,
+									max: 3,
+									step: 0.1,
+									unit: "",
+								},
+								{
+									label: "Grayscale",
+									key: "grayscale",
+									min: 0,
+									max: 1,
+									step: 0.1,
+									unit: "",
+								},
+								{
+									label: "Sepia",
+									key: "sepia",
+									min: 0,
+									max: 1,
+									step: 0.1,
+									unit: "",
+								},
+								{
+									label: "Hue Rotate",
+									key: "hueRotate",
+									min: 0,
+									max: 360,
+									step: 1,
+									unit: "deg",
+								},
+								{
+									label: "Saturate",
+									key: "saturate",
+									min: 0,
+									max: 5,
+									step: 0.1,
+									unit: "",
+								},
+								{
+									label: "Invert",
+									key: "invert",
+									min: 0,
+									max: 1,
+									step: 0.1,
+									unit: "",
+								},
 							].map((filter) => (
 								<div key={filter.key}>
 									<div className="flex justify-between mb-1">
 										<Label className="text-xs">{filter.label}</Label>
 										<span className="text-[10px] text-muted-foreground">
-											{(extendedElement.style?.filters as any)?.[filter.key] ?? 0}{filter.unit}
+											{(extendedElement.style?.filters as any)?.[filter.key] ??
+												0}
+											{filter.unit}
 										</span>
 									</div>
 									<Input
@@ -1559,16 +1746,18 @@ export default function PropertiesPanel() {
 										min={filter.min}
 										max={filter.max}
 										step={filter.step}
-										value={(extendedElement.style?.filters as any)?.[filter.key] ?? 0}
+										value={
+											(extendedElement.style?.filters as any)?.[filter.key] ?? 0
+										}
 										onChange={(e) =>
 											handleUpdate({
 												style: {
 													...extendedElement.style,
 													filters: {
 														...extendedElement.style?.filters,
-														[filter.key]: Number(e.target.value)
-													}
-												}
+														[filter.key]: Number(e.target.value),
+													},
+												},
 											})
 										}
 										className="h-4"
@@ -1691,9 +1880,7 @@ export default function PropertiesPanel() {
 												<SelectItem value="linear">Linear</SelectItem>
 												<SelectItem value="ease-in">Ease In</SelectItem>
 												<SelectItem value="ease-out">Ease Out</SelectItem>
-												<SelectItem value="ease-in-out">
-													Ease In Out
-												</SelectItem>
+												<SelectItem value="ease-in-out">Ease In Out</SelectItem>
 											</SelectContent>
 										</Select>
 									</div>

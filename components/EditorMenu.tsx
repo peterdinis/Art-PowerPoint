@@ -36,10 +36,10 @@ interface EditorMenuProps {
 	onUploadChart: () => void; // Pridaná prop pre upload chartu
 }
 
-export default function EditorMenu({ 
-	onSave, 
-	onExport, 
-	onUploadChart 
+export default function EditorMenu({
+	onSave,
+	onExport,
+	onUploadChart,
 }: EditorMenuProps) {
 	const { currentPresentation } = usePresentationStore();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

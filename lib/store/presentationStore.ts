@@ -469,10 +469,11 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
-			const slides = state.currentPresentation.slides.map((slide: Slide, index: number) =>
-				index === state.currentSlideIndex
-					? { ...slide, elements: [...slide.elements, newElement] }
-					: slide,
+			const slides = state.currentPresentation.slides.map(
+				(slide: Slide, index: number) =>
+					index === state.currentSlideIndex
+						? { ...slide, elements: [...slide.elements, newElement] }
+						: slide,
 			);
 
 			return {
@@ -527,7 +528,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 			const slides = state.currentPresentation.slides.map((slide: Slide) => ({
 				...slide,
-				elements: slide.elements.filter((el: SlideElement) => el.id !== elementId),
+				elements: slide.elements.filter(
+					(el: SlideElement) => el.id !== elementId,
+				),
 			}));
 
 			return {
@@ -559,7 +562,10 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				if (s.id === slideId) {
 					return {
 						...s,
-						elements: [...s.elements, { ...element, id: element.id || uuidv4() }],
+						elements: [
+							...s.elements,
+							{ ...element, id: element.id || uuidv4() },
+						],
 					};
 				}
 				return s;
@@ -570,7 +576,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set({
 			currentPresentation: updatedPresentation,
 			presentations: state.presentations.map((p) =>
-				p.id === updatedPresentation.id ? updatedPresentation : p
+				p.id === updatedPresentation.id ? updatedPresentation : p,
 			),
 		});
 
@@ -616,32 +622,37 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
-			const compressedSlides = state.currentPresentation.slides.map((slide: Slide) => ({
-				...slide,
-				elements: slide.elements
-					.filter((el: SlideElement) => {
-						// Remove empty text elements
-						if (el.type === 'text' && !el.content?.trim()) return false;
-						return true;
-					})
-					.map((el: SlideElement) => {
-						const cleanedEl = { ...el };
+			const compressedSlides = state.currentPresentation.slides.map(
+				(slide: Slide) => ({
+					...slide,
+					elements: slide.elements
+						.filter((el: SlideElement) => {
+							// Remove empty text elements
+							if (el.type === "text" && !el.content?.trim()) return false;
+							return true;
+						})
+						.map((el: SlideElement) => {
+							const cleanedEl = { ...el };
 
-						// Remove potential large/unnecessary properties if they are default
-						if (cleanedEl.style) {
-							const style = { ...cleanedEl.style };
-							// Remove properties that are null or undefined to save space
-							Object.keys(style).forEach(key => {
-								if (style[key as keyof typeof style] === undefined || style[key as keyof typeof style] === null) {
-									delete style[key as keyof typeof style];
-								}
-							});
-							cleanedEl.style = style;
-						}
+							// Remove potential large/unnecessary properties if they are default
+							if (cleanedEl.style) {
+								const style = { ...cleanedEl.style };
+								// Remove properties that are null or undefined to save space
+								Object.keys(style).forEach((key) => {
+									if (
+										style[key as keyof typeof style] === undefined ||
+										style[key as keyof typeof style] === null
+									) {
+										delete style[key as keyof typeof style];
+									}
+								});
+								cleanedEl.style = style;
+							}
 
-						return cleanedEl;
-					}),
-			}));
+							return cleanedEl;
+						}),
+				}),
+			);
 
 			const updatedPresentation = {
 				...state.currentPresentation,
@@ -652,7 +663,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			return {
 				currentPresentation: updatedPresentation,
 				presentations: state.presentations.map((p) =>
-					p.id === updatedPresentation.id ? updatedPresentation : p
+					p.id === updatedPresentation.id ? updatedPresentation : p,
 				),
 			};
 		});

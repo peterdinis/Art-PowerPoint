@@ -32,10 +32,10 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { FilePond, registerPlugin } from 'react-filepond';
-import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
-import FilePondPluginFileValidateSize from 'filepond-plugin-file-validate-size';
-import 'filepond/dist/filepond.min.css';
+import { FilePond, registerPlugin } from "react-filepond";
+import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
+import FilePondPluginFileValidateSize from "filepond-plugin-file-validate-size";
+import "filepond/dist/filepond.min.css";
 
 // Register plugins
 registerPlugin(FilePondPluginFileValidateType, FilePondPluginFileValidateSize);
@@ -146,17 +146,21 @@ function EditorContent() {
 
 	// Funkcia pre parsovanie CSV dát
 	const parseCSVData = (csvText: string): ChartData => {
-		const lines = csvText.trim().split('\n');
-		const headers = lines[0].split(',').map(h => h.trim());
+		const lines = csvText.trim().split("\n");
+		const headers = lines[0].split(",").map((h) => h.trim());
 		const datasets = [];
 
 		// Ak máme hlavičku s "label,value" formátom
-		if (headers.length === 2 && headers[0].toLowerCase() === 'label' && headers[1].toLowerCase() === 'value') {
+		if (
+			headers.length === 2 &&
+			headers[0].toLowerCase() === "label" &&
+			headers[1].toLowerCase() === "value"
+		) {
 			const labels = [];
 			const data = [];
 
 			for (let i = 1; i < lines.length; i++) {
-				const [label, value] = lines[i].split(',').map(v => v.trim());
+				const [label, value] = lines[i].split(",").map((v) => v.trim());
 				labels.push(label);
 				data.push(parseFloat(value) || 0);
 			}
@@ -165,7 +169,9 @@ function EditorContent() {
 				label: chartTitle,
 				data,
 				backgroundColor: CHART_COLORS.slice(0, data.length),
-				borderColor: CHART_COLORS.slice(0, data.length).map(color => color + '80'),
+				borderColor: CHART_COLORS.slice(0, data.length).map(
+					(color) => color + "80",
+				),
 			});
 
 			return {
@@ -177,21 +183,21 @@ function EditorContent() {
 		// Ak máme viac dátových sád
 		const labels = [];
 		for (let i = 1; i < lines.length; i++) {
-			const values = lines[i].split(',').map(v => v.trim());
+			const values = lines[i].split(",").map((v) => v.trim());
 			labels.push(values[0]);
 		}
 
 		for (let i = 1; i < headers.length; i++) {
 			const data = [];
 			for (let j = 1; j < lines.length; j++) {
-				const values = lines[j].split(',').map(v => v.trim());
+				const values = lines[j].split(",").map((v) => v.trim());
 				data.push(parseFloat(values[i]) || 0);
 			}
 
 			datasets.push({
 				label: headers[i],
 				data,
-				backgroundColor: CHART_COLORS.map(color => color + '40'),
+				backgroundColor: CHART_COLORS.map((color) => color + "40"),
 				borderColor: CHART_COLORS[i - 1] || CHART_COLORS[0],
 			});
 		}
@@ -211,40 +217,51 @@ function EditorContent() {
 			if (data.labels && data.datasets) {
 				// Chart.js formát
 				return data;
-			} else if (Array.isArray(data) && data.every(item => item.label && item.value)) {
+			} else if (
+				Array.isArray(data) &&
+				data.every((item) => item.label && item.value)
+			) {
 				// Array of {label, value}
-				const labels = data.map(item => item.label);
-				const values = data.map(item => item.value);
+				const labels = data.map((item) => item.label);
+				const values = data.map((item) => item.value);
 
 				return {
 					labels,
-					datasets: [{
-						label: chartTitle,
-						data: values,
-						backgroundColor: CHART_COLORS.slice(0, values.length),
-						borderColor: CHART_COLORS.slice(0, values.length).map(color => color + '80'),
-					}],
+					datasets: [
+						{
+							label: chartTitle,
+							data: values,
+							backgroundColor: CHART_COLORS.slice(0, values.length),
+							borderColor: CHART_COLORS.slice(0, values.length).map(
+								(color) => color + "80",
+							),
+						},
+					],
 				};
-			} else if (typeof data === 'object' && !Array.isArray(data)) {
+			} else if (typeof data === "object" && !Array.isArray(data)) {
 				// Object s label/value pármi
 				const labels = Object.keys(data);
 				const values = Object.values(data) as number[];
 
 				return {
 					labels,
-					datasets: [{
-						label: chartTitle,
-						data: values,
-						backgroundColor: CHART_COLORS.slice(0, values.length),
-						borderColor: CHART_COLORS.slice(0, values.length).map(color => color + '80'),
-					}],
+					datasets: [
+						{
+							label: chartTitle,
+							data: values,
+							backgroundColor: CHART_COLORS.slice(0, values.length),
+							borderColor: CHART_COLORS.slice(0, values.length).map(
+								(color) => color + "80",
+							),
+						},
+					],
 				};
 			}
 
-			throw new Error('Unsupported JSON format');
+			throw new Error("Unsupported JSON format");
 		} catch (error) {
-			console.error('Error parsing JSON:', error);
-			throw new Error('Invalid JSON format');
+			console.error("Error parsing JSON:", error);
+			throw new Error("Invalid JSON format");
 		}
 	};
 
@@ -254,13 +271,13 @@ function EditorContent() {
 			const text = await file.text();
 			let chartData: ChartData;
 
-			if (file.name.endsWith('.json')) {
+			if (file.name.endsWith(".json")) {
 				chartData = parseJSONData(text);
-			} else if (file.name.endsWith('.csv')) {
+			} else if (file.name.endsWith(".csv")) {
 				chartData = parseCSVData(text);
 			} else {
 				// Skúsime analyzovať obsah
-				if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
+				if (text.trim().startsWith("{") || text.trim().startsWith("[")) {
 					chartData = parseJSONData(text);
 				} else {
 					chartData = parseCSVData(text);
@@ -269,12 +286,12 @@ function EditorContent() {
 
 			// Nastavíme data do textarea
 			setChartDataInput(JSON.stringify(chartData, null, 2));
-			toast.success('Chart data loaded from file!');
+			toast.success("Chart data loaded from file!");
 
 			return true;
 		} catch (error) {
-			console.error('Error processing file:', error);
-			toast.error('Error processing file. Please check the format.');
+			console.error("Error processing file:", error);
+			toast.error("Error processing file. Please check the format.");
 			return false;
 		}
 	};
@@ -283,7 +300,7 @@ function EditorContent() {
 	const handleSaveChart = () => {
 		try {
 			if (!currentPresentation || !currentPresentation.selectedSlideId) {
-				toast.error('No slide selected');
+				toast.error("No slide selected");
 				return;
 			}
 
@@ -295,20 +312,24 @@ function EditorContent() {
 			} else {
 				// Vytvoríme vzorové dáta
 				chartData = {
-					labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-					datasets: [{
-						label: chartTitle,
-						data: [65, 59, 80, 81],
-						backgroundColor: CHART_COLORS.slice(0, 4),
-						borderColor: CHART_COLORS.slice(0, 4).map(color => color + '80'),
-					}],
+					labels: ["Q1", "Q2", "Q3", "Q4"],
+					datasets: [
+						{
+							label: chartTitle,
+							data: [65, 59, 80, 81],
+							backgroundColor: CHART_COLORS.slice(0, 4),
+							borderColor: CHART_COLORS.slice(0, 4).map(
+								(color) => color + "80",
+							),
+						},
+					],
 				};
 			}
 
 			// Vytvoríme chart element
 			const chartElement = {
 				id: `chart-${Date.now()}`,
-				type: 'chart',
+				type: "chart",
 				x: 100,
 				y: 100,
 				width: 400,
@@ -320,7 +341,7 @@ function EditorContent() {
 						responsive: true,
 						plugins: {
 							legend: {
-								position: 'top' as const,
+								position: "top" as const,
 							},
 							title: {
 								display: true,
@@ -338,74 +359,106 @@ function EditorContent() {
 			// Zatvoríme dialog a ukážeme toast
 			setShowChartDialog(false);
 			setFiles([]); // Reset files
-			toast.success('Chart added to slide!');
-
+			toast.success("Chart added to slide!");
 		} catch (error) {
-			console.error('Error adding chart:', error);
-			toast.error('Error adding chart. Please check your data format.');
+			console.error("Error adding chart:", error);
+			toast.error("Error adding chart. Please check your data format.");
 		}
 	};
 
 	// Funkcia pre zobrazenie ukážky dát podľa typu chartu
 	const showSampleData = () => {
-		let sampleData = '';
+		let sampleData = "";
 
 		switch (chartType) {
-			case 'bar':
-				sampleData = JSON.stringify({
-					labels: ["Jan", "Feb", "Mar", "Apr"],
-					datasets: [{
-						label: chartTitle,
-						data: [65, 59, 80, 81],
-						backgroundColor: ["#3b82f6", "#10b981", "#f59e0b", "#ef4444"]
-					}]
-				}, null, 2);
+			case "bar":
+				sampleData = JSON.stringify(
+					{
+						labels: ["Jan", "Feb", "Mar", "Apr"],
+						datasets: [
+							{
+								label: chartTitle,
+								data: [65, 59, 80, 81],
+								backgroundColor: ["#3b82f6", "#10b981", "#f59e0b", "#ef4444"],
+							},
+						],
+					},
+					null,
+					2,
+				);
 				break;
 
-			case 'line':
-				sampleData = JSON.stringify({
-					labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-					datasets: [{
-						label: chartTitle,
-						data: [30, 45, 25, 60],
-						borderColor: "#3b82f6",
-						backgroundColor: "#3b82f640"
-					}]
-				}, null, 2);
+			case "line":
+				sampleData = JSON.stringify(
+					{
+						labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+						datasets: [
+							{
+								label: chartTitle,
+								data: [30, 45, 25, 60],
+								borderColor: "#3b82f6",
+								backgroundColor: "#3b82f640",
+							},
+						],
+					},
+					null,
+					2,
+				);
 				break;
 
-			case 'pie':
-			case 'doughnut':
-				sampleData = JSON.stringify({
-					labels: ["Red", "Blue", "Yellow", "Green"],
-					datasets: [{
-						label: chartTitle,
-						data: [300, 50, 100, 150],
-						backgroundColor: ["#ef4444", "#3b82f6", "#f59e0b", "#10b981"]
-					}]
-				}, null, 2);
+			case "pie":
+			case "doughnut":
+				sampleData = JSON.stringify(
+					{
+						labels: ["Red", "Blue", "Yellow", "Green"],
+						datasets: [
+							{
+								label: chartTitle,
+								data: [300, 50, 100, 150],
+								backgroundColor: ["#ef4444", "#3b82f6", "#f59e0b", "#10b981"],
+							},
+						],
+					},
+					null,
+					2,
+				);
 				break;
 
-			case 'radar':
-				sampleData = JSON.stringify({
-					labels: ["Eating", "Drinking", "Sleeping", "Designing", "Coding", "Cycling", "Running"],
-					datasets: [{
-						label: "Series 1",
-						data: [65, 59, 90, 81, 56, 55, 40],
-						backgroundColor: "#3b82f640",
-						borderColor: "#3b82f6"
-					}, {
-						label: "Series 2",
-						data: [28, 48, 40, 19, 96, 27, 100],
-						backgroundColor: "#10b98140",
-						borderColor: "#10b981"
-					}]
-				}, null, 2);
+			case "radar":
+				sampleData = JSON.stringify(
+					{
+						labels: [
+							"Eating",
+							"Drinking",
+							"Sleeping",
+							"Designing",
+							"Coding",
+							"Cycling",
+							"Running",
+						],
+						datasets: [
+							{
+								label: "Series 1",
+								data: [65, 59, 90, 81, 56, 55, 40],
+								backgroundColor: "#3b82f640",
+								borderColor: "#3b82f6",
+							},
+							{
+								label: "Series 2",
+								data: [28, 48, 40, 19, 96, 27, 100],
+								backgroundColor: "#10b98140",
+								borderColor: "#10b981",
+							},
+						],
+					},
+					null,
+					2,
+				);
 				break;
 		}
 
 		setChartDataInput(sampleData);
-		toast.info('Sample data loaded for ' + chartType + ' chart');
+		toast.info("Sample data loaded for " + chartType + " chart");
 	};
 
 	if (isLoading || !currentPresentation) {
@@ -438,7 +491,8 @@ function EditorContent() {
 						<DialogHeader>
 							<DialogTitle>Add Custom Chart</DialogTitle>
 							<DialogDescription>
-								Upload your chart data or enter it manually. Supports JSON and CSV formats.
+								Upload your chart data or enter it manually. Supports JSON and
+								CSV formats.
 							</DialogDescription>
 						</DialogHeader>
 
@@ -479,16 +533,20 @@ function EditorContent() {
 										onupdatefiles={setFiles}
 										allowMultiple={false}
 										maxFiles={1}
-										acceptedFileTypes={['application/json', 'text/csv', 'text/plain']}
+										acceptedFileTypes={[
+											"application/json",
+											"text/csv",
+											"text/plain",
+										]}
 										maxFileSize="1MB"
 										labelIdle='Drag & Drop your file or <span class="filepond--label-action">Browse</span>'
-										labelFileProcessing='Processing'
-										labelFileProcessingComplete='Upload complete'
-										labelFileProcessingError='Upload error'
-										labelFileProcessingAborted='Upload cancelled'
-										labelTapToCancel='tap to cancel'
-										labelTapToRetry='tap to retry'
-										labelTapToUndo='tap to undo'
+										labelFileProcessing="Processing"
+										labelFileProcessingComplete="Upload complete"
+										labelFileProcessingError="Upload error"
+										labelFileProcessingAborted="Upload cancelled"
+										labelTapToCancel="tap to cancel"
+										labelTapToRetry="tap to retry"
+										labelTapToUndo="tap to undo"
 										onprocessfile={(error, file) => {
 											if (!error) {
 												handleFileProcess(file.file);
@@ -500,7 +558,7 @@ function EditorContent() {
 												setTimeout(() => {
 													load(file.name);
 												}, 1000);
-											}
+											},
 										}}
 									/>
 									<p className="text-xs text-muted-foreground mt-2">
@@ -510,7 +568,9 @@ function EditorContent() {
 
 								<div className="space-y-2">
 									<div className="flex items-center justify-between">
-										<Label htmlFor="chart-data">Or Enter Data Manually (JSON)</Label>
+										<Label htmlFor="chart-data">
+											Or Enter Data Manually (JSON)
+										</Label>
 										<div className="flex gap-2">
 											<Button
 												type="button"
@@ -524,7 +584,7 @@ function EditorContent() {
 												type="button"
 												variant="outline"
 												size="sm"
-												onClick={() => setChartDataInput('')}
+												onClick={() => setChartDataInput("")}
 											>
 												Clear
 											</Button>
@@ -561,9 +621,9 @@ Example:
 													try {
 														const data = JSON.parse(chartDataInput);
 														setChartDataInput(JSON.stringify(data, null, 2));
-														toast.success('JSON formatted');
+														toast.success("JSON formatted");
 													} catch {
-														toast.error('Invalid JSON format');
+														toast.error("Invalid JSON format");
 													}
 												}}
 											>
@@ -582,7 +642,8 @@ Example:
 												{`[
   {"label": "Category A", "value": 30},
   {"label": "Category B", "value": 45}
-]`}</pre>
+]`}
+											</pre>
 										</div>
 										<div className="space-y-2">
 											<p className="font-medium">Multiple Datasets:</p>
@@ -593,7 +654,8 @@ Example:
     {"label": "2023", "data": [65, 59, 80]},
     {"label": "2024", "data": [28, 48, 40]}
   ]
-}`}</pre>
+}`}
+											</pre>
 										</div>
 									</div>
 								</div>
@@ -606,7 +668,9 @@ Example:
 									<div className="grid grid-cols-2 gap-4 text-xs">
 										<div>
 											<p className="text-muted-foreground mb-1">Type:</p>
-											<p className="font-medium capitalize">{chartType} Chart</p>
+											<p className="font-medium capitalize">
+												{chartType} Chart
+											</p>
 										</div>
 										<div>
 											<p className="text-muted-foreground mb-1">Title:</p>
@@ -622,14 +686,16 @@ Example:
 															if (data.labels) {
 																return `${data.labels.length} labels, ${data.datasets?.length || 1} dataset(s)`;
 															}
-															return 'Valid JSON data';
+															return "Valid JSON data";
 														} catch {
-															return 'Invalid JSON - check format';
+															return "Invalid JSON - check format";
 														}
 													})()}
 												</p>
 											) : (
-												<p className="font-medium">No data - will use sample data</p>
+												<p className="font-medium">
+													No data - will use sample data
+												</p>
 											)}
 										</div>
 									</div>

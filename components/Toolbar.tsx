@@ -99,21 +99,26 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { SlideElementType, FontWeight, FontStyle, ShapeType } from "@/lib/types/presentation";
-import { FilePond, registerPlugin } from 'react-filepond';
-import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
-import FilePondPluginFileValidateSize from 'filepond-plugin-file-validate-size';
-import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
-import FilePondPluginFileEncode from 'filepond-plugin-file-encode';
-import 'filepond/dist/filepond.min.css';
-import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
+import {
+	SlideElementType,
+	FontWeight,
+	FontStyle,
+	ShapeType,
+} from "@/lib/types/presentation";
+import { FilePond, registerPlugin } from "react-filepond";
+import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
+import FilePondPluginFileValidateSize from "filepond-plugin-file-validate-size";
+import FilePondPluginImagePreview from "filepond-plugin-image-preview";
+import FilePondPluginFileEncode from "filepond-plugin-file-encode";
+import "filepond/dist/filepond.min.css";
+import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
 
 // Register plugins
 registerPlugin(
 	FilePondPluginFileValidateType,
 	FilePondPluginFileValidateSize,
 	FilePondPluginImagePreview,
-	FilePondPluginFileEncode
+	FilePondPluginFileEncode,
 );
 
 const CHART_TEMPLATES = [
@@ -530,11 +535,12 @@ export default function Toolbar() {
 				Array(cols)
 					.fill(null)
 					.map((_, colIndex) => ({
-						content: type === "pricing" && rowIndex === 0
-							? ["Feature", "Standard", "Premium"][colIndex]
-							: type === "list"
-								? `List Item ${rowIndex + 1}`
-								: `Data ${rowIndex + 1}-${colIndex + 1}`,
+						content:
+							type === "pricing" && rowIndex === 0
+								? ["Feature", "Standard", "Premium"][colIndex]
+								: type === "list"
+									? `List Item ${rowIndex + 1}`
+									: `Data ${rowIndex + 1}-${colIndex + 1}`,
 					})),
 			);
 
@@ -565,7 +571,8 @@ export default function Toolbar() {
 			style: {
 				backgroundColor: "#fef08a", // Pale yellow
 				borderRadius: 4,
-				boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+				boxShadow:
+					"0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
 			},
 		});
 
@@ -646,11 +653,16 @@ export default function Toolbar() {
 		}, 50);
 	};
 
-	const handleAddDivider = (direction: "horizontal" | "vertical" = "horizontal") => {
+	const handleAddDivider = (
+		direction: "horizontal" | "vertical" = "horizontal",
+	) => {
 		addElement({
 			type: "shape",
 			position: { x: 100, y: 100 },
-			size: direction === "horizontal" ? { width: 400, height: 2 } : { width: 2, height: 400 },
+			size:
+				direction === "horizontal"
+					? { width: 400, height: 2 }
+					: { width: 2, height: 400 },
 			content: "square",
 			style: {
 				backgroundColor: "var(--border)",
@@ -806,16 +818,18 @@ export default function Toolbar() {
 		const codeSamples = {
 			javascript: "function hello() {\n  console.log('Hello, World!');\n}",
 			typescript: "interface User {\n  id: number;\n  name: string;\n}",
-			html: "<div class=\"container\">\n  <h1>Hello</h1>\n</div>",
+			html: '<div class="container">\n  <h1>Hello</h1>\n</div>',
 			css: ".container {\n  display: flex;\n  color: blue;\n}",
-			python: "def hello_world():\n    print(\"Hello world!\")",
+			python: 'def hello_world():\n    print("Hello world!")',
 		};
 
 		addElement({
 			type: "code",
 			position: { x: 100, y: 100 },
 			size: { width: 400, height: 250 },
-			content: codeSamples[language as keyof typeof codeSamples] || "Paste your code here...",
+			content:
+				codeSamples[language as keyof typeof codeSamples] ||
+				"Paste your code here...",
 			style: {
 				language,
 				theme: "dark",
@@ -956,15 +970,15 @@ export default function Toolbar() {
 													onupdatefiles={setImageFiles}
 													allowMultiple={false}
 													maxFiles={1}
-													acceptedFileTypes={['image/*']}
+													acceptedFileTypes={["image/*"]}
 													maxFileSize="5MB"
 													labelIdle='Drag & Drop your image or <span class="filepond--label-action">Browse</span>'
-													labelFileProcessing='Processing'
-													labelFileProcessingComplete='Upload complete'
-													labelFileProcessingError='Upload error'
-													labelTapToCancel='tap to cancel'
-													labelTapToRetry='tap to retry'
-													labelTapToUndo='tap to undo'
+													labelFileProcessing="Processing"
+													labelFileProcessingComplete="Upload complete"
+													labelFileProcessingError="Upload error"
+													labelTapToCancel="tap to cancel"
+													labelTapToRetry="tap to retry"
+													labelTapToUndo="tap to undo"
 													onprocessfile={(error, file) => {
 														if (!error) {
 															handleImageUploadComplete(file);
@@ -976,7 +990,7 @@ export default function Toolbar() {
 															setTimeout(() => {
 																load(file.name);
 															}, 1000);
-														}
+														},
 													}}
 												/>
 											</div>
@@ -1010,18 +1024,25 @@ export default function Toolbar() {
 												onupdatefiles={setDocumentFiles}
 												allowMultiple={true}
 												maxFiles={5}
-												acceptedFileTypes={['.pdf', '.doc', '.docx', '.txt', '.ppt', '.pptx']}
+												acceptedFileTypes={[
+													".pdf",
+													".doc",
+													".docx",
+													".txt",
+													".ppt",
+													".pptx",
+												]}
 												maxFileSize="10MB"
 												labelIdle='Drag & Drop documents or <span class="filepond--label-action">Browse</span>'
-												labelFileProcessing='Processing'
-												labelFileProcessingComplete='Upload complete'
-												labelFileProcessingError='Upload error'
+												labelFileProcessing="Processing"
+												labelFileProcessingComplete="Upload complete"
+												labelFileProcessingError="Upload error"
 												server={{
 													process: (_fieldName, file, _metadata, load) => {
 														setTimeout(() => {
 															load(file.name);
 														}, 1000);
-													}
+													},
 												}}
 											/>
 										</div>
@@ -1040,10 +1061,10 @@ export default function Toolbar() {
 													onupdatefiles={setCsvFiles}
 													allowMultiple={false}
 													maxFiles={1}
-													acceptedFileTypes={['.csv', '.json', '.xlsx']}
+													acceptedFileTypes={[".csv", ".json", ".xlsx"]}
 													maxFileSize="2MB"
 													labelIdle='Drag & Drop data file or <span class="filepond--label-action">Browse</span>'
-													labelFileProcessing='Processing'
+													labelFileProcessing="Processing"
 													onprocessfile={(error, file) => {
 														if (!error) {
 															handleCSVUploadComplete(file);
@@ -1054,13 +1075,15 @@ export default function Toolbar() {
 															setTimeout(() => {
 																load(file.name);
 															}, 1000);
-														}
+														},
 													}}
 												/>
 											</div>
 
 											<div className="bg-muted/30 rounded-lg p-4">
-												<h4 className="text-sm font-medium mb-2">Supported Data Formats:</h4>
+												<h4 className="text-sm font-medium mb-2">
+													Supported Data Formats:
+												</h4>
 												<ul className="text-sm text-muted-foreground space-y-1">
 													<li>• CSV - Comma separated values</li>
 													<li>• JSON - JavaScript Object Notation</li>
@@ -1087,7 +1110,9 @@ export default function Toolbar() {
 												handleAddImage(imageUrl);
 											}
 										}}
-										disabled={isFileProcessing || (imageFiles.length === 0 && !imageUrl)}
+										disabled={
+											isFileProcessing || (imageFiles.length === 0 && !imageUrl)
+										}
 									>
 										{isFileProcessing ? "Processing..." : "Add to Slide"}
 									</Button>
@@ -1132,7 +1157,10 @@ export default function Toolbar() {
 
 						<Dialog open={iconDialogOpen} onOpenChange={setIconDialogOpen}>
 							<DialogTrigger asChild>
-								<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+								<motion.div
+									whileHover={{ scale: 1.05 }}
+									whileTap={{ scale: 0.95 }}
+								>
 									<Button variant="outline" size="sm" className="gap-2">
 										<Sparkles className="w-4 h-4" />
 										<span className="hidden sm:inline">Icon</span>
@@ -1147,7 +1175,29 @@ export default function Toolbar() {
 									</DialogDescription>
 								</DialogHeader>
 								<div className="grid grid-cols-4 gap-4 p-4 max-h-[400px] overflow-y-auto">
-									{["Calendar", "Clock", "MapPin", "Phone", "Mail", "Globe", "Music", "Film", "Mic", "Star", "Heart", "Sparkles", "Zap", "Layers", "Grid", "Columns", "Rows", "PanelLeft", "PanelRight", "PanelTop", "PanelBottom"].map((name) => {
+									{[
+										"Calendar",
+										"Clock",
+										"MapPin",
+										"Phone",
+										"Mail",
+										"Globe",
+										"Music",
+										"Film",
+										"Mic",
+										"Star",
+										"Heart",
+										"Sparkles",
+										"Zap",
+										"Layers",
+										"Grid",
+										"Columns",
+										"Rows",
+										"PanelLeft",
+										"PanelRight",
+										"PanelTop",
+										"PanelBottom",
+									].map((name) => {
 										const IconComp = (Icons as any)[name] || Icons.HelpCircle;
 										return (
 											<Button
@@ -1157,7 +1207,9 @@ export default function Toolbar() {
 												onClick={() => handleAddIcon(name)}
 											>
 												<IconComp className="w-6 h-6" />
-												<span className="text-[10px] truncate w-full">{name}</span>
+												<span className="text-[10px] truncate w-full">
+													{name}
+												</span>
 											</Button>
 										);
 									})}
@@ -1167,7 +1219,10 @@ export default function Toolbar() {
 
 						<Dialog open={tableDialogOpen} onOpenChange={setTableDialogOpen}>
 							<DialogTrigger asChild>
-								<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+								<motion.div
+									whileHover={{ scale: 1.05 }}
+									whileTap={{ scale: 0.95 }}
+								>
 									<Button variant="outline" size="sm" className="gap-2">
 										<Table2 className="w-4 h-4" />
 										<span className="hidden sm:inline">Table</span>
@@ -1240,10 +1295,11 @@ export default function Toolbar() {
 											{CHART_TEMPLATES.map((template) => (
 												<div
 													key={template.name}
-													className={`border rounded-lg p-4 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${selectedChartTemplate.name === template.name
-														? "border-primary ring-2 ring-primary/20 bg-primary/5"
-														: "border-border"
-														}`}
+													className={`border rounded-lg p-4 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${
+														selectedChartTemplate.name === template.name
+															? "border-primary ring-2 ring-primary/20 bg-primary/5"
+															: "border-border"
+													}`}
 													onClick={() => handleChartTemplateSelect(template)}
 												>
 													<div className="flex items-center gap-3 mb-2">
@@ -1361,10 +1417,10 @@ export default function Toolbar() {
 													onupdatefiles={setCsvFiles}
 													allowMultiple={false}
 													maxFiles={1}
-													acceptedFileTypes={['.csv', '.json']}
+													acceptedFileTypes={[".csv", ".json"]}
 													maxFileSize="2MB"
 													labelIdle='Drag & Drop data file or <span class="filepond--label-action">Browse</span>'
-													labelFileProcessing='Processing'
+													labelFileProcessing="Processing"
 													onprocessfile={(error, file) => {
 														if (!error) {
 															handleCSVUploadComplete(file);
@@ -1375,19 +1431,22 @@ export default function Toolbar() {
 															setTimeout(() => {
 																load(file.name);
 															}, 1000);
-														}
+														},
 													}}
 												/>
 											</div>
 
 											<div className="bg-muted/30 rounded-lg p-4">
-												<h4 className="text-sm font-medium mb-2">CSV Format Example:</h4>
+												<h4 className="text-sm font-medium mb-2">
+													CSV Format Example:
+												</h4>
 												<pre className="text-xs font-mono bg-background p-3 rounded overflow-x-auto">
 													{`Quarter,Sales,Expenses,Profit
 Q1,45000,30000,15000
 Q2,52000,35000,17000
 Q3,48000,32000,16000
-Q4,61000,40000,21000`}</pre>
+Q4,61000,40000,21000`}
+												</pre>
 												<p className="text-xs text-muted-foreground mt-2">
 													First row: labels, following rows: data values
 												</p>
@@ -1404,10 +1463,7 @@ Q4,61000,40000,21000`}</pre>
 									>
 										Cancel
 									</Button>
-									<Button
-										onClick={handleAddChart}
-										disabled={isFileProcessing}
-									>
+									<Button onClick={handleAddChart} disabled={isFileProcessing}>
 										{isFileProcessing ? "Processing..." : "Add Chart to Slide"}
 									</Button>
 								</DialogFooter>
@@ -1487,7 +1543,9 @@ Q4,61000,40000,21000`}</pre>
 							variant="outline"
 							size="sm"
 							className="gap-2"
-							onClick={() => currentPresentation && exportToPPTX(currentPresentation)}
+							onClick={() =>
+								currentPresentation && exportToPPTX(currentPresentation)
+							}
 							title="Export as PowerPoint (.pptx)"
 						>
 							<FileDown className="w-4 h-4" />
@@ -1812,7 +1870,7 @@ Q4,61000,40000,21000`}</pre>
 						</>
 					)}
 				</div>
-			</div >
-		</div >
+			</div>
+		</div>
 	);
 }

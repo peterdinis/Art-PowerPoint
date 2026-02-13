@@ -64,11 +64,7 @@ function SortableSlideItem({
 	};
 
 	return (
-		<div
-			ref={setNodeRef}
-			style={style}
-			className="px-4 py-3"
-		>
+		<div ref={setNodeRef} style={style} className="px-4 py-3">
 			<Card
 				className={cn(
 					"relative group cursor-pointer overflow-hidden transition-all h-full bg-card",
@@ -84,11 +80,13 @@ function SortableSlideItem({
 					style={{
 						backgroundColor: slide.background?.color || "var(--background)",
 						backgroundImage: (() => {
-							const stops = slide.background?.gradientStops && slide.background.gradientStops.length > 0
-								? slide.background.gradientStops
-									.map((s: any) => `${s.color} ${s.offset}%`)
-									.join(", ")
-								: slide.background?.gradient;
+							const stops =
+								slide.background?.gradientStops &&
+								slide.background.gradientStops.length > 0
+									? slide.background.gradientStops
+											.map((s: any) => `${s.color} ${s.offset}%`)
+											.join(", ")
+									: slide.background?.gradient;
 
 							const image = slide.background?.image
 								? `url(${slide.background.image})`
@@ -97,9 +95,10 @@ function SortableSlideItem({
 							if (stops) {
 								const type = slide.background?.gradientType || "linear";
 								const angle = slide.background?.gradientAngle || 135;
-								const gradient = type === "linear"
-									? `linear-gradient(${angle}deg, ${stops})`
-									: `radial-gradient(circle, ${stops})`;
+								const gradient =
+									type === "linear"
+										? `linear-gradient(${angle}deg, ${stops})`
+										: `radial-gradient(circle, ${stops})`;
 
 								return image ? `${gradient}, ${image}` : gradient;
 							}
@@ -143,7 +142,8 @@ function SortableSlideItem({
 					{/* Element Count */}
 					{slide.elements.length > 0 && (
 						<div className="absolute bottom-2 left-2 bg-background/90 backdrop-blur-sm text-foreground text-xs px-2 py-1 rounded-md">
-							{slide.elements.length} element{slide.elements.length !== 1 ? "s" : ""}
+							{slide.elements.length} element
+							{slide.elements.length !== 1 ? "s" : ""}
 						</div>
 					)}
 
@@ -201,13 +201,13 @@ export default function SlidePanel() {
 		}),
 		useSensor(KeyboardSensor, {
 			coordinateGetter: sortableKeyboardCoordinates,
-		})
+		}),
 	);
 
 	if (!currentPresentation) return null;
 
 	const slides = currentPresentation.slides;
-	const slideIds = useMemo(() => slides.map(s => s.id), [slides]);
+	const slideIds = useMemo(() => slides.map((s) => s.id), [slides]);
 
 	const virtualizer = useVirtualizer({
 		count: slides.length,
@@ -232,7 +232,9 @@ export default function SlidePanel() {
 		<div className="w-72 bg-background border-r border-border flex flex-col h-full">
 			<div className="p-4 border-b border-border bg-muted/50 shrink-0">
 				<div className="flex items-center justify-between mb-3">
-					<h2 className="font-semibold text-foreground text-lg italic tracking-tight">Slides</h2>
+					<h2 className="font-semibold text-foreground text-lg italic tracking-tight">
+						Slides
+					</h2>
 					<Button
 						variant="ghost"
 						size="icon"
@@ -289,7 +291,9 @@ export default function SlidePanel() {
 										onSelect={() => selectSlide(index)}
 										onDuplicate={() => duplicateSlide(slide.id)}
 										onDelete={() => {
-											if (confirm("Are you sure you want to delete this slide?")) {
+											if (
+												confirm("Are you sure you want to delete this slide?")
+											) {
 												deleteSlide(slide.id);
 											}
 										}}

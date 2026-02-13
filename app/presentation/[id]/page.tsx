@@ -184,13 +184,16 @@ export default function PresentationPage() {
 				)}
 				style={{
 					transitionDuration: `${transitionDuration}ms`,
-					backgroundColor: currentSlide.background?.color || "var(--background)",
+					backgroundColor:
+						currentSlide.background?.color || "var(--background)",
 					backgroundImage: (() => {
-						const stops = currentSlide.background?.gradientStops && currentSlide.background.gradientStops.length > 0
-							? currentSlide.background.gradientStops
-								.map((s) => `${s.color} ${s.offset}%`)
-								.join(", ")
-							: currentSlide.background?.gradient;
+						const stops =
+							currentSlide.background?.gradientStops &&
+							currentSlide.background.gradientStops.length > 0
+								? currentSlide.background.gradientStops
+										.map((s) => `${s.color} ${s.offset}%`)
+										.join(", ")
+								: currentSlide.background?.gradient;
 
 						const image = currentSlide.background?.image
 							? `url(${currentSlide.background.image})`
@@ -199,9 +202,10 @@ export default function PresentationPage() {
 						if (stops) {
 							const type = currentSlide.background?.gradientType || "linear";
 							const angle = currentSlide.background?.gradientAngle || 135;
-							const gradient = type === "linear"
-								? `linear-gradient(${angle}deg, ${stops})`
-								: `radial-gradient(circle, ${stops})`;
+							const gradient =
+								type === "linear"
+									? `linear-gradient(${angle}deg, ${stops})`
+									: `radial-gradient(circle, ${stops})`;
 
 							return image ? `${gradient}, ${image}` : gradient;
 						}
@@ -369,34 +373,56 @@ function PresentationElement({
 			case "code":
 				return <CodeElement element={element} isSelected={false} />;
 			case "text":
-				const filterStyles = element.style?.filters ? {
-					filter: [
-						element.style.filters.blur ? `blur(${element.style.filters.blur}px)` : "",
-						element.style.filters.brightness ? `brightness(${element.style.filters.brightness})` : "",
-						element.style.filters.contrast ? `contrast(${element.style.filters.contrast})` : "",
-						element.style.filters.grayscale ? `grayscale(${element.style.filters.grayscale})` : "",
-						element.style.filters.sepia ? `sepia(${element.style.filters.sepia})` : "",
-						element.style.filters.hueRotate ? `hue-rotate(${element.style.filters.hueRotate}deg)` : "",
-						element.style.filters.saturate ? `saturate(${element.style.filters.saturate})` : "",
-						element.style.filters.invert ? `invert(${element.style.filters.invert})` : "",
-					].join(" ")
-				} : {};
+				const filterStyles = element.style?.filters
+					? {
+							filter: [
+								element.style.filters.blur
+									? `blur(${element.style.filters.blur}px)`
+									: "",
+								element.style.filters.brightness
+									? `brightness(${element.style.filters.brightness})`
+									: "",
+								element.style.filters.contrast
+									? `contrast(${element.style.filters.contrast})`
+									: "",
+								element.style.filters.grayscale
+									? `grayscale(${element.style.filters.grayscale})`
+									: "",
+								element.style.filters.sepia
+									? `sepia(${element.style.filters.sepia})`
+									: "",
+								element.style.filters.hueRotate
+									? `hue-rotate(${element.style.filters.hueRotate}deg)`
+									: "",
+								element.style.filters.saturate
+									? `saturate(${element.style.filters.saturate})`
+									: "",
+								element.style.filters.invert
+									? `invert(${element.style.filters.invert})`
+									: "",
+							].join(" "),
+						}
+					: {};
 
 				const getBackgroundStyle = () => {
 					const style: React.CSSProperties = {
-						backgroundColor: element.style?.backgroundColor
+						backgroundColor: element.style?.backgroundColor,
 					};
 
-					if (element.style?.gradientStops && element.style.gradientStops.length > 0) {
+					if (
+						element.style?.gradientStops &&
+						element.style.gradientStops.length > 0
+					) {
 						const type = element.style.gradientType || "linear";
 						const angle = element.style.gradientAngle || 135;
 						const stops = element.style.gradientStops
 							.map((s) => `${s.color} ${s.offset}%`)
 							.join(", ");
 
-						style.backgroundImage = type === "linear"
-							? `linear-gradient(${angle}deg, ${stops})`
-							: `radial-gradient(circle, ${stops})`;
+						style.backgroundImage =
+							type === "linear"
+								? `linear-gradient(${angle}deg, ${stops})`
+								: `radial-gradient(circle, ${stops})`;
 					}
 
 					return style;
@@ -414,7 +440,7 @@ function PresentationElement({
 							fontWeight: element.style?.fontWeight || "normal",
 							fontStyle: element.style?.fontStyle || "normal",
 							textDecoration: element.style?.textDecoration || "none",
-							textAlign: element.style?.textAlign as any || "left",
+							textAlign: (element.style?.textAlign as any) || "left",
 							...getBackgroundStyle(),
 							lineHeight: element.style?.lineHeight,
 							letterSpacing: element.style?.letterSpacing,
@@ -428,25 +454,43 @@ function PresentationElement({
 							display: "flex",
 							flexDirection: "column",
 							justifyContent: "center",
-							...filterStyles
+							...filterStyles,
 						}}
 					>
 						{element.content}
 					</div>
 				);
 			case "image":
-				const imageFilters = element.style?.filters ? {
-					filter: [
-						element.style.filters.blur ? `blur(${element.style.filters.blur}px)` : "",
-						element.style.filters.brightness ? `brightness(${element.style.filters.brightness})` : "",
-						element.style.filters.contrast ? `contrast(${element.style.filters.contrast})` : "",
-						element.style.filters.grayscale ? `grayscale(${element.style.filters.grayscale})` : "",
-						element.style.filters.sepia ? `sepia(${element.style.filters.sepia})` : "",
-						element.style.filters.hueRotate ? `hue-rotate(${element.style.filters.hueRotate}deg)` : "",
-						element.style.filters.saturate ? `saturate(${element.style.filters.saturate})` : "",
-						element.style.filters.invert ? `invert(${element.style.filters.invert})` : "",
-					].join(" ")
-				} : {};
+				const imageFilters = element.style?.filters
+					? {
+							filter: [
+								element.style.filters.blur
+									? `blur(${element.style.filters.blur}px)`
+									: "",
+								element.style.filters.brightness
+									? `brightness(${element.style.filters.brightness})`
+									: "",
+								element.style.filters.contrast
+									? `contrast(${element.style.filters.contrast})`
+									: "",
+								element.style.filters.grayscale
+									? `grayscale(${element.style.filters.grayscale})`
+									: "",
+								element.style.filters.sepia
+									? `sepia(${element.style.filters.sepia})`
+									: "",
+								element.style.filters.hueRotate
+									? `hue-rotate(${element.style.filters.hueRotate}deg)`
+									: "",
+								element.style.filters.saturate
+									? `saturate(${element.style.filters.saturate})`
+									: "",
+								element.style.filters.invert
+									? `invert(${element.style.filters.invert})`
+									: "",
+							].join(" "),
+						}
+					: {};
 
 				return (
 					<img
@@ -456,8 +500,8 @@ function PresentationElement({
 							width: "100%",
 							height: "100%",
 							borderRadius: element.style?.borderRadius,
-							objectFit: element.style?.objectFit as any || "cover",
-							...imageFilters
+							objectFit: (element.style?.objectFit as any) || "cover",
+							...imageFilters,
 						}}
 						onError={(e) => {
 							(e.target as HTMLImageElement).style.display = "none";
@@ -466,25 +510,46 @@ function PresentationElement({
 				);
 			case "shape":
 				const shapeType = element.content || "square";
-				const shapeFilters = element.style?.filters ? {
-					filter: [
-						element.style.filters.blur ? `blur(${element.style.filters.blur}px)` : "",
-						element.style.filters.brightness ? `brightness(${element.style.filters.brightness})` : "",
-						element.style.filters.contrast ? `contrast(${element.style.filters.contrast})` : "",
-						element.style.filters.grayscale ? `grayscale(${element.style.filters.grayscale})` : "",
-						element.style.filters.sepia ? `sepia(${element.style.filters.sepia})` : "",
-						element.style.filters.hueRotate ? `hue-rotate(${element.style.filters.hueRotate}deg)` : "",
-						element.style.filters.saturate ? `saturate(${element.style.filters.saturate})` : "",
-						element.style.filters.invert ? `invert(${element.style.filters.invert})` : "",
-					].join(" ")
-				} : {};
+				const shapeFilters = element.style?.filters
+					? {
+							filter: [
+								element.style.filters.blur
+									? `blur(${element.style.filters.blur}px)`
+									: "",
+								element.style.filters.brightness
+									? `brightness(${element.style.filters.brightness})`
+									: "",
+								element.style.filters.contrast
+									? `contrast(${element.style.filters.contrast})`
+									: "",
+								element.style.filters.grayscale
+									? `grayscale(${element.style.filters.grayscale})`
+									: "",
+								element.style.filters.sepia
+									? `sepia(${element.style.filters.sepia})`
+									: "",
+								element.style.filters.hueRotate
+									? `hue-rotate(${element.style.filters.hueRotate}deg)`
+									: "",
+								element.style.filters.saturate
+									? `saturate(${element.style.filters.saturate})`
+									: "",
+								element.style.filters.invert
+									? `invert(${element.style.filters.invert})`
+									: "",
+							].join(" "),
+						}
+					: {};
 
 				const shapeStyle: React.CSSProperties = {
 					width: "100%",
 					height: "100%",
 					backgroundColor: element.style?.backgroundColor || "#3b82f6",
 					backgroundImage: (() => {
-						if (element.style?.gradientStops && element.style.gradientStops.length > 0) {
+						if (
+							element.style?.gradientStops &&
+							element.style.gradientStops.length > 0
+						) {
 							const type = element.style.gradientType || "linear";
 							const angle = element.style.gradientAngle || 135;
 							const stops = element.style.gradientStops
@@ -502,7 +567,7 @@ function PresentationElement({
 					borderStyle: (element.style?.borderStyle as any) || "solid",
 					borderRadius: element.style?.borderRadius || 0,
 					boxShadow: element.style?.boxShadow,
-					...shapeFilters
+					...shapeFilters,
 				};
 
 				if (shapeType === "circle") {
@@ -513,10 +578,10 @@ function PresentationElement({
 							style={{
 								width: 0,
 								height: 0,
-								borderLeft: `${(element.size.width / 1920) * viewportWidth / 2}px solid transparent`,
-								borderRight: `${(element.size.width / 1920) * viewportWidth / 2}px solid transparent`,
+								borderLeft: `${((element.size.width / 1920) * viewportWidth) / 2}px solid transparent`,
+								borderRight: `${((element.size.width / 1920) * viewportWidth) / 2}px solid transparent`,
 								borderBottom: `${(element.size.height / 1080) * viewportHeight}px solid ${element.style?.backgroundColor || "#3b82f6"}`,
-								...shapeFilters
+								...shapeFilters,
 							}}
 						/>
 					);
@@ -526,8 +591,12 @@ function PresentationElement({
 							<div
 								style={{
 									color: element.style?.backgroundColor || "#ec4899",
-									fontSize: Math.min(element.size.width * scaleX, element.size.height * scaleY) * 0.8,
-									...shapeFilters
+									fontSize:
+										Math.min(
+											element.size.width * scaleX,
+											element.size.height * scaleY,
+										) * 0.8,
+									...shapeFilters,
 								}}
 							>
 								❤️
