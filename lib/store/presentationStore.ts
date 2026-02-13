@@ -74,7 +74,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				slides = template.slides.map((slide) => ({
 					...slide,
 					id: uuidv4(),
-					elements: slide.elements.map((el) => ({
+					elements: slide.elements.map((el: any) => ({
 						...el,
 						id: uuidv4(),
 					})),
