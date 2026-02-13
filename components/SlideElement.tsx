@@ -91,12 +91,12 @@ export default function SlideElement({
 		}
 
 		if (element.type === "shape") {
-			const getShapeStyle = () => {
-				const baseStyle = {
+			const getShapeStyle = (): React.CSSProperties => {
+				const baseStyle: React.CSSProperties = {
 					backgroundColor: element.style?.backgroundColor || "#3b82f6",
 					borderColor: element.style?.borderColor,
 					borderWidth: element.style?.borderWidth || 0,
-					borderStyle: element.style?.borderStyle || "solid",
+					borderStyle: (element.style?.borderStyle as any) || "solid",
 					borderRadius: element.style?.borderRadius || 0,
 					boxShadow: element.style?.boxShadow,
 				};
@@ -123,7 +123,7 @@ export default function SlideElement({
 					};
 				}
 
-				return baseStyle as React.CSSProperties;
+				return baseStyle;
 			};
 
 			return (

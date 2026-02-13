@@ -91,7 +91,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { SlideElementType } from "@/lib/types/presentation";
+import { SlideElementType, FontWeight, FontStyle, ShapeType } from "@/lib/types/presentation";
 import { FilePond, registerPlugin } from 'react-filepond';
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 import FilePondPluginFileValidateSize from 'filepond-plugin-file-validate-size';
@@ -977,8 +977,8 @@ export default function Toolbar() {
 												<div
 													key={template.name}
 													className={`border rounded-lg p-4 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${selectedChartTemplate.name === template.name
-															? "border-primary ring-2 ring-primary/20 bg-primary/5"
-															: "border-border"
+														? "border-primary ring-2 ring-primary/20 bg-primary/5"
+														: "border-border"
 														}`}
 													onClick={() => handleChartTemplateSelect(template)}
 												>
