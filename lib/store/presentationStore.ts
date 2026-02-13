@@ -25,6 +25,8 @@ interface PresentationStore {
 	) => string;
 	updatePresentation: (id: string, updates: Partial<Presentation>) => void;
 	deletePresentation: (id: string) => void;
+	restorePresentation: (id: string) => void;
+	permanentlyDeletePresentation: (id: string) => void;
 	selectPresentation: (id: string) => void;
 	loadPresentations: () => void;
 	savePresentations: () => void;
@@ -139,6 +141,41 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	},
 
 	deletePresentation: (id: string) => {
+		set((state) => ({
+			presentations: state.presentations.map((p) =>
+				p.id === id ? { ...p, deletedAt: new Date(), updatedAt: new Date() } : p,
+			),
+			presentationOrder: state.presentationOrder.filter(
+				(orderId) => orderId !== id,
+			),
+			currentPresentation:
+				state.currentPresentation?.id === id ? null : state.currentPresentation,
+		}));
+
+		setTimeout(() => {
+			get().savePresentations();
+		}, 0);
+	},
+
+	restorePresentation: (id: string) => {
+		set((state) => {
+			const presentation = state.presentations.find((p) => p.id === id);
+			if (!presentation) return state;
+
+			return {
+				presentations: state.presentations.map((p) =>
+					p.id === id ? { ...p, deletedAt: undefined, updatedAt: new Date() } : p,
+				),
+				presentationOrder: [...state.presentationOrder, id],
+			};
+		});
+
+		setTimeout(() => {
+			get().savePresentations();
+		}, 0);
+	},
+
+	permanentlyDeletePresentation: (id: string) => {
 		set((state) => ({
 			presentations: state.presentations.filter((p) => p.id !== id),
 			presentationOrder: state.presentationOrder.filter(

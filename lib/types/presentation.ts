@@ -190,4 +190,5 @@ export interface Presentation {
 	selectedSlideId?: string;
 	createdAt: Date;
 	updatedAt: Date;
+	deletedAt?: Date;
 }

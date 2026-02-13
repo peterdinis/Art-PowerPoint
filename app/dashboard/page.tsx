@@ -18,7 +18,8 @@ import {
 	X,
 	FileUp,
 } from "lucide-react";
-import { usePresentationStore, Slide, Presentation } from "@/lib/store/presentationStore";
+import { usePresentationStore } from "@/lib/store/presentationStore";
+import { Slide, Presentation } from "@/lib/types/presentation";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { importPPTX } from "@/lib/utils/pptxImport";
@@ -379,6 +380,8 @@ export default function Home() {
 		loadPresentations,
 		createPresentation,
 		deletePresentation,
+		restorePresentation,
+		permanentlyDeletePresentation,
 		reorderPresentationsByIds,
 		presentationOrder,
 	} = usePresentationStore();
@@ -468,8 +471,9 @@ export default function Home() {
 	const filteredAndSorted = useMemo(() => {
 		let filtered = orderedPresentations.filter(
 			(p) =>
-				p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				p.description?.toLowerCase().includes(searchQuery.toLowerCase()),
+				!p.deletedAt &&
+				(p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					p.description?.toLowerCase().includes(searchQuery.toLowerCase())),
 		);
 
 		if (sortBy === "custom") {

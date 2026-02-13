@@ -1,6 +1,6 @@
 import JSZip from "jszip";
 import { v4 as uuidv4 } from "uuid";
-import { Presentation, Slide, SlideElement } from "../store/presentationStore";
+import type { Presentation, Slide, SlideElement } from "@/lib/types/presentation";
 
 /**
  * Utility to import .pptx files and convert them to internal Presentation format.

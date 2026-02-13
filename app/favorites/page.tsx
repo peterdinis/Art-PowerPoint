@@ -27,6 +27,7 @@ export default function FavoritesPage() {
 	// For now, show all presentations (can be extended with favorites feature)
 	const favoritePresentations = useMemo(() => {
 		return presentations.filter((p) => {
+			if (p.deletedAt) return false;
 			// Show recently updated presentations as "favorites" for now
 			const daysSinceUpdate =
 				(Date.now() - new Date(p.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
@@ -40,10 +41,10 @@ export default function FavoritesPage() {
 		const diffTime = Math.abs(now.getTime() - d.getTime());
 		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-		if (diffDays === 0) return "Dnes";
-		if (diffDays === 1) return "Včera";
-		if (diffDays < 7) return `Pred ${diffDays} dňami`;
-		return d.toLocaleDateString("sk-SK", {
+		if (diffDays === 0) return "Today";
+		if (diffDays === 1) return "Yesterday";
+		if (diffDays < 7) return `${diffDays} days ago`;
+		return d.toLocaleDateString("en-US", {
 			day: "numeric",
 			month: "short",
 			year: "numeric",
@@ -68,7 +69,7 @@ export default function FavoritesPage() {
 								<h1 className="text-3xl font-bold">Favorites</h1>
 							</div>
 							<p className="text-muted-foreground">
-								Vaše obľúbené a nedávno upravené prezentácie
+								Your favorite and recently modified presentations
 							</p>
 						</div>
 
@@ -78,13 +79,13 @@ export default function FavoritesPage() {
 									<div className="text-center py-16">
 										<Star className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
 										<h3 className="text-xl font-semibold mb-2">
-											Žiadne obľúbené prezentácie
+											No favorite presentations
 										</h3>
 										<p className="text-muted-foreground mb-6">
-											Zatiaľ nemáte žiadne obľúbené prezentácie
+											You don't have any favorite presentations yet
 										</p>
 										<Button asChild>
-											<Link href="/dashboard">Prejsť na dashboard</Link>
+											<Link href="/dashboard">Go to dashboard</Link>
 										</Button>
 									</div>
 								</CardContent>
@@ -108,8 +109,8 @@ export default function FavoritesPage() {
 													<Star className="w-5 h-5 text-primary fill-primary" />
 												</div>
 												<div className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm text-xs px-2 py-1 rounded">
-													{presentation.slides.length} slajd
-													{presentation.slides.length !== 1 ? "ov" : ""}
+													{presentation.slides.length} slide
+													{presentation.slides.length !== 1 ? "s" : ""}
 												</div>
 											</div>
 											<CardHeader>
