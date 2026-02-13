@@ -300,7 +300,7 @@ export default function Toolbar() {
 	};
 
 	const handleAddImage = (imageUrl?: string) => {
-		const url = imageUrl || this?.imageUrl;
+		const url = imageUrl || "";
 		if (url) {
 			addElement({
 				type: "image",

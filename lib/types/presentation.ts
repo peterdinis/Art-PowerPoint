@@ -1,10 +1,26 @@
-export type SlideElementType = "text" | "image" | "shape" | "video" | "chart";
+export type SlideElementType = "text" | "image" | "shape" | "video" | "chart" | "icon" | "table" | "code";
 export type TextAlign = "left" | "center" | "right" | "justify";
 export type FontWeight = "normal" | "bold" | "100" | "200" | "300" | "400" | "500" | "600" | "700" | "800" | "900";
 export type FontStyle = "normal" | "italic" | "oblique";
 export type TextDecoration = "none" | "underline" | "line-through" | "overline";
 export type ObjectFit = "fill" | "contain" | "cover" | "none" | "scale-down";
 export type BorderStyle = "solid" | "dashed" | "dotted" | "double";
+
+export interface GradientStop {
+	color: string;
+	offset: number;
+}
+
+export interface FilterEffects {
+	blur?: number;
+	brightness?: number;
+	contrast?: number;
+	grayscale?: number;
+	sepia?: number;
+	hueRotate?: number;
+	saturate?: number;
+	invert?: number;
+}
 
 export type AnimationType =
 	| "none"
@@ -42,6 +58,16 @@ export type ShapeType =
 	| "octagon"
 	| "diamond";
 
+export interface TableCell {
+	content: string;
+	style?: {
+		backgroundColor?: string;
+		color?: string;
+		fontWeight?: FontWeight;
+		textAlign?: TextAlign;
+	};
+}
+
 export interface SlideElement {
 	id: string;
 	type: SlideElementType;
@@ -69,8 +95,33 @@ export interface SlideElement {
 		borderRadius?: number;
 		boxShadow?: string;
 
+		// Gradients
+		gradientType?: "linear" | "radial";
+		gradientAngle?: number;
+		gradientStops?: GradientStop[];
+
+		// Filter effects
+		filters?: FilterEffects;
+
 		// Image specific
 		objectFit?: ObjectFit;
+
+		// Icon specific
+		iconName?: string;
+		iconSize?: number;
+
+		// Table specific
+		rows?: number;
+		cols?: number;
+		tableData?: TableCell[][];
+		headerRow?: boolean;
+		headerCol?: boolean;
+		stripeRows?: boolean;
+
+		// Code specific
+		language?: string;
+		theme?: "light" | "dark";
+		lineNumbers?: boolean;
 
 		// Common
 		opacity?: number;
@@ -96,10 +147,13 @@ export interface Slide {
 	id: string;
 	elements: SlideElement[];
 	background?: {
-		type?: string;
+		type?: "color" | "image" | "gradient";
 		color?: string;
 		image?: string;
 		gradient?: string;
+		gradientStops?: GradientStop[];
+		gradientAngle?: number;
+		gradientType?: "linear" | "radial";
 	};
 	notes?: string;
 	transition?: {

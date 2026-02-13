@@ -51,8 +51,8 @@ interface ChartData {
 	datasets: {
 		label: string;
 		data: number[];
-		backgroundColor?: string[];
-		borderColor?: string[];
+		backgroundColor?: string | string[];
+		borderColor?: string | string[];
 	}[];
 }
 
@@ -82,7 +82,7 @@ function EditorContent() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [showSlidePanel, setShowSlidePanel] = useState(false);
 	const [showPropertiesPanel, setShowPropertiesPanel] = useState(false);
-	
+
 	// Nové stavy pre dialog na upload chartu
 	const [showChartDialog, setShowChartDialog] = useState(false);
 	const [chartType, setChartType] = useState<string>("bar");
@@ -149,45 +149,45 @@ function EditorContent() {
 		const lines = csvText.trim().split('\n');
 		const headers = lines[0].split(',').map(h => h.trim());
 		const datasets = [];
-		
+
 		// Ak máme hlavičku s "label,value" formátom
 		if (headers.length === 2 && headers[0].toLowerCase() === 'label' && headers[1].toLowerCase() === 'value') {
 			const labels = [];
 			const data = [];
-			
+
 			for (let i = 1; i < lines.length; i++) {
 				const [label, value] = lines[i].split(',').map(v => v.trim());
 				labels.push(label);
 				data.push(parseFloat(value) || 0);
 			}
-			
+
 			datasets.push({
 				label: chartTitle,
 				data,
 				backgroundColor: CHART_COLORS.slice(0, data.length),
 				borderColor: CHART_COLORS.slice(0, data.length).map(color => color + '80'),
 			});
-			
+
 			return {
 				labels,
 				datasets,
 			};
 		}
-		
+
 		// Ak máme viac dátových sád
 		const labels = [];
 		for (let i = 1; i < lines.length; i++) {
 			const values = lines[i].split(',').map(v => v.trim());
 			labels.push(values[0]);
 		}
-		
+
 		for (let i = 1; i < headers.length; i++) {
 			const data = [];
 			for (let j = 1; j < lines.length; j++) {
 				const values = lines[j].split(',').map(v => v.trim());
 				data.push(parseFloat(values[i]) || 0);
 			}
-			
+
 			datasets.push({
 				label: headers[i],
 				data,
@@ -195,7 +195,7 @@ function EditorContent() {
 				borderColor: CHART_COLORS[i - 1] || CHART_COLORS[0],
 			});
 		}
-		
+
 		return {
 			labels,
 			datasets,
@@ -206,7 +206,7 @@ function EditorContent() {
 	const parseJSONData = (jsonText: string): ChartData => {
 		try {
 			const data = JSON.parse(jsonText);
-			
+
 			// Rôzne formáty JSON dát
 			if (data.labels && data.datasets) {
 				// Chart.js formát
@@ -215,7 +215,7 @@ function EditorContent() {
 				// Array of {label, value}
 				const labels = data.map(item => item.label);
 				const values = data.map(item => item.value);
-				
+
 				return {
 					labels,
 					datasets: [{
@@ -229,7 +229,7 @@ function EditorContent() {
 				// Object s label/value pármi
 				const labels = Object.keys(data);
 				const values = Object.values(data) as number[];
-				
+
 				return {
 					labels,
 					datasets: [{
@@ -240,7 +240,7 @@ function EditorContent() {
 					}],
 				};
 			}
-			
+
 			throw new Error('Unsupported JSON format');
 		} catch (error) {
 			console.error('Error parsing JSON:', error);
@@ -253,7 +253,7 @@ function EditorContent() {
 		try {
 			const text = await file.text();
 			let chartData: ChartData;
-			
+
 			if (file.name.endsWith('.json')) {
 				chartData = parseJSONData(text);
 			} else if (file.name.endsWith('.csv')) {
@@ -266,11 +266,11 @@ function EditorContent() {
 					chartData = parseCSVData(text);
 				}
 			}
-			
+
 			// Nastavíme data do textarea
 			setChartDataInput(JSON.stringify(chartData, null, 2));
 			toast.success('Chart data loaded from file!');
-			
+
 			return true;
 		} catch (error) {
 			console.error('Error processing file:', error);
@@ -288,7 +288,7 @@ function EditorContent() {
 			}
 
 			let chartData: ChartData;
-			
+
 			if (chartDataInput.trim()) {
 				// Parse user input
 				chartData = parseJSONData(chartDataInput);
@@ -334,12 +334,12 @@ function EditorContent() {
 
 			// Pridáme element do aktuálneho slide
 			addElementToSlide(currentPresentation.selectedSlideId, chartElement);
-			
+
 			// Zatvoríme dialog a ukážeme toast
 			setShowChartDialog(false);
 			setFiles([]); // Reset files
 			toast.success('Chart added to slide!');
-			
+
 		} catch (error) {
 			console.error('Error adding chart:', error);
 			toast.error('Error adding chart. Please check your data format.');
@@ -349,7 +349,7 @@ function EditorContent() {
 	// Funkcia pre zobrazenie ukážky dát podľa typu chartu
 	const showSampleData = () => {
 		let sampleData = '';
-		
+
 		switch (chartType) {
 			case 'bar':
 				sampleData = JSON.stringify({
@@ -361,7 +361,7 @@ function EditorContent() {
 					}]
 				}, null, 2);
 				break;
-				
+
 			case 'line':
 				sampleData = JSON.stringify({
 					labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
@@ -373,7 +373,7 @@ function EditorContent() {
 					}]
 				}, null, 2);
 				break;
-				
+
 			case 'pie':
 			case 'doughnut':
 				sampleData = JSON.stringify({
@@ -385,7 +385,7 @@ function EditorContent() {
 					}]
 				}, null, 2);
 				break;
-				
+
 			case 'radar':
 				sampleData = JSON.stringify({
 					labels: ["Eating", "Drinking", "Sleeping", "Designing", "Coding", "Cycling", "Running"],
@@ -403,7 +403,7 @@ function EditorContent() {
 				}, null, 2);
 				break;
 		}
-		
+
 		setChartDataInput(sampleData);
 		toast.info('Sample data loaded for ' + chartType + ' chart');
 	};
@@ -426,10 +426,10 @@ function EditorContent() {
 		<DndProvider backend={HTML5Backend}>
 			<div className="h-screen flex flex-col bg-background">
 				{/* Header */}
-				<EditorMenu 
-					onSave={handleSave} 
-					onExport={handleExport} 
-					onUploadChart={handleUploadChart} 
+				<EditorMenu
+					onSave={handleSave}
+					onExport={handleExport}
+					onUploadChart={handleUploadChart}
 				/>
 
 				{/* Dialog pre upload chartu */}
@@ -441,7 +441,7 @@ function EditorContent() {
 								Upload your chart data or enter it manually. Supports JSON and CSV formats.
 							</DialogDescription>
 						</DialogHeader>
-						
+
 						<div className="grid gap-4 py-4">
 							<div className="grid grid-cols-2 gap-4">
 								<div className="space-y-2">
@@ -459,7 +459,7 @@ function EditorContent() {
 										</SelectContent>
 									</Select>
 								</div>
-								
+
 								<div className="space-y-2">
 									<Label htmlFor="chart-title">Chart Title</Label>
 									<Input
@@ -470,7 +470,7 @@ function EditorContent() {
 									/>
 								</div>
 							</div>
-							
+
 							<div className="space-y-4">
 								<div>
 									<Label className="block mb-2">Upload Data File</Label>
@@ -507,22 +507,22 @@ function EditorContent() {
 										Supports .json, .csv files up to 1MB
 									</p>
 								</div>
-								
+
 								<div className="space-y-2">
 									<div className="flex items-center justify-between">
 										<Label htmlFor="chart-data">Or Enter Data Manually (JSON)</Label>
 										<div className="flex gap-2">
-											<Button 
-												type="button" 
-												variant="outline" 
+											<Button
+												type="button"
+												variant="outline"
 												size="sm"
 												onClick={showSampleData}
 											>
 												Load Sample
 											</Button>
-											<Button 
-												type="button" 
-												variant="outline" 
+											<Button
+												type="button"
+												variant="outline"
 												size="sm"
 												onClick={() => setChartDataInput('')}
 											>
@@ -553,9 +553,9 @@ Example:
 											Supported formats: JSON (Chart.js format)
 										</p>
 										{chartDataInput.trim() && (
-											<Button 
-												type="button" 
-												variant="ghost" 
+											<Button
+												type="button"
+												variant="ghost"
 												size="sm"
 												onClick={() => {
 													try {
@@ -572,14 +572,14 @@ Example:
 										)}
 									</div>
 								</div>
-								
+
 								<div className="bg-muted/50 rounded-md p-4">
 									<h4 className="text-sm font-medium mb-3">Quick Tips:</h4>
 									<div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
 										<div className="space-y-2">
 											<p className="font-medium">Simple Array Format:</p>
 											<pre className="bg-background p-2 rounded overflow-x-auto">
-{`[
+												{`[
   {"label": "Category A", "value": 30},
   {"label": "Category B", "value": 45}
 ]`}</pre>
@@ -587,7 +587,7 @@ Example:
 										<div className="space-y-2">
 											<p className="font-medium">Multiple Datasets:</p>
 											<pre className="bg-background p-2 rounded overflow-x-auto">
-{`{
+												{`{
   "labels": ["Jan", "Feb", "Mar"],
   "datasets": [
     {"label": "2023", "data": [65, 59, 80]},
@@ -597,7 +597,7 @@ Example:
 										</div>
 									</div>
 								</div>
-								
+
 								<div className="bg-primary/5 rounded-md p-4 border border-primary/20">
 									<h4 className="text-sm font-medium mb-2 flex items-center gap-2">
 										<span className="text-primary">✓</span>
@@ -636,7 +636,7 @@ Example:
 								</div>
 							</div>
 						</div>
-						
+
 						<DialogFooter className="gap-2 sm:gap-0">
 							<Button
 								variant="outline"
@@ -647,7 +647,7 @@ Example:
 							>
 								Cancel
 							</Button>
-							<Button 
+							<Button
 								onClick={handleSaveChart}
 								disabled={!currentPresentation?.selectedSlideId}
 							>

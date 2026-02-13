@@ -9,16 +9,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
+import { GradientStop } from "@/lib/types/presentation";
+
 interface SlideBackgroundEditorProps {
 	currentBackground?: {
+		type?: "color" | "image" | "gradient";
 		color?: string;
 		image?: string;
 		gradient?: string;
+		gradientStops?: GradientStop[];
+		gradientAngle?: number;
+		gradientType?: "linear" | "radial";
 	};
 	onUpdate: (updates: {
+		type?: "color" | "image" | "gradient";
 		color?: string;
 		image?: string;
 		gradient?: string;
+		gradientStops?: GradientStop[];
+		gradientAngle?: number;
+		gradientType?: "linear" | "radial";
 	}) => void;
 }
 
@@ -72,12 +82,13 @@ export default function SlideBackgroundEditor({
 
 	const handleColorChange = (newColor: string) => {
 		setColor(newColor);
-		onUpdate({ color: newColor, image: undefined, gradient: undefined });
+		onUpdate({ type: "color", color: newColor, image: undefined, gradient: undefined });
 	};
 
 	const handleImageChange = (url: string) => {
 		setImageUrl(url);
 		onUpdate({
+			type: "image",
 			image: url || undefined,
 			color: undefined,
 			gradient: undefined,
@@ -86,7 +97,7 @@ export default function SlideBackgroundEditor({
 
 	const handleGradientChange = (gradient: string) => {
 		setSelectedGradient(gradient);
-		onUpdate({ gradient, color: undefined, image: undefined });
+		onUpdate({ type: "gradient", gradient, color: undefined, image: undefined });
 	};
 
 	const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

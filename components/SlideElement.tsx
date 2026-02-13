@@ -176,7 +176,9 @@ export default function SlideElement({
 			handleSize={[8, 8]}
 		>
 			<div
-				ref={drag}
+				ref={(node) => {
+					if (node) drag(node);
+				}}
 				className={cn(
 					"absolute cursor-move",
 					isSelected && "ring-2 ring-primary ring-offset-2",

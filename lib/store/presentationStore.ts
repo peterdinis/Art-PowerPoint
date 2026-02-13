@@ -42,9 +42,12 @@ interface PresentationStore {
 
 	// Element actions
 	addElement: (element: Omit<SlideElement, "id">) => void;
+	addElementToSlide: (slideId: string, element: any) => void;
 	updateElement: (elementId: string, updates: Partial<SlideElement>) => void;
 	deleteElement: (elementId: string) => void;
 	selectElement: (elementId: string | null) => void;
+	previousSlide: () => void;
+	nextSlide: () => void;
 }
 
 const createDefaultSlide = (): Slide => ({
@@ -537,6 +540,36 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 	selectElement: (elementId: string | null) => {
 		set({ selectedElementId: elementId });
+	},
+
+	addElementToSlide: (slideId: string, element: any) => {
+		const state = get();
+		if (!state.currentPresentation) return;
+
+		const updatedPresentation = {
+			...state.currentPresentation,
+			slides: state.currentPresentation.slides.map((s) => {
+				if (s.id === slideId) {
+					return {
+						...s,
+						elements: [...s.elements, { ...element, id: element.id || uuidv4() }],
+					};
+				}
+				return s;
+			}),
+			updatedAt: new Date(),
+		};
+
+		set({
+			currentPresentation: updatedPresentation,
+			presentations: state.presentations.map((p) =>
+				p.id === updatedPresentation.id ? updatedPresentation : p
+			),
+		});
+
+		setTimeout(() => {
+			get().savePresentations();
+		}, 0);
 	},
 	previousSlide: () => {
 		const state = get();
