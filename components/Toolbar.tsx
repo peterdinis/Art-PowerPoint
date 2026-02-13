@@ -57,6 +57,7 @@ import {
 	Table2,
 	TrendingUp,
 	FileUp,
+	Minus,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -241,8 +242,12 @@ export default function Toolbar() {
 
 	const handleAddText = (
 		textType:
-			| "heading1"
-			| "heading2"
+			| "h1"
+			| "h2"
+			| "h3"
+			| "h4"
+			| "h5"
+			| "h6"
 			| "body"
 			| "quote"
 			| "code"
@@ -260,8 +265,12 @@ export default function Toolbar() {
 			}
 		> = {
 			title: { fontSize: 64, fontWeight: "bold", color: "#1e40af" },
-			heading1: { fontSize: 48, fontWeight: "bold" },
-			heading2: { fontSize: 36, fontWeight: "bold" },
+			h1: { fontSize: 48, fontWeight: "bold" },
+			h2: { fontSize: 36, fontWeight: "bold" },
+			h3: { fontSize: 30, fontWeight: "bold" },
+			h4: { fontSize: 24, fontWeight: "bold" },
+			h5: { fontSize: 20, fontWeight: "bold" },
+			h6: { fontSize: 18, fontWeight: "bold" },
 			subtitle: { fontSize: 32, fontStyle: "italic", color: "#6b7280" },
 			body: { fontSize: 24, fontWeight: "normal" },
 			quote: { fontSize: 28, fontStyle: "italic", color: "#6b7280" },
@@ -270,8 +279,12 @@ export default function Toolbar() {
 
 		const contents = {
 			title: "Presentation Title",
-			heading1: "Main Heading",
-			heading2: "Sub Heading",
+			h1: "Heading 1",
+			h2: "Heading 2",
+			h3: "Heading 3",
+			h4: "Heading 4",
+			h5: "Heading 5",
+			h6: "Heading 6",
 			subtitle: "Presentation Subtitle",
 			body: "Add your text here...",
 			quote: "The only way to do great work is to love what you do.",
@@ -484,6 +497,154 @@ export default function Toolbar() {
 			},
 		});
 		setTableDialogOpen(false);
+	};
+
+	const handleAddTablePreset = (type: "pricing" | "list" | "grid") => {
+		let rows = 3;
+		let cols = 3;
+		let headerRow = true;
+		let stripeRows = true;
+
+		if (type === "list") {
+			rows = 5;
+			cols = 1;
+		} else if (type === "pricing") {
+			rows = 4;
+			cols = 3;
+		}
+
+		const tableData = Array(rows)
+			.fill(null)
+			.map((_, rowIndex) =>
+				Array(cols)
+					.fill(null)
+					.map((_, colIndex) => ({
+						content: type === "pricing" && rowIndex === 0
+							? ["Feature", "Standard", "Premium"][colIndex]
+							: type === "list"
+								? `List Item ${rowIndex + 1}`
+								: `Data ${rowIndex + 1}-${colIndex + 1}`,
+					})),
+			);
+
+		addElement({
+			type: "table",
+			position: { x: 100, y: 100 },
+			size: { width: type === "list" ? 300 : 500, height: rows * 50 },
+			content: "",
+			style: {
+				rows,
+				cols,
+				tableData,
+				headerRow,
+				stripeRows,
+				borderColor: "#e5e7eb",
+				borderWidth: 1,
+				backgroundColor: "transparent",
+			},
+		});
+	};
+
+	const handleAddStickyNote = () => {
+		addElement({
+			type: "shape",
+			position: { x: 100, y: 100 },
+			size: { width: 200, height: 200 },
+			content: "rounded",
+			style: {
+				backgroundColor: "#fef08a", // Pale yellow
+				borderRadius: 4,
+				boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+			},
+		});
+
+		// Add text inside the sticky note
+		setTimeout(() => {
+			addElement({
+				type: "text",
+				position: { x: 120, y: 120 },
+				size: { width: 160, height: 160 },
+				content: "Important note...",
+				style: {
+					fontSize: 18,
+					color: "#713f12", // Dark yellow text
+					textAlign: "center",
+					fontFamily: "Courier New",
+				},
+			});
+		}, 50);
+	};
+
+	const handleAddBadge = () => {
+		addElement({
+			type: "text",
+			position: { x: 100, y: 100 },
+			size: { width: 100, height: 32 },
+			content: "BADGE",
+			style: {
+				fontSize: 12,
+				fontWeight: "bold",
+				color: "#ffffff",
+				backgroundColor: "#3b82f6",
+				borderRadius: 16,
+				textAlign: "center",
+				padding: "4px 12px",
+			},
+		});
+	};
+
+	const handleAddStatCard = () => {
+		addElement({
+			type: "shape",
+			position: { x: 100, y: 100 },
+			size: { width: 200, height: 120 },
+			content: "rounded",
+			style: {
+				backgroundColor: "hsl(var(--card))",
+				borderWidth: 1,
+				borderColor: "hsl(var(--border))",
+				borderRadius: 12,
+				boxShadow: "var(--shadow-md)",
+			},
+		});
+
+		setTimeout(() => {
+			addElement({
+				type: "text",
+				position: { x: 110, y: 120 },
+				size: { width: 180, height: 60 },
+				content: "99.9%",
+				style: {
+					fontSize: 36,
+					fontWeight: "bold",
+					color: "hsl(var(--primary))",
+					textAlign: "center",
+				},
+			});
+			addElement({
+				type: "text",
+				position: { x: 110, y: 185 },
+				size: { width: 180, height: 24 },
+				content: "Success Rate",
+				style: {
+					fontSize: 14,
+					color: "hsl(var(--muted-foreground))",
+					textAlign: "center",
+				},
+			});
+		}, 50);
+	};
+
+	const handleAddDivider = (direction: "horizontal" | "vertical" = "horizontal") => {
+		addElement({
+			type: "shape",
+			position: { x: 100, y: 100 },
+			size: direction === "horizontal" ? { width: 400, height: 2 } : { width: 2, height: 400 },
+			content: "square",
+			style: {
+				backgroundColor: "hsl(var(--border))",
+			},
+		});
 	};
 
 	const handleAddChart = () => {
@@ -1277,33 +1438,56 @@ Q4,61000,40000,21000`}</pre>
 								<span>Text Elements</span>
 								<FontIcon className="w-3 h-3" />
 							</DropdownMenuLabel>
-							<div className="grid grid-cols-2 gap-1 p-2">
+							<div className="grid grid-cols-3 gap-1 p-2">
 								<DropdownMenuItem
-									onClick={() => handleAddText("title")}
+									onClick={() => handleAddText("h1")}
 									className="flex-col gap-2 h-auto py-3"
 								>
-									<Heading1 className="w-6 h-6" />
-									<span className="text-xs">Title</span>
+									<Heading1 className="w-5 h-5" />
+									<span className="text-[10px]">H1</span>
 								</DropdownMenuItem>
 								<DropdownMenuItem
-									onClick={() => handleAddText("heading1")}
+									onClick={() => handleAddText("h2")}
 									className="flex-col gap-2 h-auto py-3"
 								>
-									<Heading1 className="w-6 h-6" />
-									<span className="text-xs">Heading 1</span>
+									<Heading2 className="w-5 h-5" />
+									<span className="text-[10px]">H2</span>
 								</DropdownMenuItem>
 								<DropdownMenuItem
-									onClick={() => handleAddText("heading2")}
+									onClick={() => handleAddText("h3")}
 									className="flex-col gap-2 h-auto py-3"
 								>
-									<Heading2 className="w-6 h-6" />
-									<span className="text-xs">Heading 2</span>
+									<Heading2 className="w-5 h-5 opacity-80" />
+									<span className="text-[10px]">H3</span>
 								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => handleAddText("h4")}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<Type className="w-5 h-5" />
+									<span className="text-[10px]">H4</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => handleAddText("h5")}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<Type className="w-5 h-5 opacity-80" />
+									<span className="text-[10px]">H5</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => handleAddText("h6")}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<Type className="w-5 h-5 opacity-60" />
+									<span className="text-[10px]">H6</span>
+								</DropdownMenuItem>
+							</div>
+							<div className="grid grid-cols-2 gap-1 px-2 pb-2">
 								<DropdownMenuItem
 									onClick={() => handleAddText("body")}
 									className="flex-col gap-2 h-auto py-3"
 								>
-									<Type className="w-6 h-6" />
+									<AlignLeft className="w-6 h-6" />
 									<span className="text-xs">Body Text</span>
 								</DropdownMenuItem>
 								<DropdownMenuItem
@@ -1313,22 +1497,15 @@ Q4,61000,40000,21000`}</pre>
 									<Quote className="w-6 h-6" />
 									<span className="text-xs">Quote</span>
 								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={() => handleAddCode("javascript")}
-									className="flex-col gap-2 h-auto py-3"
-								>
-									<Code className="w-6 h-6" />
-									<span className="text-xs">Code Snippet</span>
-								</DropdownMenuItem>
 							</div>
 
 							<DropdownMenuSeparator />
 
 							<DropdownMenuLabel className="text-xs text-muted-foreground flex items-center justify-between">
-								<span>Interactive Elements</span>
+								<span>Interactive & Media</span>
 								<Sparkles className="w-3 h-3" />
 							</DropdownMenuLabel>
-							<div className="grid grid-cols-2 gap-1 p-2">
+							<div className="grid grid-cols-3 gap-1 p-2">
 								<DropdownMenuItem
 									onClick={() => setIconDialogOpen(true)}
 									className="flex-col gap-2 h-auto py-3"
@@ -1343,123 +1520,118 @@ Q4,61000,40000,21000`}</pre>
 									<Table2 className="w-6 h-6" />
 									<span className="text-xs">Table</span>
 								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => handleAddCode("javascript")}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<Code className="w-6 h-6" />
+									<span className="text-xs">Code</span>
+								</DropdownMenuItem>
 							</div>
 
 							<DropdownMenuSeparator />
 
 							<DropdownMenuLabel className="text-xs text-muted-foreground flex items-center justify-between">
-								<span>Lists</span>
-								<List className="w-3 h-3" />
+								<span>Table Presets</span>
+								<Grid className="w-3 h-3" />
 							</DropdownMenuLabel>
 							<div className="grid grid-cols-3 gap-1 p-2">
 								<DropdownMenuItem
-									onClick={() => handleAddList("ordered")}
+									onClick={() => handleAddTablePreset("grid")}
 									className="flex-col gap-2 h-auto py-3"
 								>
-									<span className="text-lg">1.</span>
-									<span className="text-xs">Numbered</span>
+									<Table2 className="w-5 h-5" />
+									<span className="text-[10px]">3x3 Grid</span>
 								</DropdownMenuItem>
 								<DropdownMenuItem
-									onClick={() => handleAddList("unordered")}
+									onClick={() => handleAddTablePreset("pricing")}
 									className="flex-col gap-2 h-auto py-3"
 								>
-									<span className="text-lg">•</span>
-									<span className="text-xs">Bulleted</span>
+									<Columns className="w-5 h-5" />
+									<span className="text-[10px]">Pricing</span>
 								</DropdownMenuItem>
 								<DropdownMenuItem
-									onClick={() => handleAddList("checklist")}
+									onClick={() => handleAddTablePreset("list")}
 									className="flex-col gap-2 h-auto py-3"
 								>
-									<span className="text-lg">☐</span>
-									<span className="text-xs">Checklist</span>
+									<Rows className="w-5 h-5" />
+									<span className="text-[10px]">Clean List</span>
 								</DropdownMenuItem>
 							</div>
 
 							<DropdownMenuSeparator />
 
 							<DropdownMenuLabel className="text-xs text-muted-foreground flex items-center justify-between">
-								<span>Media</span>
+								<span>Custom Components</span>
+								<Zap className="w-3 h-3" />
+							</DropdownMenuLabel>
+							<div className="grid grid-cols-2 gap-1 p-2">
+								<DropdownMenuItem
+									onClick={handleAddStickyNote}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<FileText className="w-6 h-6 text-yellow-500" />
+									<span className="text-xs">Sticky Note</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={handleAddStatCard}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<TrendingUp className="w-6 h-6 text-blue-500" />
+									<span className="text-xs">Stat Card</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={handleAddBadge}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<Star className="w-6 h-6 text-purple-500" />
+									<span className="text-xs">Badge/Tag</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => handleAddDivider("horizontal")}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<Minus className="w-6 h-6 text-gray-400 rotate-0" />
+									<span className="text-xs">Divider</span>
+								</DropdownMenuItem>
+							</div>
+
+							<DropdownMenuSeparator />
+
+							<DropdownMenuLabel className="text-xs text-muted-foreground flex items-center justify-between">
+								<span>Media & Data</span>
 								<Image className="w-3 h-3" />
 							</DropdownMenuLabel>
 							<div className="grid grid-cols-3 gap-1 p-2">
-								<Dialog
-									open={imageDialogOpen}
-									onOpenChange={setImageDialogOpen}
-								>
-									<DialogTrigger asChild>
-										<DropdownMenuItem
-											onSelect={(e) => e.preventDefault()}
-											className="flex-col gap-2 h-auto py-3"
-										>
-											<Image className="w-6 h-6" />
-											<span className="text-xs">Image</span>
-										</DropdownMenuItem>
-									</DialogTrigger>
-								</Dialog>
-								<Dialog
-									open={videoDialogOpen}
-									onOpenChange={setVideoDialogOpen}
-								>
-									<DialogTrigger asChild>
-										<DropdownMenuItem
-											onSelect={(e) => e.preventDefault()}
-											className="flex-col gap-2 h-auto py-3"
-										>
-											<Video className="w-6 h-6" />
-											<span className="text-xs">Video</span>
-										</DropdownMenuItem>
-									</DialogTrigger>
-								</Dialog>
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<DropdownMenuItem
-											onSelect={(e) => e.preventDefault()}
-											className="flex-col gap-2 h-auto py-3"
-										>
-											<Music className="w-6 h-6" />
-											<span className="text-xs">Audio</span>
-										</DropdownMenuItem>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent side="right">
-										<DropdownMenuItem onClick={() => handleAddMedia("audio")}>
-											<Music className="w-4 h-4 mr-2" />
-											Audio Player
-										</DropdownMenuItem>
-										<DropdownMenuItem onClick={() => handleAddMedia("podcast")}>
-											<Mic className="w-4 h-4 mr-2" />
-											Podcast
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
-							</div>
-
-							<DropdownMenuSeparator />
-
-							<DropdownMenuLabel className="text-xs text-muted-foreground flex items-center justify-between">
-								<span>Data & Charts</span>
-								<BarChart className="w-3 h-3" />
-							</DropdownMenuLabel>
-							<div className="grid grid-cols-2 gap-1 p-2">
-								<Dialog
-									open={chartDialogOpen}
-									onOpenChange={setChartDialogOpen}
-								>
-									<DialogTrigger asChild>
-										<DropdownMenuItem
-											onSelect={(e) => e.preventDefault()}
-											className="flex-col gap-2 h-auto py-3"
-										>
-											<BarChart className="w-6 h-6" />
-											<span className="text-xs">Chart</span>
-										</DropdownMenuItem>
-									</DialogTrigger>
-								</Dialog>
 								<DropdownMenuItem
-									onClick={() => setChartDialogOpen(true)}
+									onSelect={(e) => {
+										e.preventDefault();
+										setImageDialogOpen(true);
+									}}
 									className="flex-col gap-2 h-auto py-3"
 								>
-									<UploadIcon className="w-6 h-6" />
-									<span className="text-xs">Import Data</span>
+									<Image className="w-5 h-5" />
+									<span className="text-[10px]">Image</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onSelect={(e) => {
+										e.preventDefault();
+										setVideoDialogOpen(true);
+									}}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<Video className="w-5 h-5" />
+									<span className="text-[10px]">Video</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onSelect={(e) => {
+										e.preventDefault();
+										setChartDialogOpen(true);
+									}}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<BarChart className="w-5 h-5" />
+									<span className="text-[10px]">Chart</span>
 								</DropdownMenuItem>
 							</div>
 						</DropdownMenuContent>
