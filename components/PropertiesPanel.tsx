@@ -1,6 +1,7 @@
 "use client";
 
 import { usePresentationStore } from "@/lib/store/presentationStore";
+import * as Icons from "lucide-react";
 import {
 	Trash2,
 	Type,
@@ -14,6 +15,13 @@ import {
 	AlignLeft,
 	AlignCenter,
 	AlignRight,
+	Sparkles,
+	Table2,
+	Code,
+	Palette,
+	Plus,
+	Minus,
+	Settings2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -336,6 +344,12 @@ export default function PropertiesPanel() {
 				return <Square className="w-5 h-5" />;
 			case "video":
 				return <Video className="w-5 h-5" />;
+			case "icon":
+				return <Sparkles className="w-5 h-5" />;
+			case "table":
+				return <Table2 className="w-5 h-5" />;
+			case "code":
+				return <Code className="w-5 h-5" />;
 			default:
 				return <Layers className="w-5 h-5" />;
 		}
@@ -1083,6 +1097,487 @@ export default function PropertiesPanel() {
 						</div>
 					</>
 				)}
+
+				{/* Icon-specific properties */}
+				{extendedElement.type === "icon" && (
+					<>
+						<Separator />
+						<div>
+							<Label htmlFor="icon-name">Icon</Label>
+							<Select
+								value={extendedElement.style?.iconName || "HelpCircle"}
+								onValueChange={(value) =>
+									handleUpdate({
+										style: {
+											...extendedElement.style,
+											iconName: value,
+										},
+									})
+								}
+							>
+								<SelectTrigger id="icon-name" className="mt-2 text-left h-auto py-2">
+									<div className="flex items-center gap-2">
+										<div className="p-1.5 bg-muted rounded">
+											{(() => {
+												const IconComp = (Icons as any)[extendedElement.style?.iconName || "HelpCircle"] || Icons.HelpCircle;
+												return <IconComp size={16} />;
+											})()}
+										</div>
+										<SelectValue placeholder="Select icon" />
+									</div>
+								</SelectTrigger>
+								<SelectContent className="max-h-[300px]">
+									{["Calendar", "Clock", "MapPin", "Phone", "Mail", "Globe", "Music", "Film", "Mic", "Star", "Heart", "Sparkles", "Zap", "Layers", "Grid", "Columns", "Rows", "PanelLeft", "PanelRight", "PanelTop", "PanelBottom", "Check", "X", "Plus", "Minus", "ChevronRight", "ChevronLeft", "ArrowRight", "ArrowLeft", "Search", "Settings", "Bell", "User", "Home", "Camera", "Play", "Pause", "Volume2", "Shield", "Lock", "Unlock", "Cloud", "Sun", "Moon", "Wind", "Umbrella", "Smile", "Wink", "Hand", "ThumbsUp", "Anchor", "Activity", "BarChart2", "Database", "Terminal", "Cpu", "HardDrive", "Layout", "Box"].map((name) => {
+										const IconComp = (Icons as any)[name] || Icons.HelpCircle;
+										return (
+											<SelectItem key={name} value={name}>
+												<div className="flex items-center gap-2">
+													<IconComp size={14} />
+													<span className="text-xs">{name}</span>
+												</div>
+											</SelectItem>
+										);
+									})}
+								</SelectContent>
+							</Select>
+						</div>
+
+						<div>
+							<Label htmlFor="icon-color">Color</Label>
+							<Input
+								id="icon-color"
+								type="color"
+								value={extendedElement.style?.color || "#3b82f6"}
+								onChange={(e) =>
+									handleUpdate({
+										style: {
+											...extendedElement.style,
+											color: e.target.value,
+										},
+									})
+								}
+								className="w-full h-10 mt-2 cursor-pointer"
+							/>
+						</div>
+					</>
+				)}
+
+				{/* Table-specific properties */}
+				{extendedElement.type === "table" && (
+					<>
+						<Separator />
+						<div className="grid grid-cols-2 gap-4">
+							<div>
+								<Label htmlFor="table-rows">Rows</Label>
+								<Input
+									id="table-rows"
+									type="number"
+									min="1"
+									max="20"
+									value={extendedElement.style?.rows || 1}
+									onChange={(e) => {
+										const val = Number(e.target.value);
+										const oldRows = extendedElement.style?.rows || 3;
+										const cols = extendedElement.style?.cols || 3;
+										let tableData = [...(extendedElement.style?.tableData || [])];
+
+										if (val > oldRows) {
+											// Add rows
+											const newRows = Array(val - oldRows).fill(null).map(() =>
+												Array(cols).fill(null).map(() => ({ content: "" }))
+											);
+											tableData = [...tableData, ...newRows];
+										} else if (val < oldRows) {
+											// Remove rows
+											tableData = tableData.slice(0, val);
+										}
+
+										handleUpdate({
+											style: {
+												...extendedElement.style,
+												rows: val,
+												tableData
+											},
+										});
+									}}
+									className="mt-2"
+								/>
+							</div>
+							<div>
+								<Label htmlFor="table-cols">Columns</Label>
+								<Input
+									id="table-cols"
+									type="number"
+									min="1"
+									max="10"
+									value={extendedElement.style?.cols || 1}
+									onChange={(e) => {
+										const val = Number(e.target.value);
+										const rows = extendedElement.style?.rows || 3;
+										const oldCols = extendedElement.style?.cols || 3;
+										let tableData = (extendedElement.style?.tableData || []).map((row: any) => {
+											let newRow = [...row];
+											if (val > oldCols) {
+												// Add columns
+												const newCols = Array(val - oldCols).fill(null).map(() => ({ content: "" }));
+												newRow = [...newRow, ...newCols];
+											} else if (val < oldCols) {
+												// Remove columns
+												newRow = newRow.slice(0, val);
+											}
+											return newRow;
+										});
+
+										handleUpdate({
+											style: {
+												...extendedElement.style,
+												cols: val,
+												tableData
+											},
+										});
+									}}
+									className="mt-2"
+								/>
+							</div>
+						</div>
+
+						<div className="space-y-3">
+							<div className="flex items-center justify-between">
+								<Label htmlFor="header-row">Header Row</Label>
+								<input
+									id="header-row"
+									type="checkbox"
+									checked={extendedElement.style?.headerRow ?? true}
+									onChange={(e) =>
+										handleUpdate({
+											style: {
+												...extendedElement.style,
+												headerRow: e.target.checked,
+											},
+										})
+									}
+									className="w-4 h-4"
+								/>
+							</div>
+							<div className="flex items-center justify-between">
+								<Label htmlFor="stripe-rows">Striped Rows</Label>
+								<input
+									id="stripe-rows"
+									type="checkbox"
+									checked={extendedElement.style?.stripeRows ?? true}
+									onChange={(e) =>
+										handleUpdate({
+											style: {
+												...extendedElement.style,
+												stripeRows: e.target.checked,
+											},
+										})
+									}
+									className="w-4 h-4"
+								/>
+							</div>
+						</div>
+					</>
+				)}
+
+				{/* Code-specific properties */}
+				{extendedElement.type === "code" && (
+					<>
+						<Separator />
+						<div>
+							<Label htmlFor="code-language">Language</Label>
+							<Select
+								value={extendedElement.style?.language || "javascript"}
+								onValueChange={(value) =>
+									handleUpdate({
+										style: {
+											...extendedElement.style,
+											language: value,
+										},
+									})
+								}
+							>
+								<SelectTrigger id="code-language" className="mt-2">
+									<SelectValue placeholder="Select language" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="javascript">JavaScript</SelectItem>
+									<SelectItem value="typescript">TypeScript</SelectItem>
+									<SelectItem value="python">Python</SelectItem>
+									<SelectItem value="html">HTML</SelectItem>
+									<SelectItem value="css">CSS</SelectItem>
+									<SelectItem value="json">JSON</SelectItem>
+									<SelectItem value="rust">Rust</SelectItem>
+									<SelectItem value="go">Go</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+
+						<div>
+							<Label htmlFor="code-theme">Theme</Label>
+							<Select
+								value={extendedElement.style?.theme || "dark"}
+								onValueChange={(value) =>
+									handleUpdate({
+										style: {
+											...extendedElement.style,
+											theme: value as "dark" | "light",
+											backgroundColor: value === "dark" ? "#1e1e1e" : "#f5f5f5",
+											color: value === "dark" ? "#d4d4d4" : "#333333",
+										},
+									})
+								}
+							>
+								<SelectTrigger id="code-theme" className="mt-2">
+									<SelectValue placeholder="Select theme" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="dark">Dark (VS Code)</SelectItem>
+									<SelectItem value="light">Light</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+
+						<div className="flex items-center justify-between">
+							<Label htmlFor="line-numbers">Line Numbers</Label>
+							<input
+								id="line-numbers"
+								type="checkbox"
+								checked={extendedElement.style?.lineNumbers ?? true}
+								onChange={(e) =>
+									handleUpdate({
+										style: {
+											...extendedElement.style,
+											lineNumbers: e.target.checked,
+										},
+									})
+								}
+								className="w-4 h-4"
+							/>
+						</div>
+					</>
+				)}
+
+				{/* Gradients section */}
+				<Separator />
+				<div className="space-y-4">
+					<div className="flex items-center justify-between">
+						<Label className="flex items-center gap-2">
+							<Palette className="w-4 h-4" /> Advanced Gradient
+						</Label>
+						<input
+							type="checkbox"
+							checked={!!(extendedElement.style?.gradientStops && extendedElement.style.gradientStops.length > 0)}
+							onChange={(e) => {
+								if (e.target.checked) {
+									handleUpdate({
+										style: {
+											...extendedElement.style,
+											gradientStops: [
+												{ color: extendedElement.style?.backgroundColor || "#3b82f6", offset: 0 },
+												{ color: "#ffffff", offset: 100 }
+											],
+											gradientType: "linear",
+											gradientAngle: 135
+										}
+									});
+								} else {
+									handleUpdate({
+										style: {
+											...extendedElement.style,
+											gradientStops: undefined,
+											gradientType: undefined,
+											gradientAngle: undefined
+										}
+									});
+								}
+							}}
+							className="w-4 h-4"
+						/>
+					</div>
+
+					{extendedElement.style?.gradientStops && extendedElement.style.gradientStops.length > 0 && (
+						<div className="space-y-4 pt-2">
+							<div>
+								<Label className="text-xs">Type</Label>
+								<Select
+									value={extendedElement.style.gradientType || "linear"}
+									onValueChange={(value: "linear" | "radial") =>
+										handleUpdate({
+											style: { ...extendedElement.style, gradientType: value }
+										})
+									}
+								>
+									<SelectTrigger className="mt-1 h-8">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="linear">Linear</SelectItem>
+										<SelectItem value="radial">Radial</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+
+							{extendedElement.style.gradientType !== "radial" && (
+								<div>
+									<Label className="text-xs">Angle: {extendedElement.style.gradientAngle || 135}°</Label>
+									<Input
+										type="range"
+										min="0"
+										max="360"
+										value={extendedElement.style.gradientAngle || 135}
+										onChange={(e) =>
+											handleUpdate({
+												style: { ...extendedElement.style, gradientAngle: Number(e.target.value) }
+											})
+										}
+										className="mt-1"
+									/>
+								</div>
+							)}
+
+							<div className="space-y-2">
+								<Label className="text-xs flex items-center justify-between">
+									Stops
+									<Button
+										variant="ghost"
+										size="sm"
+										className="h-6 w-6 p-0"
+										onClick={() => {
+											const stops = [...(extendedElement.style?.gradientStops || [])];
+											stops.push({ color: "#ffffff", offset: 100 });
+											handleUpdate({ style: { ...extendedElement.style, gradientStops: stops } });
+										}}
+									>
+										<Plus className="w-3 h-3" />
+									</Button>
+								</Label>
+								<div className="space-y-2">
+									{extendedElement.style.gradientStops.map((stop, idx) => (
+										<div key={idx} className="flex items-center gap-2">
+											<Input
+												type="color"
+												value={stop.color}
+												onChange={(e) => {
+													const stops = [...(extendedElement.style?.gradientStops || [])];
+													stops[idx] = { ...stops[idx], color: e.target.value };
+													handleUpdate({ style: { ...extendedElement.style, gradientStops: stops } });
+												}}
+												className="w-8 h-8 p-0 border-none bg-transparent"
+											/>
+											<Input
+												type="number"
+												min="0"
+												max="100"
+												value={stop.offset}
+												onChange={(e) => {
+													const stops = [...(extendedElement.style?.gradientStops || [])];
+													stops[idx] = { ...stops[idx], offset: Number(e.target.value) };
+													handleUpdate({ style: { ...extendedElement.style, gradientStops: stops } });
+												}}
+												className="h-8 flex-1"
+											/>
+											{extendedElement.style!.gradientStops!.length > 2 && (
+												<Button
+													variant="ghost"
+													size="sm"
+													className="h-8 w-8 p-0"
+													onClick={() => {
+														const stops = extendedElement.style!.gradientStops!.filter((_, i) => i !== idx);
+														handleUpdate({ style: { ...extendedElement.style, gradientStops: stops } });
+													}}
+												>
+													<Minus className="w-3 h-3" />
+												</Button>
+											)}
+										</div>
+									))}
+								</div>
+							</div>
+						</div>
+					)}
+				</div>
+
+				{/* Filters section */}
+				<Separator />
+				<div className="space-y-4">
+					<div className="flex items-center justify-between">
+						<Label className="flex items-center gap-2">
+							<Settings2 className="w-4 h-4" /> Filter Effects
+						</Label>
+						<input
+							type="checkbox"
+							checked={!!extendedElement.style?.filters}
+							onChange={(e) => {
+								if (e.target.checked) {
+									handleUpdate({
+										style: {
+											...extendedElement.style,
+											filters: {
+												blur: 0,
+												brightness: 1,
+												contrast: 1,
+												grayscale: 0,
+												sepia: 0,
+												hueRotate: 0,
+												saturate: 1,
+												invert: 0
+											}
+										}
+									});
+								} else {
+									handleUpdate({
+										style: { ...extendedElement.style, filters: undefined }
+									});
+								}
+							}}
+							className="w-4 h-4"
+						/>
+					</div>
+
+					{extendedElement.style?.filters && (
+						<div className="space-y-4 pt-2">
+							{[
+								{ label: "Blur", key: "blur", min: 0, max: 20, step: 0.1, unit: "px" },
+								{ label: "Brightness", key: "brightness", min: 0, max: 3, step: 0.1, unit: "" },
+								{ label: "Contrast", key: "contrast", min: 0, max: 3, step: 0.1, unit: "" },
+								{ label: "Grayscale", key: "grayscale", min: 0, max: 1, step: 0.1, unit: "" },
+								{ label: "Sepia", key: "sepia", min: 0, max: 1, step: 0.1, unit: "" },
+								{ label: "Hue Rotate", key: "hueRotate", min: 0, max: 360, step: 1, unit: "deg" },
+								{ label: "Saturate", key: "saturate", min: 0, max: 5, step: 0.1, unit: "" },
+								{ label: "Invert", key: "invert", min: 0, max: 1, step: 0.1, unit: "" },
+							].map((filter) => (
+								<div key={filter.key}>
+									<div className="flex justify-between mb-1">
+										<Label className="text-xs">{filter.label}</Label>
+										<span className="text-[10px] text-muted-foreground">
+											{(extendedElement.style?.filters as any)?.[filter.key] ?? 0}{filter.unit}
+										</span>
+									</div>
+									<Input
+										type="range"
+										min={filter.min}
+										max={filter.max}
+										step={filter.step}
+										value={(extendedElement.style?.filters as any)?.[filter.key] ?? 0}
+										onChange={(e) =>
+											handleUpdate({
+												style: {
+													...extendedElement.style,
+													filters: {
+														...extendedElement.style?.filters,
+														[filter.key]: Number(e.target.value)
+													}
+												}
+											})
+										}
+										className="h-4"
+									/>
+								</div>
+							))}
+						</div>
+					)}
+				</div>
 
 				{/* Animation */}
 				<Separator />

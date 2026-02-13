@@ -1,13 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Image, Palette, Sparkles, Upload, X } from "lucide-react";
+import { Image, Palette, Sparkles, Upload, X, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 
 import { GradientStop } from "@/lib/types/presentation";
 
@@ -197,21 +205,125 @@ export default function SlideBackgroundEditor({
 						</div>
 					</div>
 
-					<div>
-						<Label>Custom Gradient</Label>
+					<Separator className="my-4" />
+
+					<div className="space-y-4">
+						<div className="flex items-center justify-between">
+							<Label className="flex items-center gap-2 font-medium">
+								<Sparkles className="w-4 h-4" /> Advanced Gradient
+							</Label>
+						</div>
+
+						<div className="space-y-4 pt-2">
+							<div>
+								<Label className="text-xs">Type</Label>
+								<Select
+									value={currentBackground?.gradientType || "linear"}
+									onValueChange={(value: "linear" | "radial") =>
+										onUpdate({ ...currentBackground, type: "gradient", gradientType: value })
+									}
+								>
+									<SelectTrigger className="mt-1 h-8">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="linear">Linear</SelectItem>
+										<SelectItem value="radial">Radial</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+
+							{currentBackground?.gradientType !== "radial" && (
+								<div>
+									<div className="flex justify-between mb-1">
+										<Label className="text-xs">Angle</Label>
+										<span className="text-[10px] text-muted-foreground">{currentBackground?.gradientAngle || 135}°</span>
+									</div>
+									<Input
+										type="range"
+										min="0"
+										max="360"
+										value={currentBackground?.gradientAngle || 135}
+										onChange={(e) =>
+											onUpdate({ ...currentBackground, type: "gradient", gradientAngle: Number(e.target.value) })
+										}
+										className="h-4 mt-1"
+									/>
+								</div>
+							)}
+
+							<div className="space-y-2">
+								<Label className="text-xs flex items-center justify-between">
+									Stops
+									<Button
+										variant="ghost"
+										size="sm"
+										className="h-6 w-6 p-0"
+										onClick={() => {
+											const stops = [...(currentBackground?.gradientStops || [{ color: "#667eea", offset: 0 }, { color: "#764ba2", offset: 100 }])];
+											stops.push({ color: "#ffffff", offset: 100 });
+											onUpdate({ ...currentBackground, type: "gradient", gradientStops: stops });
+										}}
+									>
+										<Plus className="w-3 h-3" />
+									</Button>
+								</Label>
+								<div className="space-y-2">
+									{(currentBackground?.gradientStops || [{ color: "#667eea", offset: 0 }, { color: "#764ba2", offset: 100 }]).map((stop, idx) => (
+										<div key={idx} className="flex items-center gap-2">
+											<Input
+												type="color"
+												value={stop.color}
+												onChange={(e) => {
+													const stops = [...(currentBackground?.gradientStops || [{ color: "#667eea", offset: 0 }, { color: "#764ba2", offset: 100 }])];
+													stops[idx] = { ...stops[idx], color: e.target.value };
+													onUpdate({ ...currentBackground, type: "gradient", gradientStops: stops });
+												}}
+												className="w-8 h-8 p-0 border-none bg-transparent"
+											/>
+											<Input
+												type="number"
+												min="0"
+												max="100"
+												value={stop.offset}
+												onChange={(e) => {
+													const stops = [...(currentBackground?.gradientStops || [{ color: "#667eea", offset: 0 }, { color: "#764ba2", offset: 100 }])];
+													stops[idx] = { ...stops[idx], offset: Number(e.target.value) };
+													onUpdate({ ...currentBackground, type: "gradient", gradientStops: stops });
+												}}
+												className="h-8 flex-1"
+											/>
+											<Button
+												variant="ghost"
+												size="sm"
+												className="h-8 w-8 p-0"
+												onClick={() => {
+													const currentStops = currentBackground?.gradientStops || [{ color: "#667eea", offset: 0 }, { color: "#764ba2", offset: 100 }];
+													if (currentStops.length > 2) {
+														const stops = currentStops.filter((_, i) => i !== idx);
+														onUpdate({ ...currentBackground, type: "gradient", gradientStops: stops });
+													}
+												}}
+												disabled={(currentBackground?.gradientStops?.length || 2) <= 2}
+											>
+												<Minus className="w-3 h-3" />
+											</Button>
+										</div>
+									))}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div className="pt-4">
+						<Label>Gradient Preview (CSS)</Label>
 						<Input
 							type="text"
 							value={selectedGradient}
 							onChange={(e) => handleGradientChange(e.target.value)}
-							className="mt-2"
-							placeholder="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+							className="mt-2 text-xs"
+							placeholder="linear-gradient(...)"
 						/>
-						{selectedGradient && (
-							<div
-								className="w-full h-16 rounded-md border border-border mt-2"
-								style={{ background: selectedGradient }}
-							/>
-						)}
 					</div>
 				</TabsContent>
 
