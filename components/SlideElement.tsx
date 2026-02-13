@@ -1,6 +1,7 @@
 "use client";
 
 import { useDrag } from "react-dnd";
+import React from "react";
 import { cn } from "@/lib/utils";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
@@ -122,7 +123,7 @@ export default function SlideElement({
 					};
 				}
 
-				return baseStyle;
+				return baseStyle as React.CSSProperties;
 			};
 
 			return (

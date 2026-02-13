@@ -348,7 +348,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			if (!state.currentPresentation) return state;
 
 			const newSlides = state.currentPresentation.slides.filter(
-				(s) => s.id !== slideId,
+				(s: Slide) => s.id !== slideId,
 			);
 
 			const newIndex = Math.min(state.currentSlideIndex, newSlides.length - 1);
@@ -383,7 +383,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		const duplicatedSlide: Slide = {
 			...slideToDuplicate,
 			id: uuidv4(),
-			elements: slideToDuplicate.elements.map((el) => ({
+			elements: slideToDuplicate.elements.map((el: SlideElement) => ({
 				...el,
 				id: uuidv4(),
 			})),
@@ -459,7 +459,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
-			const slides = state.currentPresentation.slides.map((slide, index) =>
+			const slides = state.currentPresentation.slides.map((slide: Slide, index: number) =>
 				index === state.currentSlideIndex
 					? { ...slide, elements: [...slide.elements, newElement] }
 					: slide,
@@ -487,9 +487,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
-			const slides = state.currentPresentation.slides.map((slide) => ({
+			const slides = state.currentPresentation.slides.map((slide: Slide) => ({
 				...slide,
-				elements: slide.elements.map((el) =>
+				elements: slide.elements.map((el: SlideElement) =>
 					el.id === elementId ? { ...el, ...updates } : el,
 				),
 			}));
@@ -515,9 +515,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
-			const slides = state.currentPresentation.slides.map((slide) => ({
+			const slides = state.currentPresentation.slides.map((slide: Slide) => ({
 				...slide,
-				elements: slide.elements.filter((el) => el.id !== elementId),
+				elements: slide.elements.filter((el: SlideElement) => el.id !== elementId),
 			}));
 
 			return {
@@ -539,25 +539,25 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set({ selectedElementId: elementId });
 	},
 	previousSlide: () => {
-  const state = get();
-  if (state.currentPresentation && state.currentSlideIndex > 0) {
-    set({
-      currentSlideIndex: state.currentSlideIndex - 1,
-      selectedElementId: null,
-    });
-  }
-},
+		const state = get();
+		if (state.currentPresentation && state.currentSlideIndex > 0) {
+			set({
+				currentSlideIndex: state.currentSlideIndex - 1,
+				selectedElementId: null,
+			});
+		}
+	},
 
-nextSlide: () => {
-  const state = get();
-  if (
-    state.currentPresentation &&
-    state.currentSlideIndex < state.currentPresentation.slides.length - 1
-  ) {
-    set({
-      currentSlideIndex: state.currentSlideIndex + 1,
-      selectedElementId: null,
-    });
-  }
-}
+	nextSlide: () => {
+		const state = get();
+		if (
+			state.currentPresentation &&
+			state.currentSlideIndex < state.currentPresentation.slides.length - 1
+		) {
+			set({
+				currentSlideIndex: state.currentSlideIndex + 1,
+				selectedElementId: null,
+			});
+		}
+	}
 }));

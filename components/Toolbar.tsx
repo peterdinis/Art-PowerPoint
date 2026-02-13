@@ -182,7 +182,7 @@ export default function Toolbar() {
 	const [fontFamily, setFontFamily] = useState("Arial");
 	const [textColor, setTextColor] = useState("#212121");
 	const [layoutType, setLayoutType] = useState("two-columns");
-	
+
 	// FilePond states
 	const [imageFiles, setImageFiles] = useState<any[]>([]);
 	const [csvFiles, setCsvFiles] = useState<any[]>([]);
@@ -230,7 +230,7 @@ export default function Toolbar() {
 					size: { width: 400, height: 300 },
 					content: result,
 					style: {
-						borderRadius: "8px",
+						borderRadius: 8,
 					},
 				});
 			};
@@ -252,8 +252,8 @@ export default function Toolbar() {
 			string,
 			{
 				fontSize: number;
-				fontWeight?: string;
-				fontStyle?: string;
+				fontWeight?: FontWeight;
+				fontStyle?: FontStyle;
 				fontFamily?: string;
 				color?: string;
 			}
@@ -308,7 +308,7 @@ export default function Toolbar() {
 				size: { width: 400, height: 300 },
 				content: url,
 				style: {
-					borderRadius: "8px",
+					borderRadius: 8,
 				},
 			});
 			setImageUrl("");
@@ -330,7 +330,7 @@ export default function Toolbar() {
 						size: { width: 400, height: 300 },
 						content: base64,
 						style: {
-							borderRadius: "8px",
+							borderRadius: 8,
 						},
 					});
 					setImageDialogOpen(false);
@@ -351,7 +351,7 @@ export default function Toolbar() {
 				size: { width: 640, height: 360 },
 				content: videoUrl,
 				style: {
-					borderRadius: "8px",
+					borderRadius: 8,
 				},
 			});
 			setVideoUrl("");
@@ -426,7 +426,7 @@ export default function Toolbar() {
 				backgroundColor: colors[shapeType],
 				borderWidth: 0,
 				borderColor: "#000000",
-				...(shapeType === "rounded" && { borderRadius: "12px" }),
+				...(shapeType === "rounded" && { borderRadius: 12 }),
 				...(shapeType === "heart" && { color: colors[shapeType] }),
 			},
 		});
@@ -501,10 +501,10 @@ export default function Toolbar() {
 				size: { width: 500, height: 350 },
 				content: JSON.stringify(chartData),
 				style: {
-					chartType,
+					chartType: chartType as "bar" | "line" | "pie" | "area",
 					chartTitle,
 					backgroundColor: "#ffffff",
-					borderRadius: "8px",
+					borderRadius: 8,
 					borderWidth: 1,
 					borderColor: "#e5e7eb",
 				},
@@ -762,7 +762,7 @@ export default function Toolbar() {
 										<TabsTrigger value="documents">Documents</TabsTrigger>
 										<TabsTrigger value="data">Data Files</TabsTrigger>
 									</TabsList>
-									
+
 									<TabsContent value="images" className="space-y-4 py-4">
 										<div className="space-y-4">
 											<div className="border-2 border-dashed border-border rounded-lg p-4">
@@ -795,7 +795,7 @@ export default function Toolbar() {
 													}}
 												/>
 											</div>
-											
+
 											<div className="text-center">
 												<p className="text-sm text-muted-foreground mb-4">
 													Or use image URL
@@ -807,8 +807,8 @@ export default function Toolbar() {
 														placeholder="https://example.com/image.jpg"
 														className="flex-1"
 													/>
-													<Button 
-														onClick={() => handleAddImage(imageUrl)} 
+													<Button
+														onClick={() => handleAddImage(imageUrl)}
 														disabled={!imageUrl}
 													>
 														Add
@@ -817,7 +817,7 @@ export default function Toolbar() {
 											</div>
 										</div>
 									</TabsContent>
-									
+
 									<TabsContent value="documents" className="space-y-4 py-4">
 										<div className="border-2 border-dashed border-border rounded-lg p-4">
 											<FilePond
@@ -846,7 +846,7 @@ export default function Toolbar() {
 											</p>
 										</div>
 									</TabsContent>
-									
+
 									<TabsContent value="data" className="space-y-4 py-4">
 										<div className="space-y-4">
 											<div className="border-2 border-dashed border-border rounded-lg p-4">
@@ -873,7 +873,7 @@ export default function Toolbar() {
 													}}
 												/>
 											</div>
-											
+
 											<div className="bg-muted/30 rounded-lg p-4">
 												<h4 className="text-sm font-medium mb-2">Supported Data Formats:</h4>
 												<ul className="text-sm text-muted-foreground space-y-1">
@@ -885,7 +885,7 @@ export default function Toolbar() {
 										</div>
 									</TabsContent>
 								</Tabs>
-								
+
 								<DialogFooter>
 									<Button
 										variant="outline"
@@ -894,7 +894,7 @@ export default function Toolbar() {
 									>
 										Cancel
 									</Button>
-									<Button 
+									<Button
 										onClick={() => {
 											if (imageFiles.length > 0 && imageFiles[0].status === 5) {
 												handleImageUploadComplete(imageFiles[0]);
@@ -932,7 +932,7 @@ export default function Toolbar() {
 								<span className="hidden sm:inline">Text</span>
 							</Button>
 						</motion.div>
-						
+
 						<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
 							<Button
 								onClick={() => handleAddShape("star")}
@@ -976,11 +976,10 @@ export default function Toolbar() {
 											{CHART_TEMPLATES.map((template) => (
 												<div
 													key={template.name}
-													className={`border rounded-lg p-4 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${
-														selectedChartTemplate.name === template.name
+													className={`border rounded-lg p-4 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${selectedChartTemplate.name === template.name
 															? "border-primary ring-2 ring-primary/20 bg-primary/5"
 															: "border-border"
-													}`}
+														}`}
 													onClick={() => handleChartTemplateSelect(template)}
 												>
 													<div className="flex items-center gap-3 mb-2">
@@ -1120,7 +1119,7 @@ export default function Toolbar() {
 											<div className="bg-muted/30 rounded-lg p-4">
 												<h4 className="text-sm font-medium mb-2">CSV Format Example:</h4>
 												<pre className="text-xs font-mono bg-background p-3 rounded overflow-x-auto">
-{`Quarter,Sales,Expenses,Profit
+													{`Quarter,Sales,Expenses,Profit
 Q1,45000,30000,15000
 Q2,52000,35000,17000
 Q3,48000,32000,16000
@@ -1141,7 +1140,7 @@ Q4,61000,40000,21000`}</pre>
 									>
 										Cancel
 									</Button>
-									<Button 
+									<Button
 										onClick={handleAddChart}
 										disabled={isFileProcessing}
 									>
