@@ -8,7 +8,10 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
-import type { SlideElement as SlideElementType, GradientStop } from "@/lib/types/presentation";
+import type {
+	SlideElement as SlideElementType,
+	GradientStop,
+} from "@/lib/types/presentation";
 import ChartElement from "./elements/ChartElement";
 import IconElement from "./elements/IconElement";
 import TableElement from "./elements/TableElement";
@@ -63,34 +66,56 @@ export default function SlideElement({
 		}
 
 		if (element.type === "text") {
-			const filterStyles = element.style?.filters ? {
-				filter: [
-					element.style.filters.blur ? `blur(${element.style.filters.blur}px)` : "",
-					element.style.filters.brightness ? `brightness(${element.style.filters.brightness})` : "",
-					element.style.filters.contrast ? `contrast(${element.style.filters.contrast})` : "",
-					element.style.filters.grayscale ? `grayscale(${element.style.filters.grayscale})` : "",
-					element.style.filters.sepia ? `sepia(${element.style.filters.sepia})` : "",
-					element.style.filters.hueRotate ? `hue-rotate(${element.style.filters.hueRotate}deg)` : "",
-					element.style.filters.saturate ? `saturate(${element.style.filters.saturate})` : "",
-					element.style.filters.invert ? `invert(${element.style.filters.invert})` : "",
-				].join(" ")
-			} : {};
+			const filterStyles = element.style?.filters
+				? {
+						filter: [
+							element.style.filters.blur
+								? `blur(${element.style.filters.blur}px)`
+								: "",
+							element.style.filters.brightness
+								? `brightness(${element.style.filters.brightness})`
+								: "",
+							element.style.filters.contrast
+								? `contrast(${element.style.filters.contrast})`
+								: "",
+							element.style.filters.grayscale
+								? `grayscale(${element.style.filters.grayscale})`
+								: "",
+							element.style.filters.sepia
+								? `sepia(${element.style.filters.sepia})`
+								: "",
+							element.style.filters.hueRotate
+								? `hue-rotate(${element.style.filters.hueRotate}deg)`
+								: "",
+							element.style.filters.saturate
+								? `saturate(${element.style.filters.saturate})`
+								: "",
+							element.style.filters.invert
+								? `invert(${element.style.filters.invert})`
+								: "",
+						].join(" "),
+					}
+				: {};
 
 			const getBackgroundStyle = () => {
 				const style: React.CSSProperties = {
-					backgroundColor: element.style?.backgroundColor
+					backgroundColor: element.style?.backgroundColor,
 				};
 
-				if (element.style?.gradientStops && element.style.gradientStops.length > 0) {
+				if (
+					element.style?.gradientStops &&
+					element.style.gradientStops.length > 0
+				) {
 					const type = element.style.gradientType || "linear";
 					const angle = element.style.gradientAngle || 135;
 					const stops = element.style.gradientStops
 						.map((s) => `${s.color} ${s.offset}%`)
 						.join(", ");
 
-					style.backgroundImage = type === "linear"
-						? `linear-gradient(${angle}deg, ${stops})`
-						: `radial-gradient(circle, ${stops})`;
+					style.backgroundImage =
+						type === "linear"
+							? `linear-gradient(${angle}deg, ${stops})`
+							: `radial-gradient(circle, ${stops})`;
 				}
 
 				return style;
@@ -121,7 +146,7 @@ export default function SlideElement({
 						opacity: element.style?.opacity,
 						padding: element.style?.padding || "8px",
 						whiteSpace: "pre-wrap",
-						...filterStyles
+						...filterStyles,
 					}}
 				>
 					{element.content}
@@ -130,18 +155,36 @@ export default function SlideElement({
 		}
 
 		if (element.type === "image") {
-			const filterStyles = element.style?.filters ? {
-				filter: [
-					element.style.filters.blur ? `blur(${element.style.filters.blur}px)` : "",
-					element.style.filters.brightness ? `brightness(${element.style.filters.brightness})` : "",
-					element.style.filters.contrast ? `contrast(${element.style.filters.contrast})` : "",
-					element.style.filters.grayscale ? `grayscale(${element.style.filters.grayscale})` : "",
-					element.style.filters.sepia ? `sepia(${element.style.filters.sepia})` : "",
-					element.style.filters.hueRotate ? `hue-rotate(${element.style.filters.hueRotate}deg)` : "",
-					element.style.filters.saturate ? `saturate(${element.style.filters.saturate})` : "",
-					element.style.filters.invert ? `invert(${element.style.filters.invert})` : "",
-				].join(" ")
-			} : {};
+			const filterStyles = element.style?.filters
+				? {
+						filter: [
+							element.style.filters.blur
+								? `blur(${element.style.filters.blur}px)`
+								: "",
+							element.style.filters.brightness
+								? `brightness(${element.style.filters.brightness})`
+								: "",
+							element.style.filters.contrast
+								? `contrast(${element.style.filters.contrast})`
+								: "",
+							element.style.filters.grayscale
+								? `grayscale(${element.style.filters.grayscale})`
+								: "",
+							element.style.filters.sepia
+								? `sepia(${element.style.filters.sepia})`
+								: "",
+							element.style.filters.hueRotate
+								? `hue-rotate(${element.style.filters.hueRotate}deg)`
+								: "",
+							element.style.filters.saturate
+								? `saturate(${element.style.filters.saturate})`
+								: "",
+							element.style.filters.invert
+								? `invert(${element.style.filters.invert})`
+								: "",
+						].join(" "),
+					}
+				: {};
 
 			return (
 				<img
@@ -151,29 +194,50 @@ export default function SlideElement({
 					style={{
 						borderRadius: element.style?.borderRadius,
 						objectFit: element.style?.objectFit as any,
-						...filterStyles
+						...filterStyles,
 					}}
 				/>
 			);
 		}
 
 		if (element.type === "shape") {
-			const filterStyles = element.style?.filters ? {
-				filter: [
-					element.style.filters.blur ? `blur(${element.style.filters.blur}px)` : "",
-					element.style.filters.brightness ? `brightness(${element.style.filters.brightness})` : "",
-					element.style.filters.contrast ? `contrast(${element.style.filters.contrast})` : "",
-					element.style.filters.grayscale ? `grayscale(${element.style.filters.grayscale})` : "",
-					element.style.filters.sepia ? `sepia(${element.style.filters.sepia})` : "",
-					element.style.filters.hueRotate ? `hue-rotate(${element.style.filters.hueRotate}deg)` : "",
-					element.style.filters.saturate ? `saturate(${element.style.filters.saturate})` : "",
-					element.style.filters.invert ? `invert(${element.style.filters.invert})` : "",
-				].join(" ")
-			} : {};
+			const filterStyles = element.style?.filters
+				? {
+						filter: [
+							element.style.filters.blur
+								? `blur(${element.style.filters.blur}px)`
+								: "",
+							element.style.filters.brightness
+								? `brightness(${element.style.filters.brightness})`
+								: "",
+							element.style.filters.contrast
+								? `contrast(${element.style.filters.contrast})`
+								: "",
+							element.style.filters.grayscale
+								? `grayscale(${element.style.filters.grayscale})`
+								: "",
+							element.style.filters.sepia
+								? `sepia(${element.style.filters.sepia})`
+								: "",
+							element.style.filters.hueRotate
+								? `hue-rotate(${element.style.filters.hueRotate}deg)`
+								: "",
+							element.style.filters.saturate
+								? `saturate(${element.style.filters.saturate})`
+								: "",
+							element.style.filters.invert
+								? `invert(${element.style.filters.invert})`
+								: "",
+						].join(" "),
+					}
+				: {};
 
 			const getShapeStyle = (): React.CSSProperties => {
 				const getBackgroundImage = () => {
-					if (element.style?.gradientStops && element.style.gradientStops.length > 0) {
+					if (
+						element.style?.gradientStops &&
+						element.style.gradientStops.length > 0
+					) {
 						const type = element.style.gradientType || "linear";
 						const angle = element.style.gradientAngle || 135;
 						const stops = element.style.gradientStops
@@ -195,7 +259,7 @@ export default function SlideElement({
 					borderStyle: (element.style?.borderStyle as any) || "solid",
 					borderRadius: element.style?.borderRadius || 0,
 					boxShadow: element.style?.boxShadow,
-					...filterStyles
+					...filterStyles,
 				};
 
 				if (element.content === "circle") {

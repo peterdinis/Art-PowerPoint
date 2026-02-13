@@ -90,7 +90,12 @@ export default function SlideBackgroundEditor({
 
 	const handleColorChange = (newColor: string) => {
 		setColor(newColor);
-		onUpdate({ type: "color", color: newColor, image: undefined, gradient: undefined });
+		onUpdate({
+			type: "color",
+			color: newColor,
+			image: undefined,
+			gradient: undefined,
+		});
 	};
 
 	const handleImageChange = (url: string) => {
@@ -105,7 +110,12 @@ export default function SlideBackgroundEditor({
 
 	const handleGradientChange = (gradient: string) => {
 		setSelectedGradient(gradient);
-		onUpdate({ type: "gradient", gradient, color: undefined, image: undefined });
+		onUpdate({
+			type: "gradient",
+			gradient,
+			color: undefined,
+			image: undefined,
+		});
 	};
 
 	const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -220,7 +230,11 @@ export default function SlideBackgroundEditor({
 								<Select
 									value={currentBackground?.gradientType || "linear"}
 									onValueChange={(value: "linear" | "radial") =>
-										onUpdate({ ...currentBackground, type: "gradient", gradientType: value })
+										onUpdate({
+											...currentBackground,
+											type: "gradient",
+											gradientType: value,
+										})
 									}
 								>
 									<SelectTrigger className="mt-1 h-8">
@@ -237,7 +251,9 @@ export default function SlideBackgroundEditor({
 								<div>
 									<div className="flex justify-between mb-1">
 										<Label className="text-xs">Angle</Label>
-										<span className="text-[10px] text-muted-foreground">{currentBackground?.gradientAngle || 135}°</span>
+										<span className="text-[10px] text-muted-foreground">
+											{currentBackground?.gradientAngle || 135}°
+										</span>
 									</div>
 									<Input
 										type="range"
@@ -245,7 +261,11 @@ export default function SlideBackgroundEditor({
 										max="360"
 										value={currentBackground?.gradientAngle || 135}
 										onChange={(e) =>
-											onUpdate({ ...currentBackground, type: "gradient", gradientAngle: Number(e.target.value) })
+											onUpdate({
+												...currentBackground,
+												type: "gradient",
+												gradientAngle: Number(e.target.value),
+											})
 										}
 										className="h-4 mt-1"
 									/>
@@ -260,24 +280,47 @@ export default function SlideBackgroundEditor({
 										size="sm"
 										className="h-6 w-6 p-0"
 										onClick={() => {
-											const stops = [...(currentBackground?.gradientStops || [{ color: "#667eea", offset: 0 }, { color: "#764ba2", offset: 100 }])];
+											const stops = [
+												...(currentBackground?.gradientStops || [
+													{ color: "#667eea", offset: 0 },
+													{ color: "#764ba2", offset: 100 },
+												]),
+											];
 											stops.push({ color: "#ffffff", offset: 100 });
-											onUpdate({ ...currentBackground, type: "gradient", gradientStops: stops });
+											onUpdate({
+												...currentBackground,
+												type: "gradient",
+												gradientStops: stops,
+											});
 										}}
 									>
 										<Plus className="w-3 h-3" />
 									</Button>
 								</Label>
 								<div className="space-y-2">
-									{(currentBackground?.gradientStops || [{ color: "#667eea", offset: 0 }, { color: "#764ba2", offset: 100 }]).map((stop, idx) => (
+									{(
+										currentBackground?.gradientStops || [
+											{ color: "#667eea", offset: 0 },
+											{ color: "#764ba2", offset: 100 },
+										]
+									).map((stop, idx) => (
 										<div key={idx} className="flex items-center gap-2">
 											<Input
 												type="color"
 												value={stop.color}
 												onChange={(e) => {
-													const stops = [...(currentBackground?.gradientStops || [{ color: "#667eea", offset: 0 }, { color: "#764ba2", offset: 100 }])];
+													const stops = [
+														...(currentBackground?.gradientStops || [
+															{ color: "#667eea", offset: 0 },
+															{ color: "#764ba2", offset: 100 },
+														]),
+													];
 													stops[idx] = { ...stops[idx], color: e.target.value };
-													onUpdate({ ...currentBackground, type: "gradient", gradientStops: stops });
+													onUpdate({
+														...currentBackground,
+														type: "gradient",
+														gradientStops: stops,
+													});
 												}}
 												className="w-8 h-8 p-0 border-none bg-transparent"
 											/>
@@ -287,9 +330,21 @@ export default function SlideBackgroundEditor({
 												max="100"
 												value={stop.offset}
 												onChange={(e) => {
-													const stops = [...(currentBackground?.gradientStops || [{ color: "#667eea", offset: 0 }, { color: "#764ba2", offset: 100 }])];
-													stops[idx] = { ...stops[idx], offset: Number(e.target.value) };
-													onUpdate({ ...currentBackground, type: "gradient", gradientStops: stops });
+													const stops = [
+														...(currentBackground?.gradientStops || [
+															{ color: "#667eea", offset: 0 },
+															{ color: "#764ba2", offset: 100 },
+														]),
+													];
+													stops[idx] = {
+														...stops[idx],
+														offset: Number(e.target.value),
+													};
+													onUpdate({
+														...currentBackground,
+														type: "gradient",
+														gradientStops: stops,
+													});
 												}}
 												className="h-8 flex-1"
 											/>
@@ -298,13 +353,25 @@ export default function SlideBackgroundEditor({
 												size="sm"
 												className="h-8 w-8 p-0"
 												onClick={() => {
-													const currentStops = currentBackground?.gradientStops || [{ color: "#667eea", offset: 0 }, { color: "#764ba2", offset: 100 }];
+													const currentStops =
+														currentBackground?.gradientStops || [
+															{ color: "#667eea", offset: 0 },
+															{ color: "#764ba2", offset: 100 },
+														];
 													if (currentStops.length > 2) {
-														const stops = currentStops.filter((_, i) => i !== idx);
-														onUpdate({ ...currentBackground, type: "gradient", gradientStops: stops });
+														const stops = currentStops.filter(
+															(_, i) => i !== idx,
+														);
+														onUpdate({
+															...currentBackground,
+															type: "gradient",
+															gradientStops: stops,
+														});
 													}
 												}}
-												disabled={(currentBackground?.gradientStops?.length || 2) <= 2}
+												disabled={
+													(currentBackground?.gradientStops?.length || 2) <= 2
+												}
 											>
 												<Minus className="w-3 h-3" />
 											</Button>

@@ -31,13 +31,13 @@ export default function EditorCanvas() {
 				if (delta) {
 					const element = currentPresentation.slides[
 						currentSlideIndex
-					]?.elements.find((el: { id: string; }) => el.id === item.id);
+					]?.elements.find((el: { id: string }) => el.id === item.id);
 					if (element) {
 						const slideElement = dropRef.current;
 						const rect = slideElement.getBoundingClientRect();
 						// Adjust scaling calculation to include zoom level
-						const scaleX = (rect.width / zoomLevel) / 960;
-						const scaleY = (rect.height / zoomLevel) / 540;
+						const scaleX = rect.width / zoomLevel / 960;
+						const scaleY = rect.height / zoomLevel / 540;
 
 						const newX = Math.max(
 							0,
@@ -89,10 +89,17 @@ export default function EditorCanvas() {
 			previousSlide();
 		} else if (e.key === "ArrowRight") {
 			nextSlide();
-		} else if ((e.key === "Delete" || e.key === "Backspace") && selectedElementId) {
+		} else if (
+			(e.key === "Delete" || e.key === "Backspace") &&
+			selectedElementId
+		) {
 			// Don't delete if we're in an input or textarea
 			const activeElement = document.activeElement as HTMLElement | null;
-			if (activeElement?.tagName === "INPUT" || activeElement?.tagName === "TEXTAREA" || activeElement?.isContentEditable) {
+			if (
+				activeElement?.tagName === "INPUT" ||
+				activeElement?.tagName === "TEXTAREA" ||
+				activeElement?.isContentEditable
+			) {
 				return;
 			}
 
@@ -143,13 +150,16 @@ export default function EditorCanvas() {
 						width: "100%",
 						maxWidth: "960px",
 						aspectRatio: "16/9",
-						backgroundColor: currentSlide.background?.color || "var(--background)",
+						backgroundColor:
+							currentSlide.background?.color || "var(--background)",
 						backgroundImage: (() => {
-							const stops = currentSlide.background?.gradientStops && currentSlide.background.gradientStops.length > 0
-								? currentSlide.background.gradientStops
-									.map((s: any) => `${s.color} ${s.offset}%`)
-									.join(", ")
-								: currentSlide.background?.gradient;
+							const stops =
+								currentSlide.background?.gradientStops &&
+								currentSlide.background.gradientStops.length > 0
+									? currentSlide.background.gradientStops
+											.map((s: any) => `${s.color} ${s.offset}%`)
+											.join(", ")
+									: currentSlide.background?.gradient;
 
 							const image = currentSlide.background?.image
 								? `url(${currentSlide.background.image})`
@@ -158,9 +168,10 @@ export default function EditorCanvas() {
 							if (stops) {
 								const type = currentSlide.background?.gradientType || "linear";
 								const angle = currentSlide.background?.gradientAngle || 135;
-								const gradient = type === "linear"
-									? `linear-gradient(${angle}deg, ${stops})`
-									: `radial-gradient(circle, ${stops})`;
+								const gradient =
+									type === "linear"
+										? `linear-gradient(${angle}deg, ${stops})`
+										: `radial-gradient(circle, ${stops})`;
 
 								return image ? `${gradient}, ${image}` : gradient;
 							}
@@ -190,7 +201,7 @@ export default function EditorCanvas() {
 									? `linear-gradient(to right, color-mix(in srgb, var(--foreground), transparent 90%) 1px, transparent 1px),
 									   linear-gradient(to bottom, color-mix(in srgb, var(--foreground), transparent 90%) 1px, transparent 1px)`
 									: "none",
-								backgroundSize: '20px 20px'
+								backgroundSize: "20px 20px",
 							}}
 						/>
 					)}
@@ -276,6 +287,6 @@ export default function EditorCanvas() {
 					</div>
 				</div>
 			</div>
-		</div >
+		</div>
 	);
 }
