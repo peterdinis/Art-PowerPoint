@@ -1,6 +1,7 @@
 "use client";
 
 import { usePresentationStore } from "@/lib/store/presentationStore";
+import * as Icons from "lucide-react";
 import {
 	Trash2,
 	Type,
@@ -14,6 +15,13 @@ import {
 	AlignLeft,
 	AlignCenter,
 	AlignRight,
+	Sparkles,
+	Table2,
+	Code,
+	Palette,
+	Plus,
+	Minus,
+	Settings2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,59 +37,24 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { SlideElement } from "@/lib/types/presentation";
+import type {
+	SlideElement,
+	AnimationType,
+	SlideTransitionType,
+	FontWeight,
+	FontStyle,
+	TextDecoration,
+	TextAlign,
+	ObjectFit,
+	BorderStyle,
+	ShapeType,
+} from "@/lib/types/presentation";
 import SlideBackgroundEditor from "./SlideBackgroundEditor";
 import { useTheme } from "@/components/ThemeProvider";
 
 import { motion } from "framer-motion";
 
-// Extended type definitions for better type safety
-type AnimationType =
-	| "none"
-	| "fadeIn"
-	| "slideIn"
-	| "zoomIn"
-	| "bounce"
-	| "rotate"
-	| "fadeOut"
-	| "slideOut"
-	| "zoomOut"
-	| "pulse"
-	| "shake";
-type SlideTransitionType =
-	| "none"
-	| "fade"
-	| "slide"
-	| "zoom"
-	| "blur"
-	| "cube"
-	| "flip";
-type FontWeightType =
-	| "normal"
-	| "bold"
-	| "100"
-	| "200"
-	| "300"
-	| "400"
-	| "500"
-	| "600"
-	| "700"
-	| "800"
-	| "900";
-type FontStyleType = "normal" | "italic" | "oblique";
-type TextDecorationType = "none" | "underline" | "line-through" | "overline";
-type TextAlignType = "left" | "center" | "right" | "justify";
-type ShapeType =
-	| "square"
-	| "circle"
-	| "triangle"
-	| "rectangle"
-	| "rounded"
-	| "star"
-	| "ellipse"
-	| "hexagon"
-	| "arrow"
-	| "heart";
+// Use the core types instead of local ones
 type FontFamilyType =
 	| "Arial"
 	| "Helvetica"
@@ -95,54 +68,6 @@ type FontFamilyType =
 	| "Open Sans"
 	| "Montserrat"
 	| "Lato";
-type BorderStyleType = "solid" | "dashed" | "dotted" | "double";
-type ObjectFitType = "contain" | "cover" | "fill" | "none" | "scale-down";
-
-// Create a proper type for element styling
-interface ElementStyle {
-	color?: string;
-	backgroundColor?: string;
-	borderColor?: string;
-	borderWidth?: number;
-	fontSize?: number;
-	fontFamily?: FontFamilyType;
-	fontWeight?: FontWeightType;
-	fontStyle?: FontStyleType;
-	textDecoration?: TextDecorationType;
-	textAlign?: TextAlignType;
-	opacity?: number;
-	borderRadius?: number;
-	borderStyle?: BorderStyleType;
-	boxShadow?: string;
-	lineHeight?: number;
-	letterSpacing?: number;
-	gradient?: string;
-	objectFit?: ObjectFitType;
-}
-
-// Create a proper extended element type based on what SlideElement probably contains
-// Instead of extending, create a type that works with our store functions
-interface ExtendedSlideElement {
-	id: string;
-	type: "text" | "image" | "shape" | "video";
-	content: string;
-	position: { x: number; y: number };
-	size: { width: number; height: number };
-	style?: ElementStyle;
-	animation?: {
-		type: AnimationType;
-		duration: number;
-		delay: number;
-		easing?: string;
-		direction?: "normal" | "reverse" | "alternate" | "alternate-reverse";
-	};
-	autoplay?: boolean;
-	controls?: boolean;
-	loop?: boolean;
-	rotation?: number;
-	// Add other properties that might exist in SlideElement
-	[key: string]: any;
-}
 
 export default function PropertiesPanel() {
 	const {
@@ -174,37 +99,15 @@ export default function PropertiesPanel() {
 		: undefined;
 
 	// Helper function to get element with proper typing
-	const getExtendedElement = (): ExtendedSlideElement | undefined => {
+	const getExtendedElement = (): SlideElement | undefined => {
 		if (!selectedElement) return undefined;
 
-		// Create a properly typed element based on what we have
-		const element = selectedElement as any;
-
-		// Ensure all required properties exist with defaults
-		const extendedElement: ExtendedSlideElement = {
-			id: element.id || "",
-			type: element.type || "text",
-			content: element.content || "",
-			position: element.position || { x: 0, y: 0 },
-			size: element.size || { width: 100, height: 100 },
-			style: element.style || {},
-			rotation: element.rotation || 0,
-			// Copy any other properties
-			...element,
-		};
-
-		// Ensure nested objects exist
-		if (!extendedElement.position) extendedElement.position = { x: 0, y: 0 };
-		if (!extendedElement.size)
-			extendedElement.size = { width: 100, height: 100 };
-		if (!extendedElement.style) extendedElement.style = {};
-
-		return extendedElement;
+		return selectedElement;
 	};
 
 	const extendedElement = getExtendedElement();
 
-	const handleUpdate = (updates: Partial<ExtendedSlideElement>) => {
+	const handleUpdate = (updates: Partial<SlideElement>) => {
 		if (selectedElement) {
 			// Prepare the update object
 			const updateData: any = { ...updates };
@@ -237,12 +140,12 @@ export default function PropertiesPanel() {
 		const updatedSlides = currentPresentation.slides.map((slide, index) =>
 			index === currentSlideIndex
 				? {
-						...slide,
-						background: {
-							...(slide.background || { type: "color", color: "#ffffff" }),
-							...updates,
-						},
-					}
+					...slide,
+					background: {
+						...(slide.background || { type: "color", color: "#ffffff" }),
+						...updates,
+					},
+				}
 				: slide,
 		);
 		updatePresentation(currentPresentation.id, { slides: updatedSlides });
@@ -315,13 +218,13 @@ export default function PropertiesPanel() {
 										(slide, index) =>
 											index === currentSlideIndex
 												? {
-														...slide,
-														transition: {
-															type: value,
-															duration: slide.transition?.duration || 500,
-															direction: slide.transition?.direction || "right",
-														},
-													}
+													...slide,
+													transition: {
+														type: value,
+														duration: slide.transition?.duration || 500,
+														direction: slide.transition?.direction || "right",
+													},
+												}
 												: slide,
 									);
 									updatePresentation(currentPresentation.id, {
@@ -358,12 +261,12 @@ export default function PropertiesPanel() {
 														(slide, index) =>
 															index === currentSlideIndex
 																? {
-																		...slide,
-																		transition: {
-																			...slide.transition!,
-																			duration: Number(e.target.value),
-																		},
-																	}
+																	...slide,
+																	transition: {
+																		...slide.transition!,
+																		duration: Number(e.target.value),
+																	},
+																}
 																: slide,
 													);
 													updatePresentation(currentPresentation.id, {
@@ -378,50 +281,50 @@ export default function PropertiesPanel() {
 										</div>
 										{(currentSlide.transition.type === "slide" ||
 											currentSlide.transition.type === "cube") && (
-											<div>
-												<Label
-													htmlFor="transition-direction"
-													className="text-xs"
-												>
-													Direction
-												</Label>
-												<Select
-													value={currentSlide.transition.direction || "right"}
-													onValueChange={(
-														value: "left" | "right" | "up" | "down",
-													) => {
-														const updatedSlides =
-															currentPresentation.slides.map((slide, index) =>
-																index === currentSlideIndex
-																	? {
+												<div>
+													<Label
+														htmlFor="transition-direction"
+														className="text-xs"
+													>
+														Direction
+													</Label>
+													<Select
+														value={currentSlide.transition.direction || "right"}
+														onValueChange={(
+															value: "left" | "right" | "up" | "down",
+														) => {
+															const updatedSlides =
+																currentPresentation.slides.map((slide, index) =>
+																	index === currentSlideIndex
+																		? {
 																			...slide,
 																			transition: {
 																				...slide.transition!,
 																				direction: value,
 																			},
 																		}
-																	: slide,
-															);
-														updatePresentation(currentPresentation.id, {
-															slides: updatedSlides,
-														});
-													}}
-												>
-													<SelectTrigger
-														id="transition-direction"
-														className="mt-1"
+																		: slide,
+																);
+															updatePresentation(currentPresentation.id, {
+																slides: updatedSlides,
+															});
+														}}
 													>
-														<SelectValue placeholder="Select direction" />
-													</SelectTrigger>
-													<SelectContent>
-														<SelectItem value="left">Left</SelectItem>
-														<SelectItem value="right">Right</SelectItem>
-														<SelectItem value="up">Up</SelectItem>
-														<SelectItem value="down">Down</SelectItem>
-													</SelectContent>
-												</Select>
-											</div>
-										)}
+														<SelectTrigger
+															id="transition-direction"
+															className="mt-1"
+														>
+															<SelectValue placeholder="Select direction" />
+														</SelectTrigger>
+														<SelectContent>
+															<SelectItem value="left">Left</SelectItem>
+															<SelectItem value="right">Right</SelectItem>
+															<SelectItem value="up">Up</SelectItem>
+															<SelectItem value="down">Down</SelectItem>
+														</SelectContent>
+													</Select>
+												</div>
+											)}
 									</div>
 								)}
 						</div>
@@ -441,6 +344,12 @@ export default function PropertiesPanel() {
 				return <Square className="w-5 h-5" />;
 			case "video":
 				return <Video className="w-5 h-5" />;
+			case "icon":
+				return <Sparkles className="w-5 h-5" />;
+			case "table":
+				return <Table2 className="w-5 h-5" />;
+			case "code":
+				return <Code className="w-5 h-5" />;
 			default:
 				return <Layers className="w-5 h-5" />;
 		}
@@ -452,7 +361,7 @@ export default function PropertiesPanel() {
 			initial={{ x: 320, opacity: 0 }}
 			animate={{ x: 0, opacity: 1 }}
 			transition={{ type: "spring", stiffness: 300, damping: 30 }}
-			className="w-80 bg-background border-l border-border flex flex-col"
+			className="w-80 h-[calc(100vh-4rem)] bg-background border-l border-border flex flex-col overflow-hidden"
 		>
 			<CardHeader>
 				<div className="flex items-center justify-between">
@@ -763,7 +672,7 @@ export default function PropertiesPanel() {
 									className={cn(
 										"h-8 w-full rounded-none border-l",
 										extendedElement.style?.fontStyle === "italic" &&
-											"bg-accent",
+										"bg-accent",
 									)}
 									onClick={() =>
 										handleUpdate({
@@ -786,7 +695,7 @@ export default function PropertiesPanel() {
 									className={cn(
 										"h-8 w-full rounded-none border-l",
 										extendedElement.style?.textDecoration === "underline" &&
-											"bg-accent",
+										"bg-accent",
 									)}
 									onClick={() =>
 										handleUpdate({
@@ -813,7 +722,7 @@ export default function PropertiesPanel() {
 										"h-8 w-full rounded-none",
 										(!extendedElement.style?.textAlign ||
 											extendedElement.style?.textAlign === "left") &&
-											"bg-accent",
+										"bg-accent",
 									)}
 									onClick={() =>
 										handleUpdate({
@@ -830,7 +739,7 @@ export default function PropertiesPanel() {
 									className={cn(
 										"h-8 w-full rounded-none border-l",
 										extendedElement.style?.textAlign === "center" &&
-											"bg-accent",
+										"bg-accent",
 									)}
 									onClick={() =>
 										handleUpdate({
@@ -937,14 +846,17 @@ export default function PropertiesPanel() {
 							<Label htmlFor="image-fit">Image Fit</Label>
 							<Select
 								value={extendedElement.style?.objectFit || "cover"}
-								onValueChange={(value: ObjectFitType) =>
+								onValueChange={(value: any) =>
 									handleUpdate({
-										style: { ...extendedElement.style, objectFit: value },
+										style: {
+											...extendedElement.style,
+											objectFit: value as ObjectFit,
+										},
 									})
 								}
 							>
-								<SelectTrigger id="image-fit" className="mt-2">
-									<SelectValue placeholder="Select fit mode" />
+								<SelectTrigger id="object-fit" className="mt-2">
+									<SelectValue placeholder="Select fit" />
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="cover">Cover</SelectItem>
@@ -1037,9 +949,9 @@ export default function PropertiesPanel() {
 					<>
 						<Separator />
 						<div>
-							<Label htmlFor="shape-type">Shape Type</Label>
+							<Label htmlFor="shape-type">Shape</Label>
 							<Select
-								value={(extendedElement.content as ShapeType) || "square"}
+								value={extendedElement.content as ShapeType}
 								onValueChange={(value: ShapeType) =>
 									handleUpdate({ content: value })
 								}
@@ -1052,19 +964,17 @@ export default function PropertiesPanel() {
 									<SelectItem value="circle">Circle</SelectItem>
 									<SelectItem value="triangle">Triangle</SelectItem>
 									<SelectItem value="rectangle">Rectangle</SelectItem>
-									<SelectItem value="rounded">Rounded Rectangle</SelectItem>
+									<SelectItem value="rounded">Rounded</SelectItem>
 									<SelectItem value="star">Star</SelectItem>
-									<SelectItem value="ellipse">Ellipse</SelectItem>
-									<SelectItem value="hexagon">Hexagon</SelectItem>
-									<SelectItem value="arrow">Arrow</SelectItem>
 									<SelectItem value="heart">Heart</SelectItem>
+									<SelectItem value="hexagon">Hexagon</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
 
 						<div className="grid grid-cols-2 gap-4">
 							<div>
-								<Label htmlFor="shape-bg">Background Color</Label>
+								<Label htmlFor="shape-bg">Fill Color</Label>
 								<Input
 									id="shape-bg"
 									type="color"
@@ -1080,11 +990,10 @@ export default function PropertiesPanel() {
 									className="w-full h-10 mt-2 cursor-pointer"
 								/>
 							</div>
-
 							<div>
-								<Label htmlFor="shape-border-color">Border Color</Label>
+								<Label htmlFor="shape-border">Border Color</Label>
 								<Input
-									id="shape-border-color"
+									id="shape-border"
 									type="color"
 									value={extendedElement.style?.borderColor || "#000000"}
 									onChange={(e) =>
@@ -1100,43 +1009,46 @@ export default function PropertiesPanel() {
 							</div>
 						</div>
 
-						<div className="grid grid-cols-2 gap-4">
-							<div>
-								<Label htmlFor="shape-border-width">Border Width</Label>
-								<Input
-									id="shape-border-width"
-									type="number"
-									value={extendedElement.style?.borderWidth || 0}
-									onChange={(e) =>
-										handleUpdate({
-											style: {
-												...extendedElement.style,
-												borderWidth: Math.max(0, Number(e.target.value)),
-											},
-										})
-									}
-									min="0"
-									className="mt-2"
-								/>
-							</div>
+						<div>
+							<Label htmlFor="shape-border-width">Border Width</Label>
+							<Input
+								id="shape-border-width"
+								type="number"
+								value={extendedElement.style?.borderWidth || 0}
+								onChange={(e) =>
+									handleUpdate({
+										style: {
+											...extendedElement.style,
+											borderWidth: Number(e.target.value),
+										},
+									})
+								}
+								className="mt-2"
+							/>
+						</div>
 
-							<div>
-								<Label htmlFor="shape-border-radius">Border Radius</Label>
+						<div>
+							<Label htmlFor="shape-border-radius">Border Radius</Label>
+							<div className="flex items-center gap-2 mt-2">
 								<Input
 									id="shape-border-radius"
-									type="number"
+									type="range"
+									min="0"
+									max="100"
 									value={extendedElement.style?.borderRadius || 0}
 									onChange={(e) =>
 										handleUpdate({
 											style: {
 												...extendedElement.style,
-												borderRadius: Math.max(0, Number(e.target.value)),
+												borderRadius: Number(e.target.value),
 											},
 										})
 									}
-									min="0"
-									className="mt-2"
+									className="flex-1"
 								/>
+								<span className="text-sm w-8">
+									{extendedElement.style?.borderRadius || 0}
+								</span>
 							</div>
 						</div>
 
@@ -1144,11 +1056,11 @@ export default function PropertiesPanel() {
 							<Label htmlFor="shape-border-style">Border Style</Label>
 							<Select
 								value={extendedElement.style?.borderStyle || "solid"}
-								onValueChange={(value: BorderStyleType) =>
+								onValueChange={(value: any) =>
 									handleUpdate({
 										style: {
 											...extendedElement.style,
-											borderStyle: value,
+											borderStyle: value as BorderStyle,
 										},
 									})
 								}
@@ -1186,30 +1098,505 @@ export default function PropertiesPanel() {
 					</>
 				)}
 
-				{/* Animation Settings - for all elements */}
+				{/* Icon-specific properties */}
+				{extendedElement.type === "icon" && (
+					<>
+						<Separator />
+						<div>
+							<Label htmlFor="icon-name">Icon</Label>
+							<Select
+								value={extendedElement.style?.iconName || "HelpCircle"}
+								onValueChange={(value) =>
+									handleUpdate({
+										style: {
+											...extendedElement.style,
+											iconName: value,
+										},
+									})
+								}
+							>
+								<SelectTrigger id="icon-name" className="mt-2 text-left h-auto py-2">
+									<div className="flex items-center gap-2">
+										<div className="p-1.5 bg-muted rounded">
+											{(() => {
+												const IconComp = (Icons as any)[extendedElement.style?.iconName || "HelpCircle"] || Icons.HelpCircle;
+												return <IconComp size={16} />;
+											})()}
+										</div>
+										<SelectValue placeholder="Select icon" />
+									</div>
+								</SelectTrigger>
+								<SelectContent className="max-h-[300px]">
+									{["Calendar", "Clock", "MapPin", "Phone", "Mail", "Globe", "Music", "Film", "Mic", "Star", "Heart", "Sparkles", "Zap", "Layers", "Grid", "Columns", "Rows", "PanelLeft", "PanelRight", "PanelTop", "PanelBottom", "Check", "X", "Plus", "Minus", "ChevronRight", "ChevronLeft", "ArrowRight", "ArrowLeft", "Search", "Settings", "Bell", "User", "Home", "Camera", "Play", "Pause", "Volume2", "Shield", "Lock", "Unlock", "Cloud", "Sun", "Moon", "Wind", "Umbrella", "Smile", "Wink", "Hand", "ThumbsUp", "Anchor", "Activity", "BarChart2", "Database", "Terminal", "Cpu", "HardDrive", "Layout", "Box"].map((name) => {
+										const IconComp = (Icons as any)[name] || Icons.HelpCircle;
+										return (
+											<SelectItem key={name} value={name}>
+												<div className="flex items-center gap-2">
+													<IconComp size={14} />
+													<span className="text-xs">{name}</span>
+												</div>
+											</SelectItem>
+										);
+									})}
+								</SelectContent>
+							</Select>
+						</div>
+
+						<div>
+							<Label htmlFor="icon-color">Color</Label>
+							<Input
+								id="icon-color"
+								type="color"
+								value={extendedElement.style?.color || "#3b82f6"}
+								onChange={(e) =>
+									handleUpdate({
+										style: {
+											...extendedElement.style,
+											color: e.target.value,
+										},
+									})
+								}
+								className="w-full h-10 mt-2 cursor-pointer"
+							/>
+						</div>
+					</>
+				)}
+
+				{/* Table-specific properties */}
+				{extendedElement.type === "table" && (
+					<>
+						<Separator />
+						<div className="grid grid-cols-2 gap-4">
+							<div>
+								<Label htmlFor="table-rows">Rows</Label>
+								<Input
+									id="table-rows"
+									type="number"
+									min="1"
+									max="20"
+									value={extendedElement.style?.rows || 1}
+									onChange={(e) => {
+										const val = Number(e.target.value);
+										const oldRows = extendedElement.style?.rows || 3;
+										const cols = extendedElement.style?.cols || 3;
+										let tableData = [...(extendedElement.style?.tableData || [])];
+
+										if (val > oldRows) {
+											// Add rows
+											const newRows = Array(val - oldRows).fill(null).map(() =>
+												Array(cols).fill(null).map(() => ({ content: "" }))
+											);
+											tableData = [...tableData, ...newRows];
+										} else if (val < oldRows) {
+											// Remove rows
+											tableData = tableData.slice(0, val);
+										}
+
+										handleUpdate({
+											style: {
+												...extendedElement.style,
+												rows: val,
+												tableData
+											},
+										});
+									}}
+									className="mt-2"
+								/>
+							</div>
+							<div>
+								<Label htmlFor="table-cols">Columns</Label>
+								<Input
+									id="table-cols"
+									type="number"
+									min="1"
+									max="10"
+									value={extendedElement.style?.cols || 1}
+									onChange={(e) => {
+										const val = Number(e.target.value);
+										const rows = extendedElement.style?.rows || 3;
+										const oldCols = extendedElement.style?.cols || 3;
+										let tableData = (extendedElement.style?.tableData || []).map((row: any) => {
+											let newRow = [...row];
+											if (val > oldCols) {
+												// Add columns
+												const newCols = Array(val - oldCols).fill(null).map(() => ({ content: "" }));
+												newRow = [...newRow, ...newCols];
+											} else if (val < oldCols) {
+												// Remove columns
+												newRow = newRow.slice(0, val);
+											}
+											return newRow;
+										});
+
+										handleUpdate({
+											style: {
+												...extendedElement.style,
+												cols: val,
+												tableData
+											},
+										});
+									}}
+									className="mt-2"
+								/>
+							</div>
+						</div>
+
+						<div className="space-y-3">
+							<div className="flex items-center justify-between">
+								<Label htmlFor="header-row">Header Row</Label>
+								<input
+									id="header-row"
+									type="checkbox"
+									checked={extendedElement.style?.headerRow ?? true}
+									onChange={(e) =>
+										handleUpdate({
+											style: {
+												...extendedElement.style,
+												headerRow: e.target.checked,
+											},
+										})
+									}
+									className="w-4 h-4"
+								/>
+							</div>
+							<div className="flex items-center justify-between">
+								<Label htmlFor="stripe-rows">Striped Rows</Label>
+								<input
+									id="stripe-rows"
+									type="checkbox"
+									checked={extendedElement.style?.stripeRows ?? true}
+									onChange={(e) =>
+										handleUpdate({
+											style: {
+												...extendedElement.style,
+												stripeRows: e.target.checked,
+											},
+										})
+									}
+									className="w-4 h-4"
+								/>
+							</div>
+						</div>
+					</>
+				)}
+
+				{/* Code-specific properties */}
+				{extendedElement.type === "code" && (
+					<>
+						<Separator />
+						<div>
+							<Label htmlFor="code-language">Language</Label>
+							<Select
+								value={extendedElement.style?.language || "javascript"}
+								onValueChange={(value) =>
+									handleUpdate({
+										style: {
+											...extendedElement.style,
+											language: value,
+										},
+									})
+								}
+							>
+								<SelectTrigger id="code-language" className="mt-2">
+									<SelectValue placeholder="Select language" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="javascript">JavaScript</SelectItem>
+									<SelectItem value="typescript">TypeScript</SelectItem>
+									<SelectItem value="python">Python</SelectItem>
+									<SelectItem value="html">HTML</SelectItem>
+									<SelectItem value="css">CSS</SelectItem>
+									<SelectItem value="json">JSON</SelectItem>
+									<SelectItem value="rust">Rust</SelectItem>
+									<SelectItem value="go">Go</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+
+						<div>
+							<Label htmlFor="code-theme">Theme</Label>
+							<Select
+								value={extendedElement.style?.theme || "dark"}
+								onValueChange={(value) =>
+									handleUpdate({
+										style: {
+											...extendedElement.style,
+											theme: value as "dark" | "light",
+											backgroundColor: value === "dark" ? "#1e1e1e" : "#f5f5f5",
+											color: value === "dark" ? "#d4d4d4" : "#333333",
+										},
+									})
+								}
+							>
+								<SelectTrigger id="code-theme" className="mt-2">
+									<SelectValue placeholder="Select theme" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="dark">Dark (VS Code)</SelectItem>
+									<SelectItem value="light">Light</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+
+						<div className="flex items-center justify-between">
+							<Label htmlFor="line-numbers">Line Numbers</Label>
+							<input
+								id="line-numbers"
+								type="checkbox"
+								checked={extendedElement.style?.lineNumbers ?? true}
+								onChange={(e) =>
+									handleUpdate({
+										style: {
+											...extendedElement.style,
+											lineNumbers: e.target.checked,
+										},
+									})
+								}
+								className="w-4 h-4"
+							/>
+						</div>
+					</>
+				)}
+
+				{/* Gradients section */}
+				<Separator />
+				<div className="space-y-4">
+					<div className="flex items-center justify-between">
+						<Label className="flex items-center gap-2">
+							<Palette className="w-4 h-4" /> Advanced Gradient
+						</Label>
+						<input
+							type="checkbox"
+							checked={!!(extendedElement.style?.gradientStops && extendedElement.style.gradientStops.length > 0)}
+							onChange={(e) => {
+								if (e.target.checked) {
+									handleUpdate({
+										style: {
+											...extendedElement.style,
+											gradientStops: [
+												{ color: extendedElement.style?.backgroundColor || "#3b82f6", offset: 0 },
+												{ color: "#ffffff", offset: 100 }
+											],
+											gradientType: "linear",
+											gradientAngle: 135
+										}
+									});
+								} else {
+									handleUpdate({
+										style: {
+											...extendedElement.style,
+											gradientStops: undefined,
+											gradientType: undefined,
+											gradientAngle: undefined
+										}
+									});
+								}
+							}}
+							className="w-4 h-4"
+						/>
+					</div>
+
+					{extendedElement.style?.gradientStops && extendedElement.style.gradientStops.length > 0 && (
+						<div className="space-y-4 pt-2">
+							<div>
+								<Label className="text-xs">Type</Label>
+								<Select
+									value={extendedElement.style.gradientType || "linear"}
+									onValueChange={(value: "linear" | "radial") =>
+										handleUpdate({
+											style: { ...extendedElement.style, gradientType: value }
+										})
+									}
+								>
+									<SelectTrigger className="mt-1 h-8">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="linear">Linear</SelectItem>
+										<SelectItem value="radial">Radial</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+
+							{extendedElement.style.gradientType !== "radial" && (
+								<div>
+									<Label className="text-xs">Angle: {extendedElement.style.gradientAngle || 135}°</Label>
+									<Input
+										type="range"
+										min="0"
+										max="360"
+										value={extendedElement.style.gradientAngle || 135}
+										onChange={(e) =>
+											handleUpdate({
+												style: { ...extendedElement.style, gradientAngle: Number(e.target.value) }
+											})
+										}
+										className="mt-1"
+									/>
+								</div>
+							)}
+
+							<div className="space-y-2">
+								<Label className="text-xs flex items-center justify-between">
+									Stops
+									<Button
+										variant="ghost"
+										size="sm"
+										className="h-6 w-6 p-0"
+										onClick={() => {
+											const stops = [...(extendedElement.style?.gradientStops || [])];
+											stops.push({ color: "#ffffff", offset: 100 });
+											handleUpdate({ style: { ...extendedElement.style, gradientStops: stops } });
+										}}
+									>
+										<Plus className="w-3 h-3" />
+									</Button>
+								</Label>
+								<div className="space-y-2">
+									{extendedElement.style.gradientStops.map((stop, idx) => (
+										<div key={idx} className="flex items-center gap-2">
+											<Input
+												type="color"
+												value={stop.color}
+												onChange={(e) => {
+													const stops = [...(extendedElement.style?.gradientStops || [])];
+													stops[idx] = { ...stops[idx], color: e.target.value };
+													handleUpdate({ style: { ...extendedElement.style, gradientStops: stops } });
+												}}
+												className="w-8 h-8 p-0 border-none bg-transparent"
+											/>
+											<Input
+												type="number"
+												min="0"
+												max="100"
+												value={stop.offset}
+												onChange={(e) => {
+													const stops = [...(extendedElement.style?.gradientStops || [])];
+													stops[idx] = { ...stops[idx], offset: Number(e.target.value) };
+													handleUpdate({ style: { ...extendedElement.style, gradientStops: stops } });
+												}}
+												className="h-8 flex-1"
+											/>
+											{extendedElement.style!.gradientStops!.length > 2 && (
+												<Button
+													variant="ghost"
+													size="sm"
+													className="h-8 w-8 p-0"
+													onClick={() => {
+														const stops = extendedElement.style!.gradientStops!.filter((_, i) => i !== idx);
+														handleUpdate({ style: { ...extendedElement.style, gradientStops: stops } });
+													}}
+												>
+													<Minus className="w-3 h-3" />
+												</Button>
+											)}
+										</div>
+									))}
+								</div>
+							</div>
+						</div>
+					)}
+				</div>
+
+				{/* Filters section */}
+				<Separator />
+				<div className="space-y-4">
+					<div className="flex items-center justify-between">
+						<Label className="flex items-center gap-2">
+							<Settings2 className="w-4 h-4" /> Filter Effects
+						</Label>
+						<input
+							type="checkbox"
+							checked={!!extendedElement.style?.filters}
+							onChange={(e) => {
+								if (e.target.checked) {
+									handleUpdate({
+										style: {
+											...extendedElement.style,
+											filters: {
+												blur: 0,
+												brightness: 1,
+												contrast: 1,
+												grayscale: 0,
+												sepia: 0,
+												hueRotate: 0,
+												saturate: 1,
+												invert: 0
+											}
+										}
+									});
+								} else {
+									handleUpdate({
+										style: { ...extendedElement.style, filters: undefined }
+									});
+								}
+							}}
+							className="w-4 h-4"
+						/>
+					</div>
+
+					{extendedElement.style?.filters && (
+						<div className="space-y-4 pt-2">
+							{[
+								{ label: "Blur", key: "blur", min: 0, max: 20, step: 0.1, unit: "px" },
+								{ label: "Brightness", key: "brightness", min: 0, max: 3, step: 0.1, unit: "" },
+								{ label: "Contrast", key: "contrast", min: 0, max: 3, step: 0.1, unit: "" },
+								{ label: "Grayscale", key: "grayscale", min: 0, max: 1, step: 0.1, unit: "" },
+								{ label: "Sepia", key: "sepia", min: 0, max: 1, step: 0.1, unit: "" },
+								{ label: "Hue Rotate", key: "hueRotate", min: 0, max: 360, step: 1, unit: "deg" },
+								{ label: "Saturate", key: "saturate", min: 0, max: 5, step: 0.1, unit: "" },
+								{ label: "Invert", key: "invert", min: 0, max: 1, step: 0.1, unit: "" },
+							].map((filter) => (
+								<div key={filter.key}>
+									<div className="flex justify-between mb-1">
+										<Label className="text-xs">{filter.label}</Label>
+										<span className="text-[10px] text-muted-foreground">
+											{(extendedElement.style?.filters as any)?.[filter.key] ?? 0}{filter.unit}
+										</span>
+									</div>
+									<Input
+										type="range"
+										min={filter.min}
+										max={filter.max}
+										step={filter.step}
+										value={(extendedElement.style?.filters as any)?.[filter.key] ?? 0}
+										onChange={(e) =>
+											handleUpdate({
+												style: {
+													...extendedElement.style,
+													filters: {
+														...extendedElement.style?.filters,
+														[filter.key]: Number(e.target.value)
+													}
+												}
+											})
+										}
+										className="h-4"
+									/>
+								</div>
+							))}
+						</div>
+					)}
+				</div>
+
+				{/* Animation */}
 				<Separator />
 				<div>
 					<Label className="mb-3">Animation</Label>
-					<div className="space-y-3">
+					<div className="space-y-4 mt-2">
 						<div>
-							<Label
-								htmlFor="animation-type"
-								className="text-xs text-muted-foreground"
-							>
-								Animation Type
+							<Label htmlFor="animation-type" className="text-xs">
+								Type
 							</Label>
 							<Select
 								value={extendedElement.animation?.type || "none"}
 								onValueChange={(value: AnimationType) =>
 									handleUpdate({
 										animation: {
+											...extendedElement.animation,
 											type: value,
-											duration: extendedElement.animation?.duration || 500,
+											duration: extendedElement.animation?.duration || 1000,
 											delay: extendedElement.animation?.delay || 0,
-											easing:
-												extendedElement.animation?.easing || "ease-in-out",
-											direction:
-												extendedElement.animation?.direction || "normal",
 										},
 									})
 								}
@@ -1220,146 +1607,133 @@ export default function PropertiesPanel() {
 								<SelectContent>
 									<SelectItem value="none">None</SelectItem>
 									<SelectItem value="fadeIn">Fade In</SelectItem>
-									<SelectItem value="fadeOut">Fade Out</SelectItem>
 									<SelectItem value="slideIn">Slide In</SelectItem>
-									<SelectItem value="slideOut">Slide Out</SelectItem>
 									<SelectItem value="zoomIn">Zoom In</SelectItem>
-									<SelectItem value="zoomOut">Zoom Out</SelectItem>
 									<SelectItem value="bounce">Bounce</SelectItem>
 									<SelectItem value="rotate">Rotate</SelectItem>
+									<SelectItem value="fadeOut">Fade Out</SelectItem>
+									<SelectItem value="slideOut">Slide Out</SelectItem>
+									<SelectItem value="zoomOut">Zoom Out</SelectItem>
 									<SelectItem value="pulse">Pulse</SelectItem>
 									<SelectItem value="shake">Shake</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
+
 						{extendedElement.animation &&
 							extendedElement.animation.type !== "none" && (
 								<>
-									<div>
-										<Label
-											htmlFor="animation-duration"
-											className="text-xs text-muted-foreground"
-										>
-											Duration (ms)
-										</Label>
-										<Input
-											id="animation-duration"
-											type="number"
-											value={extendedElement.animation.duration || 500}
-											onChange={(e) =>
-												handleUpdate({
-													animation: {
-														...extendedElement.animation,
-														duration: Number(e.target.value),
-													},
-												})
-											}
-											min="100"
-											max="2000"
-											step="100"
-											className="mt-1"
-										/>
+									<div className="grid grid-cols-2 gap-3">
+										<div>
+											<Label htmlFor="anim-duration" className="text-xs">
+												Duration (ms)
+											</Label>
+											<Input
+												id="anim-duration"
+												type="number"
+												value={extendedElement.animation.duration}
+												onChange={(e) =>
+													handleUpdate({
+														animation: {
+															...extendedElement.animation!,
+															type: extendedElement.animation!.type,
+															duration: Number(e.target.value),
+														},
+													})
+												}
+												className="mt-1"
+											/>
+										</div>
+										<div>
+											<Label htmlFor="anim-delay" className="text-xs">
+												Delay (ms)
+											</Label>
+											<Input
+												id="anim-delay"
+												type="number"
+												value={extendedElement.animation.delay || 0}
+												onChange={(e) =>
+													handleUpdate({
+														animation: {
+															...extendedElement.animation!,
+															type: extendedElement.animation!.type,
+															duration: extendedElement.animation!.duration,
+															delay: Number(e.target.value),
+														},
+													})
+												}
+												className="mt-1"
+											/>
+										</div>
 									</div>
+
 									<div>
-										<Label
-											htmlFor="animation-delay"
-											className="text-xs text-muted-foreground"
-										>
-											Delay (ms)
-										</Label>
-										<Input
-											id="animation-delay"
-											type="number"
-											value={extendedElement.animation.delay || 0}
-											onChange={(e) =>
-												handleUpdate({
-													animation: {
-														...extendedElement.animation,
-														delay: Number(e.target.value),
-													},
-												})
-											}
-											min="0"
-											max="5000"
-											step="100"
-											className="mt-1"
-										/>
-									</div>
-									<div>
-										<Label
-											htmlFor="animation-easing"
-											className="text-xs text-muted-foreground"
-										>
+										<Label htmlFor="anim-easing" className="text-xs">
 											Easing
 										</Label>
 										<Select
-											value={extendedElement.animation?.easing || "ease-in-out"}
-											onValueChange={(value: string) =>
+											value={extendedElement.animation.easing || "ease-out"}
+											onValueChange={(value) =>
 												handleUpdate({
 													animation: {
-														...extendedElement.animation,
+														...extendedElement.animation!,
+														type: extendedElement.animation!.type,
+														duration: extendedElement.animation!.duration,
 														easing: value,
 													},
 												})
 											}
 										>
-											<SelectTrigger id="animation-easing" className="mt-1">
+											<SelectTrigger id="anim-easing" className="mt-1">
 												<SelectValue placeholder="Select easing" />
 											</SelectTrigger>
 											<SelectContent>
 												<SelectItem value="linear">Linear</SelectItem>
-												<SelectItem value="ease">Ease</SelectItem>
 												<SelectItem value="ease-in">Ease In</SelectItem>
 												<SelectItem value="ease-out">Ease Out</SelectItem>
-												<SelectItem value="ease-in-out">Ease In Out</SelectItem>
-												<SelectItem value="cubic-bezier(0.68, -0.55, 0.265, 1.55)">
-													Bounce
+												<SelectItem value="ease-in-out">
+													Ease In Out
 												</SelectItem>
 											</SelectContent>
 										</Select>
 									</div>
-									{extendedElement.animation.type.includes("slide") && (
-										<div>
-											<Label
-												htmlFor="animation-direction"
-												className="text-xs text-muted-foreground"
-											>
-												Direction
-											</Label>
-											<Select
-												value={extendedElement.animation.direction || "normal"}
-												onValueChange={(
-													value:
-														| "normal"
-														| "reverse"
-														| "alternate"
-														| "alternate-reverse",
-												) =>
-													handleUpdate({
-														animation: {
-															...extendedElement.animation,
-															direction: value,
-														},
-													})
-												}
-											>
-												<SelectTrigger
-													id="animation-direction"
-													className="mt-1"
-												>
-													<SelectValue placeholder="Select direction" />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="normal">Normal</SelectItem>
-													<SelectItem value="reverse">Reverse</SelectItem>
-													<SelectItem value="alternate">Alternate</SelectItem>
-													<SelectItem value="alternate-reverse">
-														Alternate Reverse
-													</SelectItem>
-												</SelectContent>
-											</Select>
-										</div>
-									)}
+
+									<div>
+										<Label htmlFor="anim-direction" className="text-xs">
+											Direction
+										</Label>
+										<Select
+											value={extendedElement.animation.direction || "normal"}
+											onValueChange={(
+												value:
+													| "normal"
+													| "reverse"
+													| "alternate"
+													| "alternate-reverse",
+											) =>
+												handleUpdate({
+													animation: {
+														...extendedElement.animation!,
+														type: extendedElement.animation!.type,
+														duration: extendedElement.animation!.duration,
+														direction: value,
+													},
+												})
+											}
+										>
+											<SelectTrigger id="anim-direction" className="mt-1">
+												<SelectValue placeholder="Select direction" />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="normal">Normal</SelectItem>
+												<SelectItem value="reverse">Reverse</SelectItem>
+												<SelectItem value="alternate">Alternate</SelectItem>
+												<SelectItem value="alternate-reverse">
+													Alt Reverse
+												</SelectItem>
+											</SelectContent>
+										</Select>
+									</div>
 								</>
 							)}
 					</div>

@@ -2,6 +2,10 @@ import type {
 	Presentation,
 	Slide,
 	SlideElement,
+	TextAlign,
+	FontWeight,
+	FontStyle,
+	ShapeType,
 } from "@/lib/types/presentation";
 import { v4 as uuidv4 } from "uuid";
 
@@ -22,7 +26,7 @@ const createTextElement = (
 	height: number,
 	fontSize: number = 24,
 	color: string = "#000000",
-	textAlign: "left" | "center" | "right" = "left",
+	textAlign: TextAlign = "left",
 ): SlideElement => ({
 	id: uuidv4(),
 	type: "text",
@@ -39,7 +43,7 @@ const createTextElement = (
 });
 
 const createShapeElement = (
-	type: string,
+	type: ShapeType,
 	x: number,
 	y: number,
 	width: number,

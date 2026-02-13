@@ -5,9 +5,13 @@ import { useParams, useRouter } from "next/navigation";
 import { usePresentationStore } from "@/lib/store/presentationStore";
 import { X, ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Loading } from "@/components/ui/loading";
+import { LoadingPresentation } from "@/components/ui/LoadingPresentation";
 import { cn } from "@/lib/utils";
-import type { SlideElement } from "@/lib/types/presentation";
+import type { SlideElement, GradientStop } from "@/lib/types/presentation";
+import IconElement from "@/components/elements/IconElement";
+import TableElement from "@/components/elements/TableElement";
+import CodeElement from "@/components/elements/CodeElement";
+import ChartElement from "@/components/elements/ChartElement";
 
 export default function PresentationPage() {
 	const params = useParams();
@@ -126,16 +130,16 @@ export default function PresentationPage() {
 	}, [isFullscreen]);
 
 	if (isLoading) {
-		return <Loading message="Načítavanie prezentácie" fullScreen size="lg" />;
+		return <LoadingPresentation message="Loading presentation..." />;
 	}
 
 	if (!presentation) {
 		return (
 			<div className="flex items-center justify-center h-screen bg-background">
 				<div className="text-center">
-					<p className="mb-4 text-foreground">Prezentácia sa nenašla</p>
+					<p className="mb-4 text-foreground">Presentation not found</p>
 					<Button onClick={() => router.push("/")} variant="outline">
-						Späť na dashboard
+						Back to dashboard
 					</Button>
 				</div>
 			</div>
@@ -146,12 +150,12 @@ export default function PresentationPage() {
 		return (
 			<div className="flex items-center justify-center h-screen bg-background">
 				<div className="text-center">
-					<p className="mb-4 text-foreground">Prezentácia nemá žiadne slajdy</p>
+					<p className="mb-4 text-foreground">Presentation has no slides</p>
 					<Button
 						onClick={() => router.push(`/editor?id=${presentation.id}`)}
 						variant="outline"
 					>
-						Späť do editora
+						Back to editor
 					</Button>
 				</div>
 			</div>
@@ -180,13 +184,30 @@ export default function PresentationPage() {
 				)}
 				style={{
 					transitionDuration: `${transitionDuration}ms`,
-					backgroundColor: currentSlide.background?.gradient
-						? undefined
-						: currentSlide.background?.color || "#ffffff",
-					background: currentSlide.background?.gradient || undefined,
-					backgroundImage: currentSlide.background?.image
-						? `url(${currentSlide.background.image})`
-						: undefined,
+					backgroundColor: currentSlide.background?.color || "var(--background)",
+					backgroundImage: (() => {
+						const stops = currentSlide.background?.gradientStops && currentSlide.background.gradientStops.length > 0
+							? currentSlide.background.gradientStops
+								.map((s) => `${s.color} ${s.offset}%`)
+								.join(", ")
+							: currentSlide.background?.gradient;
+
+						const image = currentSlide.background?.image
+							? `url(${currentSlide.background.image})`
+							: undefined;
+
+						if (stops) {
+							const type = currentSlide.background?.gradientType || "linear";
+							const angle = currentSlide.background?.gradientAngle || 135;
+							const gradient = type === "linear"
+								? `linear-gradient(${angle}deg, ${stops})`
+								: `radial-gradient(circle, ${stops})`;
+
+							return image ? `${gradient}, ${image}` : gradient;
+						}
+
+						return image;
+					})(),
 					backgroundSize: "cover",
 					backgroundPosition: "center",
 				}}
@@ -250,7 +271,7 @@ export default function PresentationPage() {
 							size="icon"
 							onClick={toggleFullscreen}
 							className="text-white hover:bg-white/20"
-							title="Celá obrazovka (F)"
+							title="Fullscreen (F)"
 						>
 							<span className="text-xs">⛶</span>
 						</Button>
@@ -259,7 +280,7 @@ export default function PresentationPage() {
 							size="icon"
 							onClick={() => router.push(`/editor?id=${presentation.id}`)}
 							className="text-white hover:bg-white/20"
-							title="Zavrieť"
+							title="Close"
 						>
 							<X className="w-5 h-5" />
 						</Button>
@@ -339,39 +360,94 @@ function PresentationElement({
 
 	const renderContent = () => {
 		switch (element.type) {
+			case "chart":
+				return <ChartElement element={element} isSelected={false} />;
+			case "icon":
+				return <IconElement element={element} isSelected={false} />;
+			case "table":
+				return <TableElement element={element} isSelected={false} />;
+			case "code":
+				return <CodeElement element={element} isSelected={false} />;
 			case "text":
-				// Determine text color based on slide background
-				const bgColor = slideBackground?.color || "#ffffff";
-				const isDarkBg =
-					bgColor &&
-					(bgColor === "#000000" ||
-						bgColor.toLowerCase().includes("dark") ||
-						(bgColor.startsWith("#") &&
-							parseInt(bgColor.slice(1), 16) < 0x808080));
-				const defaultTextColor = isDarkBg ? "#ffffff" : "#212121";
+				const filterStyles = element.style?.filters ? {
+					filter: [
+						element.style.filters.blur ? `blur(${element.style.filters.blur}px)` : "",
+						element.style.filters.brightness ? `brightness(${element.style.filters.brightness})` : "",
+						element.style.filters.contrast ? `contrast(${element.style.filters.contrast})` : "",
+						element.style.filters.grayscale ? `grayscale(${element.style.filters.grayscale})` : "",
+						element.style.filters.sepia ? `sepia(${element.style.filters.sepia})` : "",
+						element.style.filters.hueRotate ? `hue-rotate(${element.style.filters.hueRotate}deg)` : "",
+						element.style.filters.saturate ? `saturate(${element.style.filters.saturate})` : "",
+						element.style.filters.invert ? `invert(${element.style.filters.invert})` : "",
+					].join(" ")
+				} : {};
+
+				const getBackgroundStyle = () => {
+					const style: React.CSSProperties = {
+						backgroundColor: element.style?.backgroundColor
+					};
+
+					if (element.style?.gradientStops && element.style.gradientStops.length > 0) {
+						const type = element.style.gradientType || "linear";
+						const angle = element.style.gradientAngle || 135;
+						const stops = element.style.gradientStops
+							.map((s) => `${s.color} ${s.offset}%`)
+							.join(", ");
+
+						style.backgroundImage = type === "linear"
+							? `linear-gradient(${angle}deg, ${stops})`
+							: `radial-gradient(circle, ${stops})`;
+					}
+
+					return style;
+				};
 
 				return (
 					<div
 						style={{
 							width: "100%",
 							height: "100%",
-							padding: "8px",
-							fontSize: `${(element.style?.fontSize || 16) * scale}px`,
-							color: element.style?.color || defaultTextColor,
+							padding: element.style?.padding || "8px",
+							fontSize: `${(element.style?.fontSize || 24) * scale}px`,
+							color: element.style?.color || "var(--foreground)",
 							fontFamily: element.style?.fontFamily || "Arial",
 							fontWeight: element.style?.fontWeight || "normal",
 							fontStyle: element.style?.fontStyle || "normal",
 							textDecoration: element.style?.textDecoration || "none",
-							textAlign: element.style?.textAlign || "left",
+							textAlign: element.style?.textAlign as any || "left",
+							...getBackgroundStyle(),
+							lineHeight: element.style?.lineHeight,
+							letterSpacing: element.style?.letterSpacing,
+							borderColor: element.style?.borderColor,
+							borderWidth: element.style?.borderWidth,
+							borderStyle: element.style?.borderStyle,
+							borderRadius: element.style?.borderRadius,
+							boxShadow: element.style?.boxShadow,
+							opacity: element.style?.opacity,
+							whiteSpace: "pre-wrap",
 							display: "flex",
-							alignItems: "center",
-							overflow: "hidden",
+							flexDirection: "column",
+							justifyContent: "center",
+							...filterStyles
 						}}
 					>
-						{element.content || "Text"}
+						{element.content}
 					</div>
 				);
 			case "image":
+				const imageFilters = element.style?.filters ? {
+					filter: [
+						element.style.filters.blur ? `blur(${element.style.filters.blur}px)` : "",
+						element.style.filters.brightness ? `brightness(${element.style.filters.brightness})` : "",
+						element.style.filters.contrast ? `contrast(${element.style.filters.contrast})` : "",
+						element.style.filters.grayscale ? `grayscale(${element.style.filters.grayscale})` : "",
+						element.style.filters.sepia ? `sepia(${element.style.filters.sepia})` : "",
+						element.style.filters.hueRotate ? `hue-rotate(${element.style.filters.hueRotate}deg)` : "",
+						element.style.filters.saturate ? `saturate(${element.style.filters.saturate})` : "",
+						element.style.filters.invert ? `invert(${element.style.filters.invert})` : "",
+					].join(" ")
+				} : {};
+
 				return (
 					<img
 						src={element.content}
@@ -379,7 +455,9 @@ function PresentationElement({
 						style={{
 							width: "100%",
 							height: "100%",
-							objectFit: "cover",
+							borderRadius: element.style?.borderRadius,
+							objectFit: element.style?.objectFit as any || "cover",
+							...imageFilters
 						}}
 						onError={(e) => {
 							(e.target as HTMLImageElement).style.display = "none";
@@ -388,24 +466,74 @@ function PresentationElement({
 				);
 			case "shape":
 				const shapeType = element.content || "square";
+				const shapeFilters = element.style?.filters ? {
+					filter: [
+						element.style.filters.blur ? `blur(${element.style.filters.blur}px)` : "",
+						element.style.filters.brightness ? `brightness(${element.style.filters.brightness})` : "",
+						element.style.filters.contrast ? `contrast(${element.style.filters.contrast})` : "",
+						element.style.filters.grayscale ? `grayscale(${element.style.filters.grayscale})` : "",
+						element.style.filters.sepia ? `sepia(${element.style.filters.sepia})` : "",
+						element.style.filters.hueRotate ? `hue-rotate(${element.style.filters.hueRotate}deg)` : "",
+						element.style.filters.saturate ? `saturate(${element.style.filters.saturate})` : "",
+						element.style.filters.invert ? `invert(${element.style.filters.invert})` : "",
+					].join(" ")
+				} : {};
+
 				const shapeStyle: React.CSSProperties = {
 					width: "100%",
 					height: "100%",
 					backgroundColor: element.style?.backgroundColor || "#3b82f6",
-					border: `${element.style?.borderWidth || 0}px solid ${
-						element.style?.borderColor || "#000000"
-					}`,
+					backgroundImage: (() => {
+						if (element.style?.gradientStops && element.style.gradientStops.length > 0) {
+							const type = element.style.gradientType || "linear";
+							const angle = element.style.gradientAngle || 135;
+							const stops = element.style.gradientStops
+								.map((s: GradientStop) => `${s.color} ${s.offset}%`)
+								.join(", ");
+
+							return type === "linear"
+								? `linear-gradient(${angle}deg, ${stops})`
+								: `radial-gradient(circle, ${stops})`;
+						}
+						return undefined;
+					})(),
+					borderColor: element.style?.borderColor,
+					borderWidth: element.style?.borderWidth || 0,
+					borderStyle: (element.style?.borderStyle as any) || "solid",
+					borderRadius: element.style?.borderRadius || 0,
+					boxShadow: element.style?.boxShadow,
+					...shapeFilters
 				};
 
 				if (shapeType === "circle") {
 					shapeStyle.borderRadius = "50%";
 				} else if (shapeType === "triangle") {
-					shapeStyle.clipPath = "polygon(50% 0%, 0% 100%, 100% 100%)";
-				} else if (shapeType === "rounded") {
-					shapeStyle.borderRadius = "12px";
-				} else if (shapeType === "star") {
-					shapeStyle.clipPath =
-						"polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)";
+					return (
+						<div
+							style={{
+								width: 0,
+								height: 0,
+								borderLeft: `${(element.size.width / 1920) * viewportWidth / 2}px solid transparent`,
+								borderRight: `${(element.size.width / 1920) * viewportWidth / 2}px solid transparent`,
+								borderBottom: `${(element.size.height / 1080) * viewportHeight}px solid ${element.style?.backgroundColor || "#3b82f6"}`,
+								...shapeFilters
+							}}
+						/>
+					);
+				} else if (shapeType === "heart") {
+					return (
+						<div className="absolute inset-0 flex items-center justify-center">
+							<div
+								style={{
+									color: element.style?.backgroundColor || "#ec4899",
+									fontSize: Math.min(element.size.width * scaleX, element.size.height * scaleY) * 0.8,
+									...shapeFilters
+								}}
+							>
+								❤️
+							</div>
+						</div>
+					);
 				}
 
 				return <div style={shapeStyle} />;
@@ -419,6 +547,7 @@ function PresentationElement({
 							display: "flex",
 							alignItems: "center",
 							justifyContent: "center",
+							borderRadius: element.style?.borderRadius || "8px",
 						}}
 					>
 						<p style={{ color: "#fff" }}>Video: {element.content}</p>

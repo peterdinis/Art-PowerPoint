@@ -1,6 +1,7 @@
 "use client";
 
 import { usePresentationStore } from "@/lib/store/presentationStore";
+import * as Icons from "lucide-react";
 import {
 	Type,
 	Image,
@@ -56,7 +57,14 @@ import {
 	Table2,
 	TrendingUp,
 	FileUp,
+	FileDown,
+	Maximize,
+	ZoomIn,
+	ZoomOut,
+	Archive,
+	Minus,
 } from "lucide-react";
+import { exportToPPTX } from "@/lib/utils/pptxExport";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ThemeProvider";
@@ -91,7 +99,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { SlideElementType } from "@/lib/types/presentation";
+import { SlideElementType, FontWeight, FontStyle, ShapeType } from "@/lib/types/presentation";
 import { FilePond, registerPlugin } from 'react-filepond';
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 import FilePondPluginFileValidateSize from 'filepond-plugin-file-validate-size';
@@ -154,6 +162,11 @@ export default function Toolbar() {
 		currentSlideIndex,
 		selectedElementId,
 		updateElement,
+		zoomLevel,
+		showGrid,
+		setZoomLevel,
+		toggleGrid,
+		compressPresentation,
 	} = usePresentationStore();
 	const { theme } = useTheme();
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -182,7 +195,7 @@ export default function Toolbar() {
 	const [fontFamily, setFontFamily] = useState("Arial");
 	const [textColor, setTextColor] = useState("#212121");
 	const [layoutType, setLayoutType] = useState("two-columns");
-	
+
 	// FilePond states
 	const [imageFiles, setImageFiles] = useState<any[]>([]);
 	const [csvFiles, setCsvFiles] = useState<any[]>([]);
@@ -230,7 +243,7 @@ export default function Toolbar() {
 					size: { width: 400, height: 300 },
 					content: result,
 					style: {
-						borderRadius: "8px",
+						borderRadius: 8,
 					},
 				});
 			};
@@ -240,8 +253,12 @@ export default function Toolbar() {
 
 	const handleAddText = (
 		textType:
-			| "heading1"
-			| "heading2"
+			| "h1"
+			| "h2"
+			| "h3"
+			| "h4"
+			| "h5"
+			| "h6"
 			| "body"
 			| "quote"
 			| "code"
@@ -252,15 +269,19 @@ export default function Toolbar() {
 			string,
 			{
 				fontSize: number;
-				fontWeight?: string;
-				fontStyle?: string;
+				fontWeight?: FontWeight;
+				fontStyle?: FontStyle;
 				fontFamily?: string;
 				color?: string;
 			}
 		> = {
 			title: { fontSize: 64, fontWeight: "bold", color: "#1e40af" },
-			heading1: { fontSize: 48, fontWeight: "bold" },
-			heading2: { fontSize: 36, fontWeight: "bold" },
+			h1: { fontSize: 48, fontWeight: "bold" },
+			h2: { fontSize: 36, fontWeight: "bold" },
+			h3: { fontSize: 30, fontWeight: "bold" },
+			h4: { fontSize: 24, fontWeight: "bold" },
+			h5: { fontSize: 20, fontWeight: "bold" },
+			h6: { fontSize: 18, fontWeight: "bold" },
 			subtitle: { fontSize: 32, fontStyle: "italic", color: "#6b7280" },
 			body: { fontSize: 24, fontWeight: "normal" },
 			quote: { fontSize: 28, fontStyle: "italic", color: "#6b7280" },
@@ -269,8 +290,12 @@ export default function Toolbar() {
 
 		const contents = {
 			title: "Presentation Title",
-			heading1: "Main Heading",
-			heading2: "Sub Heading",
+			h1: "Heading 1",
+			h2: "Heading 2",
+			h3: "Heading 3",
+			h4: "Heading 4",
+			h5: "Heading 5",
+			h6: "Heading 6",
 			subtitle: "Presentation Subtitle",
 			body: "Add your text here...",
 			quote: "The only way to do great work is to love what you do.",
@@ -300,7 +325,7 @@ export default function Toolbar() {
 	};
 
 	const handleAddImage = (imageUrl?: string) => {
-		const url = imageUrl || this?.imageUrl;
+		const url = imageUrl || "";
 		if (url) {
 			addElement({
 				type: "image",
@@ -308,7 +333,7 @@ export default function Toolbar() {
 				size: { width: 400, height: 300 },
 				content: url,
 				style: {
-					borderRadius: "8px",
+					borderRadius: 8,
 				},
 			});
 			setImageUrl("");
@@ -330,7 +355,7 @@ export default function Toolbar() {
 						size: { width: 400, height: 300 },
 						content: base64,
 						style: {
-							borderRadius: "8px",
+							borderRadius: 8,
 						},
 					});
 					setImageDialogOpen(false);
@@ -351,7 +376,7 @@ export default function Toolbar() {
 				size: { width: 640, height: 360 },
 				content: videoUrl,
 				style: {
-					borderRadius: "8px",
+					borderRadius: 8,
 				},
 			});
 			setVideoUrl("");
@@ -426,7 +451,7 @@ export default function Toolbar() {
 				backgroundColor: colors[shapeType],
 				borderWidth: 0,
 				borderColor: "#000000",
-				...(shapeType === "rounded" && { borderRadius: "12px" }),
+				...(shapeType === "rounded" && { borderRadius: 12 }),
 				...(shapeType === "heart" && { color: colors[shapeType] }),
 			},
 		});
@@ -454,30 +479,183 @@ export default function Toolbar() {
 	};
 
 	const handleAddTable = () => {
-		const tableContent = Array(tableRows)
+		const rows = tableRows;
+		const cols = tableColumns;
+		const tableData = Array(rows)
 			.fill(null)
 			.map((_, rowIndex) =>
-				Array(tableColumns)
+				Array(cols)
 					.fill(null)
-					.map((_, colIndex) => `Cell ${rowIndex + 1}-${colIndex + 1}`)
-					.join("\t"),
-			)
-			.join("\n");
+					.map((_, colIndex) => ({
+						content: `Cell ${rowIndex + 1}-${colIndex + 1}`,
+					})),
+			);
 
 		addElement({
-			type: "text",
+			type: "table",
 			position: { x: 100, y: 100 },
-			size: { width: 400, height: 200 },
-			content: tableContent,
+			size: { width: 500, height: 300 },
+			content: "",
 			style: {
-				fontSize: 14,
-				color: getDefaultTextColor(),
-				fontFamily: "Arial",
-				textAlign: "left",
-				backgroundColor: "#f9fafb",
+				rows,
+				cols,
+				tableData,
+				headerRow: true,
+				stripeRows: true,
+				borderColor: "#e5e7eb",
+				borderWidth: 1,
+				backgroundColor: "#ffffff",
 			},
 		});
 		setTableDialogOpen(false);
+	};
+
+	const handleAddTablePreset = (type: "pricing" | "list" | "grid") => {
+		let rows = 3;
+		let cols = 3;
+		let headerRow = true;
+		let stripeRows = true;
+
+		if (type === "list") {
+			rows = 5;
+			cols = 1;
+		} else if (type === "pricing") {
+			rows = 4;
+			cols = 3;
+		}
+
+		const tableData = Array(rows)
+			.fill(null)
+			.map((_, rowIndex) =>
+				Array(cols)
+					.fill(null)
+					.map((_, colIndex) => ({
+						content: type === "pricing" && rowIndex === 0
+							? ["Feature", "Standard", "Premium"][colIndex]
+							: type === "list"
+								? `List Item ${rowIndex + 1}`
+								: `Data ${rowIndex + 1}-${colIndex + 1}`,
+					})),
+			);
+
+		addElement({
+			type: "table",
+			position: { x: 100, y: 100 },
+			size: { width: type === "list" ? 300 : 500, height: rows * 50 },
+			content: "",
+			style: {
+				rows,
+				cols,
+				tableData,
+				headerRow,
+				stripeRows,
+				borderColor: "#e5e7eb",
+				borderWidth: 1,
+				backgroundColor: "transparent",
+			},
+		});
+	};
+
+	const handleAddStickyNote = () => {
+		addElement({
+			type: "shape",
+			position: { x: 100, y: 100 },
+			size: { width: 200, height: 200 },
+			content: "rounded",
+			style: {
+				backgroundColor: "#fef08a", // Pale yellow
+				borderRadius: 4,
+				boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+			},
+		});
+
+		// Add text inside the sticky note
+		setTimeout(() => {
+			addElement({
+				type: "text",
+				position: { x: 120, y: 120 },
+				size: { width: 160, height: 160 },
+				content: "Important note...",
+				style: {
+					fontSize: 18,
+					color: "#713f12", // Dark yellow text
+					textAlign: "center",
+					fontFamily: "Courier New",
+				},
+			});
+		}, 50);
+	};
+
+	const handleAddBadge = () => {
+		addElement({
+			type: "text",
+			position: { x: 100, y: 100 },
+			size: { width: 100, height: 32 },
+			content: "BADGE",
+			style: {
+				fontSize: 12,
+				fontWeight: "bold",
+				color: "#ffffff",
+				backgroundColor: "#3b82f6",
+				borderRadius: 16,
+				textAlign: "center",
+				padding: "4px 12px",
+			},
+		});
+	};
+
+	const handleAddStatCard = () => {
+		addElement({
+			type: "shape",
+			position: { x: 100, y: 100 },
+			size: { width: 200, height: 120 },
+			content: "rounded",
+			style: {
+				backgroundColor: "var(--card)",
+				borderWidth: 1,
+				borderColor: "var(--border)",
+				borderRadius: 12,
+				boxShadow: "var(--shadow-md)",
+			},
+		});
+
+		setTimeout(() => {
+			addElement({
+				type: "text",
+				position: { x: 110, y: 120 },
+				size: { width: 180, height: 60 },
+				content: "99.9%",
+				style: {
+					fontSize: 36,
+					fontWeight: "bold",
+					color: "var(--primary)",
+					textAlign: "center",
+				},
+			});
+			addElement({
+				type: "text",
+				position: { x: 110, y: 185 },
+				size: { width: 180, height: 24 },
+				content: "Success Rate",
+				style: {
+					fontSize: 14,
+					color: "var(--muted-foreground)",
+					textAlign: "center",
+				},
+			});
+		}, 50);
+	};
+
+	const handleAddDivider = (direction: "horizontal" | "vertical" = "horizontal") => {
+		addElement({
+			type: "shape",
+			position: { x: 100, y: 100 },
+			size: direction === "horizontal" ? { width: 400, height: 2 } : { width: 2, height: 400 },
+			content: "square",
+			style: {
+				backgroundColor: "var(--border)",
+			},
+		});
 	};
 
 	const handleAddChart = () => {
@@ -501,10 +679,10 @@ export default function Toolbar() {
 				size: { width: 500, height: 350 },
 				content: JSON.stringify(chartData),
 				style: {
-					chartType,
+					chartType: chartType as "bar" | "line" | "pie" | "area",
 					chartTitle,
 					backgroundColor: "#ffffff",
-					borderRadius: "8px",
+					borderRadius: 8,
 					borderWidth: 1,
 					borderColor: "#e5e7eb",
 				},
@@ -610,35 +788,42 @@ export default function Toolbar() {
 		});
 	};
 
-	const handleAddIcon = (iconType: string) => {
-		const icons = {
-			calendar: "📅",
-			clock: "⏰",
-			location: "📍",
-			phone: "📞",
-			email: "📧",
-			globe: "🌐",
-			music: "🎵",
-			film: "🎬",
-			mic: "🎤",
-			star: "⭐",
-			heart: "❤️",
-			sparkles: "✨",
-			zap: "⚡",
+	const handleAddIcon = (iconName: string) => {
+		addElement({
+			type: "icon",
+			position: { x: 100, y: 100 },
+			size: { width: 100, height: 100 },
+			content: "",
+			style: {
+				iconName: iconName,
+				color: "#3b82f6",
+			},
+		});
+		setIconDialogOpen(false);
+	};
+
+	const handleAddCode = (language: string = "javascript") => {
+		const codeSamples = {
+			javascript: "function hello() {\n  console.log('Hello, World!');\n}",
+			typescript: "interface User {\n  id: number;\n  name: string;\n}",
+			html: "<div class=\"container\">\n  <h1>Hello</h1>\n</div>",
+			css: ".container {\n  display: flex;\n  color: blue;\n}",
+			python: "def hello_world():\n    print(\"Hello world!\")",
 		};
 
-		const icon = icons[iconType as keyof typeof icons] || "⭐";
-
 		addElement({
-			type: "text",
+			type: "code",
 			position: { x: 100, y: 100 },
-			size: { width: 60, height: 60 },
-			content: icon,
+			size: { width: 400, height: 250 },
+			content: codeSamples[language as keyof typeof codeSamples] || "Paste your code here...",
 			style: {
-				fontSize: 40,
-				color: "#3b82f6",
-				fontFamily: "Arial",
-				textAlign: "center",
+				language,
+				theme: "dark",
+				lineNumbers: true,
+				backgroundColor: "#1e1e1e",
+				color: "#d4d4d4",
+				fontFamily: "Courier New",
+				fontSize: 14,
 			},
 		});
 	};
@@ -762,7 +947,7 @@ export default function Toolbar() {
 										<TabsTrigger value="documents">Documents</TabsTrigger>
 										<TabsTrigger value="data">Data Files</TabsTrigger>
 									</TabsList>
-									
+
 									<TabsContent value="images" className="space-y-4 py-4">
 										<div className="space-y-4">
 											<div className="border-2 border-dashed border-border rounded-lg p-4">
@@ -795,7 +980,7 @@ export default function Toolbar() {
 													}}
 												/>
 											</div>
-											
+
 											<div className="text-center">
 												<p className="text-sm text-muted-foreground mb-4">
 													Or use image URL
@@ -807,8 +992,8 @@ export default function Toolbar() {
 														placeholder="https://example.com/image.jpg"
 														className="flex-1"
 													/>
-													<Button 
-														onClick={() => handleAddImage(imageUrl)} 
+													<Button
+														onClick={() => handleAddImage(imageUrl)}
 														disabled={!imageUrl}
 													>
 														Add
@@ -817,7 +1002,7 @@ export default function Toolbar() {
 											</div>
 										</div>
 									</TabsContent>
-									
+
 									<TabsContent value="documents" className="space-y-4 py-4">
 										<div className="border-2 border-dashed border-border rounded-lg p-4">
 											<FilePond
@@ -846,7 +1031,7 @@ export default function Toolbar() {
 											</p>
 										</div>
 									</TabsContent>
-									
+
 									<TabsContent value="data" className="space-y-4 py-4">
 										<div className="space-y-4">
 											<div className="border-2 border-dashed border-border rounded-lg p-4">
@@ -873,7 +1058,7 @@ export default function Toolbar() {
 													}}
 												/>
 											</div>
-											
+
 											<div className="bg-muted/30 rounded-lg p-4">
 												<h4 className="text-sm font-medium mb-2">Supported Data Formats:</h4>
 												<ul className="text-sm text-muted-foreground space-y-1">
@@ -885,7 +1070,7 @@ export default function Toolbar() {
 										</div>
 									</TabsContent>
 								</Tabs>
-								
+
 								<DialogFooter>
 									<Button
 										variant="outline"
@@ -894,7 +1079,7 @@ export default function Toolbar() {
 									>
 										Cancel
 									</Button>
-									<Button 
+									<Button
 										onClick={() => {
 											if (imageFiles.length > 0 && imageFiles[0].status === 5) {
 												handleImageUploadComplete(imageFiles[0]);
@@ -932,7 +1117,7 @@ export default function Toolbar() {
 								<span className="hidden sm:inline">Text</span>
 							</Button>
 						</motion.div>
-						
+
 						<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
 							<Button
 								onClick={() => handleAddShape("star")}
@@ -944,6 +1129,85 @@ export default function Toolbar() {
 								<Star className="w-4 h-4" />
 							</Button>
 						</motion.div>
+
+						<Dialog open={iconDialogOpen} onOpenChange={setIconDialogOpen}>
+							<DialogTrigger asChild>
+								<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+									<Button variant="outline" size="sm" className="gap-2">
+										<Sparkles className="w-4 h-4" />
+										<span className="hidden sm:inline">Icon</span>
+									</Button>
+								</motion.div>
+							</DialogTrigger>
+							<DialogContent className="max-w-md">
+								<DialogHeader>
+									<DialogTitle>Icons</DialogTitle>
+									<DialogDescription>
+										Select an icon to add to your slide
+									</DialogDescription>
+								</DialogHeader>
+								<div className="grid grid-cols-4 gap-4 p-4 max-h-[400px] overflow-y-auto">
+									{["Calendar", "Clock", "MapPin", "Phone", "Mail", "Globe", "Music", "Film", "Mic", "Star", "Heart", "Sparkles", "Zap", "Layers", "Grid", "Columns", "Rows", "PanelLeft", "PanelRight", "PanelTop", "PanelBottom"].map((name) => {
+										const IconComp = (Icons as any)[name] || Icons.HelpCircle;
+										return (
+											<Button
+												key={name}
+												variant="outline"
+												className="h-20 flex-col gap-2"
+												onClick={() => handleAddIcon(name)}
+											>
+												<IconComp className="w-6 h-6" />
+												<span className="text-[10px] truncate w-full">{name}</span>
+											</Button>
+										);
+									})}
+								</div>
+							</DialogContent>
+						</Dialog>
+
+						<Dialog open={tableDialogOpen} onOpenChange={setTableDialogOpen}>
+							<DialogTrigger asChild>
+								<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+									<Button variant="outline" size="sm" className="gap-2">
+										<Table2 className="w-4 h-4" />
+										<span className="hidden sm:inline">Table</span>
+									</Button>
+								</motion.div>
+							</DialogTrigger>
+							<DialogContent className="max-w-sm">
+								<DialogHeader>
+									<DialogTitle>Insert Table</DialogTitle>
+									<DialogDescription>
+										Choose grid dimensions for your new table
+									</DialogDescription>
+								</DialogHeader>
+								<div className="space-y-4 py-4">
+									<div className="space-y-2">
+										<Label>Rows: {tableRows}</Label>
+										<Slider
+											value={[tableRows]}
+											min={1}
+											max={10}
+											step={1}
+											onValueChange={([val]) => setTableRows(val)}
+										/>
+									</div>
+									<div className="space-y-2">
+										<Label>Columns: {tableColumns}</Label>
+										<Slider
+											value={[tableColumns]}
+											min={1}
+											max={10}
+											step={1}
+											onValueChange={([val]) => setTableColumns(val)}
+										/>
+									</div>
+								</div>
+								<DialogFooter>
+									<Button onClick={handleAddTable}>Create Table</Button>
+								</DialogFooter>
+							</DialogContent>
+						</Dialog>
 						<Dialog open={chartDialogOpen} onOpenChange={setChartDialogOpen}>
 							<DialogTrigger asChild>
 								<motion.div
@@ -976,11 +1240,10 @@ export default function Toolbar() {
 											{CHART_TEMPLATES.map((template) => (
 												<div
 													key={template.name}
-													className={`border rounded-lg p-4 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${
-														selectedChartTemplate.name === template.name
-															? "border-primary ring-2 ring-primary/20 bg-primary/5"
-															: "border-border"
-													}`}
+													className={`border rounded-lg p-4 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${selectedChartTemplate.name === template.name
+														? "border-primary ring-2 ring-primary/20 bg-primary/5"
+														: "border-border"
+														}`}
 													onClick={() => handleChartTemplateSelect(template)}
 												>
 													<div className="flex items-center gap-3 mb-2">
@@ -1120,7 +1383,7 @@ export default function Toolbar() {
 											<div className="bg-muted/30 rounded-lg p-4">
 												<h4 className="text-sm font-medium mb-2">CSV Format Example:</h4>
 												<pre className="text-xs font-mono bg-background p-3 rounded overflow-x-auto">
-{`Quarter,Sales,Expenses,Profit
+													{`Quarter,Sales,Expenses,Profit
 Q1,45000,30000,15000
 Q2,52000,35000,17000
 Q3,48000,32000,16000
@@ -1141,7 +1404,7 @@ Q4,61000,40000,21000`}</pre>
 									>
 										Cancel
 									</Button>
-									<Button 
+									<Button
 										onClick={handleAddChart}
 										disabled={isFileProcessing}
 									>
@@ -1153,6 +1416,84 @@ Q4,61000,40000,21000`}</pre>
 					</div>
 
 					<Separator orientation="vertical" className="h-6" />
+
+					{/* Canvas Utilities */}
+					<div className="flex items-center gap-1 bg-muted/30 rounded-lg p-0.5">
+						<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+							<Button
+								variant={showGrid ? "default" : "ghost"}
+								size="icon"
+								className="h-8 w-8"
+								onClick={toggleGrid}
+								title="Toggle Grid"
+							>
+								<Grid className="w-4 h-4" />
+							</Button>
+						</motion.div>
+						<Separator orientation="vertical" className="h-4 mx-0.5" />
+						<div className="flex items-center gap-0.5">
+							<Button
+								variant="ghost"
+								size="icon"
+								className="h-8 w-8"
+								onClick={() => setZoomLevel(zoomLevel - 0.1)}
+								disabled={zoomLevel <= 0.5}
+								title="Zoom Out"
+							>
+								<ZoomOut className="w-4 h-4" />
+							</Button>
+							<span className="text-[10px] font-medium w-8 text-center">
+								{Math.round(zoomLevel * 100)}%
+							</span>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="h-8 w-8"
+								onClick={() => setZoomLevel(zoomLevel + 0.1)}
+								disabled={zoomLevel >= 2}
+								title="Zoom In"
+							>
+								<ZoomIn className="w-4 h-4" />
+							</Button>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="h-8 w-8"
+								onClick={() => setZoomLevel(1)}
+								title="Reset Zoom"
+							>
+								<Maximize className="w-3 h-3" />
+							</Button>
+						</div>
+					</div>
+
+					<Separator orientation="vertical" className="h-6" />
+
+					<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+						<Button
+							variant="ghost"
+							size="sm"
+							className="gap-2 text-primary hover:text-primary hover:bg-primary/10"
+							onClick={compressPresentation}
+							title="Optimize presentation data"
+						>
+							<Archive className="w-4 h-4" />
+							Compress
+						</Button>
+					</motion.div>
+
+					<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+						<Button
+							variant="outline"
+							size="sm"
+							className="gap-2"
+							onClick={() => currentPresentation && exportToPPTX(currentPresentation)}
+							title="Export as PowerPoint (.pptx)"
+						>
+							<FileDown className="w-4 h-4" />
+							Export PPTX
+						</Button>
+					</motion.div>
 
 					{/* Main Add Elements Dropdown */}
 					<DropdownMenu>
@@ -1186,33 +1527,56 @@ Q4,61000,40000,21000`}</pre>
 								<span>Text Elements</span>
 								<FontIcon className="w-3 h-3" />
 							</DropdownMenuLabel>
-							<div className="grid grid-cols-2 gap-1 p-2">
+							<div className="grid grid-cols-3 gap-1 p-2">
 								<DropdownMenuItem
-									onClick={() => handleAddText("title")}
+									onClick={() => handleAddText("h1")}
 									className="flex-col gap-2 h-auto py-3"
 								>
-									<Heading1 className="w-6 h-6" />
-									<span className="text-xs">Title</span>
+									<Heading1 className="w-5 h-5" />
+									<span className="text-[10px]">H1</span>
 								</DropdownMenuItem>
 								<DropdownMenuItem
-									onClick={() => handleAddText("heading1")}
+									onClick={() => handleAddText("h2")}
 									className="flex-col gap-2 h-auto py-3"
 								>
-									<Heading1 className="w-6 h-6" />
-									<span className="text-xs">Heading 1</span>
+									<Heading2 className="w-5 h-5" />
+									<span className="text-[10px]">H2</span>
 								</DropdownMenuItem>
 								<DropdownMenuItem
-									onClick={() => handleAddText("heading2")}
+									onClick={() => handleAddText("h3")}
 									className="flex-col gap-2 h-auto py-3"
 								>
-									<Heading2 className="w-6 h-6" />
-									<span className="text-xs">Heading 2</span>
+									<Heading2 className="w-5 h-5 opacity-80" />
+									<span className="text-[10px]">H3</span>
 								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => handleAddText("h4")}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<Type className="w-5 h-5" />
+									<span className="text-[10px]">H4</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => handleAddText("h5")}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<Type className="w-5 h-5 opacity-80" />
+									<span className="text-[10px]">H5</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => handleAddText("h6")}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<Type className="w-5 h-5 opacity-60" />
+									<span className="text-[10px]">H6</span>
+								</DropdownMenuItem>
+							</div>
+							<div className="grid grid-cols-2 gap-1 px-2 pb-2">
 								<DropdownMenuItem
 									onClick={() => handleAddText("body")}
 									className="flex-col gap-2 h-auto py-3"
 								>
-									<Type className="w-6 h-6" />
+									<AlignLeft className="w-6 h-6" />
 									<span className="text-xs">Body Text</span>
 								</DropdownMenuItem>
 								<DropdownMenuItem
@@ -1222,130 +1586,141 @@ Q4,61000,40000,21000`}</pre>
 									<Quote className="w-6 h-6" />
 									<span className="text-xs">Quote</span>
 								</DropdownMenuItem>
+							</div>
+
+							<DropdownMenuSeparator />
+
+							<DropdownMenuLabel className="text-xs text-muted-foreground flex items-center justify-between">
+								<span>Interactive & Media</span>
+								<Sparkles className="w-3 h-3" />
+							</DropdownMenuLabel>
+							<div className="grid grid-cols-3 gap-1 p-2">
 								<DropdownMenuItem
-									onClick={() => handleAddText("code")}
+									onClick={() => setIconDialogOpen(true)}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<Sparkles className="w-6 h-6" />
+									<span className="text-xs">Icons</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => setTableDialogOpen(true)}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<Table2 className="w-6 h-6" />
+									<span className="text-xs">Table</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => handleAddCode("javascript")}
 									className="flex-col gap-2 h-auto py-3"
 								>
 									<Code className="w-6 h-6" />
-									<span className="text-xs">Code Block</span>
+									<span className="text-xs">Code</span>
 								</DropdownMenuItem>
 							</div>
 
 							<DropdownMenuSeparator />
 
 							<DropdownMenuLabel className="text-xs text-muted-foreground flex items-center justify-between">
-								<span>Lists</span>
-								<List className="w-3 h-3" />
+								<span>Table Presets</span>
+								<Grid className="w-3 h-3" />
 							</DropdownMenuLabel>
 							<div className="grid grid-cols-3 gap-1 p-2">
 								<DropdownMenuItem
-									onClick={() => handleAddList("ordered")}
+									onClick={() => handleAddTablePreset("grid")}
 									className="flex-col gap-2 h-auto py-3"
 								>
-									<span className="text-lg">1.</span>
-									<span className="text-xs">Numbered</span>
+									<Table2 className="w-5 h-5" />
+									<span className="text-[10px]">3x3 Grid</span>
 								</DropdownMenuItem>
 								<DropdownMenuItem
-									onClick={() => handleAddList("unordered")}
+									onClick={() => handleAddTablePreset("pricing")}
 									className="flex-col gap-2 h-auto py-3"
 								>
-									<span className="text-lg">•</span>
-									<span className="text-xs">Bulleted</span>
+									<Columns className="w-5 h-5" />
+									<span className="text-[10px]">Pricing</span>
 								</DropdownMenuItem>
 								<DropdownMenuItem
-									onClick={() => handleAddList("checklist")}
+									onClick={() => handleAddTablePreset("list")}
 									className="flex-col gap-2 h-auto py-3"
 								>
-									<span className="text-lg">☐</span>
-									<span className="text-xs">Checklist</span>
+									<Rows className="w-5 h-5" />
+									<span className="text-[10px]">Clean List</span>
 								</DropdownMenuItem>
 							</div>
 
 							<DropdownMenuSeparator />
 
 							<DropdownMenuLabel className="text-xs text-muted-foreground flex items-center justify-between">
-								<span>Media</span>
+								<span>Custom Components</span>
+								<Zap className="w-3 h-3" />
+							</DropdownMenuLabel>
+							<div className="grid grid-cols-2 gap-1 p-2">
+								<DropdownMenuItem
+									onClick={handleAddStickyNote}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<FileText className="w-6 h-6 text-yellow-500" />
+									<span className="text-xs">Sticky Note</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={handleAddStatCard}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<TrendingUp className="w-6 h-6 text-blue-500" />
+									<span className="text-xs">Stat Card</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={handleAddBadge}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<Star className="w-6 h-6 text-purple-500" />
+									<span className="text-xs">Badge/Tag</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => handleAddDivider("horizontal")}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<Minus className="w-6 h-6 text-gray-400 rotate-0" />
+									<span className="text-xs">Divider</span>
+								</DropdownMenuItem>
+							</div>
+
+							<DropdownMenuSeparator />
+
+							<DropdownMenuLabel className="text-xs text-muted-foreground flex items-center justify-between">
+								<span>Media & Data</span>
 								<Image className="w-3 h-3" />
 							</DropdownMenuLabel>
 							<div className="grid grid-cols-3 gap-1 p-2">
-								<Dialog
-									open={imageDialogOpen}
-									onOpenChange={setImageDialogOpen}
-								>
-									<DialogTrigger asChild>
-										<DropdownMenuItem
-											onSelect={(e) => e.preventDefault()}
-											className="flex-col gap-2 h-auto py-3"
-										>
-											<Image className="w-6 h-6" />
-											<span className="text-xs">Image</span>
-										</DropdownMenuItem>
-									</DialogTrigger>
-								</Dialog>
-								<Dialog
-									open={videoDialogOpen}
-									onOpenChange={setVideoDialogOpen}
-								>
-									<DialogTrigger asChild>
-										<DropdownMenuItem
-											onSelect={(e) => e.preventDefault()}
-											className="flex-col gap-2 h-auto py-3"
-										>
-											<Video className="w-6 h-6" />
-											<span className="text-xs">Video</span>
-										</DropdownMenuItem>
-									</DialogTrigger>
-								</Dialog>
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<DropdownMenuItem
-											onSelect={(e) => e.preventDefault()}
-											className="flex-col gap-2 h-auto py-3"
-										>
-											<Music className="w-6 h-6" />
-											<span className="text-xs">Audio</span>
-										</DropdownMenuItem>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent side="right">
-										<DropdownMenuItem onClick={() => handleAddMedia("audio")}>
-											<Music className="w-4 h-4 mr-2" />
-											Audio Player
-										</DropdownMenuItem>
-										<DropdownMenuItem onClick={() => handleAddMedia("podcast")}>
-											<Mic className="w-4 h-4 mr-2" />
-											Podcast
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
-							</div>
-
-							<DropdownMenuSeparator />
-
-							<DropdownMenuLabel className="text-xs text-muted-foreground flex items-center justify-between">
-								<span>Data & Charts</span>
-								<BarChart className="w-3 h-3" />
-							</DropdownMenuLabel>
-							<div className="grid grid-cols-2 gap-1 p-2">
-								<Dialog
-									open={chartDialogOpen}
-									onOpenChange={setChartDialogOpen}
-								>
-									<DialogTrigger asChild>
-										<DropdownMenuItem
-											onSelect={(e) => e.preventDefault()}
-											className="flex-col gap-2 h-auto py-3"
-										>
-											<BarChart className="w-6 h-6" />
-											<span className="text-xs">Chart</span>
-										</DropdownMenuItem>
-									</DialogTrigger>
-								</Dialog>
 								<DropdownMenuItem
-									onClick={() => setChartDialogOpen(true)}
+									onSelect={(e) => {
+										e.preventDefault();
+										setImageDialogOpen(true);
+									}}
 									className="flex-col gap-2 h-auto py-3"
 								>
-									<UploadIcon className="w-6 h-6" />
-									<span className="text-xs">Import Data</span>
+									<Image className="w-5 h-5" />
+									<span className="text-[10px]">Image</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onSelect={(e) => {
+										e.preventDefault();
+										setVideoDialogOpen(true);
+									}}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<Video className="w-5 h-5" />
+									<span className="text-[10px]">Video</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onSelect={(e) => {
+										e.preventDefault();
+										setChartDialogOpen(true);
+									}}
+									className="flex-col gap-2 h-auto py-3"
+								>
+									<BarChart className="w-5 h-5" />
+									<span className="text-[10px]">Chart</span>
 								</DropdownMenuItem>
 							</div>
 						</DropdownMenuContent>
@@ -1437,7 +1812,7 @@ Q4,61000,40000,21000`}</pre>
 						</>
 					)}
 				</div>
-			</div>
-		</div>
+			</div >
+		</div >
 	);
 }
