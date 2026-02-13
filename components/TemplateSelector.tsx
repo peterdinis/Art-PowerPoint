@@ -155,17 +155,29 @@ export default function TemplateSelector({
 											<div
 												className="aspect-video relative overflow-hidden"
 												style={{
-													backgroundColor: template.slides[0]?.background
-														?.gradient
-														? undefined
-														: template.slides[0]?.background?.color ||
-															"#ffffff",
-													background:
-														template.slides[0]?.background?.gradient ||
-														undefined,
-													backgroundImage: template.slides[0]?.background?.image
-														? `url(${template.slides[0].background.image})`
-														: undefined,
+													backgroundColor: template.slides[0]?.background?.color || "#ffffff",
+													backgroundImage: (() => {
+														const slideBg = template.slides[0]?.background;
+														if (slideBg?.gradientStops && slideBg.gradientStops.length > 0) {
+															const type = slideBg.gradientType || "linear";
+															const angle = slideBg.gradientAngle || 135;
+															const stops = slideBg.gradientStops
+																.map((s: any) => `${s.color} ${s.offset}%`)
+																.join(", ");
+
+															const grad = type === "linear"
+																? `linear-gradient(${angle}deg, ${stops})`
+																: `radial-gradient(circle, ${stops})`;
+
+															return slideBg.image ? `${grad}, url(${slideBg.image})` : grad;
+														}
+
+														if (slideBg?.gradient) {
+															return slideBg.image ? `${slideBg.gradient}, url(${slideBg.image})` : slideBg.gradient;
+														}
+
+														return slideBg?.image ? `url(${slideBg.image})` : undefined;
+													})(),
 													backgroundSize: "cover",
 													backgroundPosition: "center",
 												}}

@@ -13,7 +13,9 @@ interface PresentationStore {
 	currentSlideIndex: number;
 	selectedElementId: string | null;
 	presentationOrder: string[];
-	isLoading: boolean; // Pridané
+	isLoading: boolean;
+	zoomLevel: number; // Added
+	showGrid: boolean; // Added
 
 	// Presentation actions
 	createPresentation: (
@@ -42,15 +44,21 @@ interface PresentationStore {
 
 	// Element actions
 	addElement: (element: Omit<SlideElement, "id">) => void;
+	addElementToSlide: (slideId: string, element: any) => void;
 	updateElement: (elementId: string, updates: Partial<SlideElement>) => void;
 	deleteElement: (elementId: string) => void;
 	selectElement: (elementId: string | null) => void;
+	previousSlide: () => void;
+	nextSlide: () => void;
+	setZoomLevel: (zoom: number) => void; // Added
+	toggleGrid: () => void; // Added
+	compressPresentation: () => void; // Added
 }
 
 const createDefaultSlide = (): Slide => ({
 	id: uuidv4(),
 	elements: [],
-	background: { color: "#ffffff" },
+	background: { color: undefined },
 });
 
 export const usePresentationStore = create<PresentationStore>((set, get) => ({
@@ -60,6 +68,8 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	selectedElementId: null,
 	presentationOrder: [],
 	isLoading: false,
+	zoomLevel: 1,
+	showGrid: false,
 
 	createPresentation: (
 		title: string,
@@ -74,7 +84,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				slides = template.slides.map((slide) => ({
 					...slide,
 					id: uuidv4(),
-					elements: slide.elements.map((el) => ({
+					elements: slide.elements.map((el: any) => ({
 						...el,
 						id: uuidv4(),
 					})),
@@ -348,7 +358,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			if (!state.currentPresentation) return state;
 
 			const newSlides = state.currentPresentation.slides.filter(
-				(s) => s.id !== slideId,
+				(s: Slide) => s.id !== slideId,
 			);
 
 			const newIndex = Math.min(state.currentSlideIndex, newSlides.length - 1);
@@ -383,7 +393,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		const duplicatedSlide: Slide = {
 			...slideToDuplicate,
 			id: uuidv4(),
-			elements: slideToDuplicate.elements.map((el) => ({
+			elements: slideToDuplicate.elements.map((el: SlideElement) => ({
 				...el,
 				id: uuidv4(),
 			})),
@@ -459,7 +469,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
-			const slides = state.currentPresentation.slides.map((slide, index) =>
+			const slides = state.currentPresentation.slides.map((slide: Slide, index: number) =>
 				index === state.currentSlideIndex
 					? { ...slide, elements: [...slide.elements, newElement] }
 					: slide,
@@ -487,9 +497,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
-			const slides = state.currentPresentation.slides.map((slide) => ({
+			const slides = state.currentPresentation.slides.map((slide: Slide) => ({
 				...slide,
-				elements: slide.elements.map((el) =>
+				elements: slide.elements.map((el: SlideElement) =>
 					el.id === elementId ? { ...el, ...updates } : el,
 				),
 			}));
@@ -515,9 +525,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
-			const slides = state.currentPresentation.slides.map((slide) => ({
+			const slides = state.currentPresentation.slides.map((slide: Slide) => ({
 				...slide,
-				elements: slide.elements.filter((el) => el.id !== elementId),
+				elements: slide.elements.filter((el: SlideElement) => el.id !== elementId),
 			}));
 
 			return {
@@ -538,26 +548,117 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	selectElement: (elementId: string | null) => {
 		set({ selectedElementId: elementId });
 	},
-	previousSlide: () => {
-  const state = get();
-  if (state.currentPresentation && state.currentSlideIndex > 0) {
-    set({
-      currentSlideIndex: state.currentSlideIndex - 1,
-      selectedElementId: null,
-    });
-  }
-},
 
-nextSlide: () => {
-  const state = get();
-  if (
-    state.currentPresentation &&
-    state.currentSlideIndex < state.currentPresentation.slides.length - 1
-  ) {
-    set({
-      currentSlideIndex: state.currentSlideIndex + 1,
-      selectedElementId: null,
-    });
-  }
-}
+	addElementToSlide: (slideId: string, element: any) => {
+		const state = get();
+		if (!state.currentPresentation) return;
+
+		const updatedPresentation = {
+			...state.currentPresentation,
+			slides: state.currentPresentation.slides.map((s) => {
+				if (s.id === slideId) {
+					return {
+						...s,
+						elements: [...s.elements, { ...element, id: element.id || uuidv4() }],
+					};
+				}
+				return s;
+			}),
+			updatedAt: new Date(),
+		};
+
+		set({
+			currentPresentation: updatedPresentation,
+			presentations: state.presentations.map((p) =>
+				p.id === updatedPresentation.id ? updatedPresentation : p
+			),
+		});
+
+		setTimeout(() => {
+			get().savePresentations();
+		}, 0);
+	},
+	previousSlide: () => {
+		const state = get();
+		if (state.currentPresentation && state.currentSlideIndex > 0) {
+			set({
+				currentSlideIndex: state.currentSlideIndex - 1,
+				selectedElementId: null,
+			});
+		}
+	},
+
+	nextSlide: () => {
+		const state = get();
+		if (
+			state.currentPresentation &&
+			state.currentSlideIndex < state.currentPresentation.slides.length - 1
+		) {
+			set({
+				currentSlideIndex: state.currentSlideIndex + 1,
+				selectedElementId: null,
+			});
+		}
+	},
+
+	setZoomLevel: (zoom: number) => {
+		set({ zoomLevel: Math.max(0.1, Math.min(2, zoom)) });
+	},
+
+	toggleGrid: () => {
+		set((state) => ({ showGrid: !state.showGrid }));
+	},
+
+	compressPresentation: () => {
+		const state = get();
+		if (!state.currentPresentation) return;
+
+		set((state) => {
+			if (!state.currentPresentation) return state;
+
+			const compressedSlides = state.currentPresentation.slides.map((slide: Slide) => ({
+				...slide,
+				elements: slide.elements
+					.filter((el: SlideElement) => {
+						// Remove empty text elements
+						if (el.type === 'text' && !el.content?.trim()) return false;
+						return true;
+					})
+					.map((el: SlideElement) => {
+						const cleanedEl = { ...el };
+
+						// Remove potential large/unnecessary properties if they are default
+						if (cleanedEl.style) {
+							const style = { ...cleanedEl.style };
+							// Remove properties that are null or undefined to save space
+							Object.keys(style).forEach(key => {
+								if (style[key as keyof typeof style] === undefined || style[key as keyof typeof style] === null) {
+									delete style[key as keyof typeof style];
+								}
+							});
+							cleanedEl.style = style;
+						}
+
+						return cleanedEl;
+					}),
+			}));
+
+			const updatedPresentation = {
+				...state.currentPresentation,
+				slides: compressedSlides,
+				updatedAt: new Date(),
+			};
+
+			return {
+				currentPresentation: updatedPresentation,
+				presentations: state.presentations.map((p) =>
+					p.id === updatedPresentation.id ? updatedPresentation : p
+				),
+			};
+		});
+
+		setTimeout(() => {
+			get().savePresentations();
+		}, 0);
+	},
 }));

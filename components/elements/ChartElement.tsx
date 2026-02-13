@@ -83,9 +83,9 @@ export default function ChartElement({
 			.range([chartHeight, 0]);
 
 		const colorScale = d3
-			.scaleOrdinal()
+			.scaleOrdinal<string>()
 			.domain(chartData.labels)
-			.range(chartData.colors || d3.schemeCategory10);
+			.range(chartData.colors || (d3.schemeCategory10 as string[]));
 
 		// Create chart group
 		const chartGroup = svg
@@ -112,7 +112,7 @@ export default function ChartElement({
 					.attr("y", (d) => yScale(d))
 					.attr("width", xScale.bandwidth())
 					.attr("height", (d) => chartHeight - yScale(d))
-					.attr("fill", (_, i) => colorScale(chartData.labels[i]))
+					.attr("fill", (_, i) => colorScale(chartData.labels[i]) as string)
 					.attr("rx", 2);
 
 				// Add value labels on top of bars
@@ -174,7 +174,7 @@ export default function ChartElement({
 					.append("path")
 					.datum(chartData.values)
 					.attr("fill", "none")
-					.attr("stroke", colorScale(chartData.labels[0]))
+					.attr("stroke", colorScale(chartData.labels[0]) as string)
 					.attr("stroke-width", 3)
 					.attr("d", line);
 
@@ -192,7 +192,7 @@ export default function ChartElement({
 					.attr("cy", (d) => yScale(d))
 					.attr("r", 5)
 					.attr("fill", "#ffffff")
-					.attr("stroke", colorScale(chartData.labels[0]))
+					.attr("stroke", colorScale(chartData.labels[0]) as string)
 					.attr("stroke-width", 2);
 
 				// Add value labels
@@ -245,7 +245,7 @@ export default function ChartElement({
 					.enter()
 					.append("path")
 					.attr("d", arc)
-					.attr("fill", (_, i) => colorScale(chartData.labels[i]))
+					.attr("fill", (_, i) => colorScale(chartData.labels[i]) as string)
 					.attr("stroke", "#ffffff")
 					.attr("stroke-width", 2);
 
@@ -304,8 +304,8 @@ export default function ChartElement({
 				chartGroup
 					.append("path")
 					.datum(chartData.values)
-					.attr("fill", colorScale(chartData.labels[0]) + "40")
-					.attr("stroke", colorScale(chartData.labels[0]))
+					.attr("fill", (colorScale(chartData.labels[0]) as string) + "40")
+					.attr("stroke", colorScale(chartData.labels[0]) as string)
 					.attr("stroke-width", 2)
 					.attr("d", area);
 
@@ -323,7 +323,7 @@ export default function ChartElement({
 					.append("path")
 					.datum(chartData.values)
 					.attr("fill", "none")
-					.attr("stroke", colorScale(chartData.labels[0]))
+					.attr("stroke", colorScale(chartData.labels[0]) as string)
 					.attr("stroke-width", 2)
 					.attr("d", areaLine);
 
@@ -341,7 +341,7 @@ export default function ChartElement({
 					.attr("cy", (d) => yScale(d))
 					.attr("r", 4)
 					.attr("fill", "#ffffff")
-					.attr("stroke", colorScale(chartData.labels[0]))
+					.attr("stroke", colorScale(chartData.labels[0]) as string)
 					.attr("stroke-width", 2);
 
 				// Add axes
