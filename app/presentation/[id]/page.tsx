@@ -184,27 +184,30 @@ export default function PresentationPage() {
 				)}
 				style={{
 					transitionDuration: `${transitionDuration}ms`,
-					background: (() => {
-						if (currentSlide.background?.type === "gradient" || (currentSlide.background?.gradientStops && currentSlide.background.gradientStops.length > 0)) {
-							const type = currentSlide.background.gradientType || "linear";
-							const angle = currentSlide.background.gradientAngle || 135;
-							const stops = currentSlide.background.gradientStops
-								? currentSlide.background.gradientStops
-									.map((s) => `${s.color} ${s.offset}%`)
-									.join(", ")
-								: currentSlide.background.gradient;
+					backgroundColor: currentSlide.background?.color || "hsl(var(--background))",
+					backgroundImage: (() => {
+						const stops = currentSlide.background?.gradientStops && currentSlide.background.gradientStops.length > 0
+							? currentSlide.background.gradientStops
+								.map((s) => `${s.color} ${s.offset}%`)
+								.join(", ")
+							: currentSlide.background?.gradient;
 
-							if (!stops) return currentSlide.background.color || "hsl(var(--background))";
+						const image = currentSlide.background?.image
+							? `url(${currentSlide.background.image})`
+							: undefined;
 
-							return type === "linear"
+						if (stops) {
+							const type = currentSlide.background?.gradientType || "linear";
+							const angle = currentSlide.background?.gradientAngle || 135;
+							const gradient = type === "linear"
 								? `linear-gradient(${angle}deg, ${stops})`
 								: `radial-gradient(circle, ${stops})`;
+
+							return image ? `${gradient}, ${image}` : gradient;
 						}
-						return currentSlide.background?.color || "hsl(var(--background))";
+
+						return image;
 					})(),
-					backgroundImage: currentSlide.background?.image
-						? `url(${currentSlide.background.image})`
-						: undefined,
 					backgroundSize: "cover",
 					backgroundPosition: "center",
 				}}

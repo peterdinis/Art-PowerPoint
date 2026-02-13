@@ -18,6 +18,8 @@ export default function EditorCanvas() {
 		previousSlide,
 		nextSlide,
 		deleteElement,
+		zoomLevel,
+		showGrid,
 	} = usePresentationStore();
 	const dropRef = useRef<HTMLDivElement>(null);
 
@@ -33,8 +35,9 @@ export default function EditorCanvas() {
 					if (element) {
 						const slideElement = dropRef.current;
 						const rect = slideElement.getBoundingClientRect();
-						const scaleX = rect.width / 960;
-						const scaleY = rect.height / 540;
+						// Adjust scaling calculation to include zoom level
+						const scaleX = (rect.width / zoomLevel) / 960;
+						const scaleY = (rect.height / zoomLevel) / 540;
 
 						const newX = Math.max(
 							0,
@@ -88,7 +91,7 @@ export default function EditorCanvas() {
 			nextSlide();
 		} else if ((e.key === "Delete" || e.key === "Backspace") && selectedElementId) {
 			// Don't delete if we're in an input or textarea
-			const activeElement = document.activeElement;
+			const activeElement = document.activeElement as HTMLElement | null;
 			if (activeElement?.tagName === "INPUT" || activeElement?.tagName === "TEXTAREA" || activeElement?.isContentEditable) {
 				return;
 			}
@@ -102,7 +105,7 @@ export default function EditorCanvas() {
 
 	return (
 		<div
-			className="flex items-center justify-center h-full p-4 lg:p-8 overflow-auto"
+			className="flex items-center justify-center h-full p-4 lg:p-8 overflow-auto bg-muted/20"
 			tabIndex={0}
 			onKeyDown={handleKeyDown}
 		>
@@ -140,17 +143,34 @@ export default function EditorCanvas() {
 						width: "100%",
 						maxWidth: "960px",
 						aspectRatio: "16/9",
-						backgroundColor: currentSlide.background?.gradient
-							? undefined
-							: currentSlide.background?.color || "hsl(var(--background))",
-						background: currentSlide.background?.gradient
-							? currentSlide.background.gradient
-							: undefined,
-						backgroundImage: currentSlide.background?.image
-							? `url(${currentSlide.background.image})`
-							: undefined,
+						backgroundColor: currentSlide.background?.color || "hsl(var(--background))",
+						backgroundImage: (() => {
+							const stops = currentSlide.background?.gradientStops && currentSlide.background.gradientStops.length > 0
+								? currentSlide.background.gradientStops
+									.map((s: any) => `${s.color} ${s.offset}%`)
+									.join(", ")
+								: currentSlide.background?.gradient;
+
+							const image = currentSlide.background?.image
+								? `url(${currentSlide.background.image})`
+								: undefined;
+
+							if (stops) {
+								const type = currentSlide.background?.gradientType || "linear";
+								const angle = currentSlide.background?.gradientAngle || 135;
+								const gradient = type === "linear"
+									? `linear-gradient(${angle}deg, ${stops})`
+									: `radial-gradient(circle, ${stops})`;
+
+								return image ? `${gradient}, ${image}` : gradient;
+							}
+
+							return image;
+						})(),
 						backgroundSize: "cover",
 						backgroundPosition: "center",
+						transform: `scale(${zoomLevel})`,
+						transformOrigin: "center center",
 					}}
 					onClick={(e) => {
 						if (
@@ -161,45 +181,31 @@ export default function EditorCanvas() {
 						}
 					}}
 				>
-					{currentSlide.elements.map((element: any) => {
-						if (element.type === "chart") {
-							return (
-								<ChartElement
-									key={element.id}
-									element={element}
-									isSelected={selectedElementId === element.id}
-								/>
-							);
-						}
+					{/* Grid Overlay */}
+					{showGrid && (
+						<div
+							className="absolute inset-0 pointer-events-none z-[5]"
+							style={{
+								backgroundImage: `
+									linear-gradient(to right, hsl(var(--foreground)/0.1) 1px, transparent 1px),
+									linear-gradient(to bottom, hsl(var(--foreground)/0.1) 1px, transparent 1px)
+								`,
+								backgroundSize: '20px 20px'
+							}}
+						/>
+					)}
 
-						return (
-							<div key={element.id} className="relative group">
-								<SlideElement
-									element={element}
-									isSelected={selectedElementId === element.id}
-									onSelect={() => selectElement(element.id)}
-									onResize={(width, height) =>
-										handleElementResize(element.id, width, height)
-									}
-								/>
-								{selectedElementId === element.id && (
-									<button
-										onClick={(e) => {
-											e.stopPropagation();
-											if (confirm("Are you sure you want to delete this element?")) {
-												deleteElement(element.id);
-												selectElement(null);
-											}
-										}}
-										className="absolute -top-10 left-1/2 -translate-x-1/2 p-2 bg-destructive text-destructive-foreground rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50 hover:scale-110 active:scale-95"
-										title="Delete element"
-									>
-										<Trash2 className="w-4 h-4" />
-									</button>
-								)}
-							</div>
-						);
-					})}
+					{currentSlide.elements.map((element: any) => (
+						<SlideElement
+							key={element.id}
+							element={element}
+							isSelected={selectedElementId === element.id}
+							onSelect={() => selectElement(element.id)}
+							onResize={(width, height) =>
+								handleElementResize(element.id, width, height)
+							}
+						/>
+					))}
 
 					{currentSlide.elements.length === 0 && (
 						<div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground pointer-events-none">
@@ -270,6 +276,6 @@ export default function EditorCanvas() {
 					</div>
 				</div>
 			</div>
-		</div>
+		</div >
 	);
 }

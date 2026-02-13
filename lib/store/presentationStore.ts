@@ -13,7 +13,9 @@ interface PresentationStore {
 	currentSlideIndex: number;
 	selectedElementId: string | null;
 	presentationOrder: string[];
-	isLoading: boolean; // Pridané
+	isLoading: boolean;
+	zoomLevel: number; // Added
+	showGrid: boolean; // Added
 
 	// Presentation actions
 	createPresentation: (
@@ -48,6 +50,9 @@ interface PresentationStore {
 	selectElement: (elementId: string | null) => void;
 	previousSlide: () => void;
 	nextSlide: () => void;
+	setZoomLevel: (zoom: number) => void; // Added
+	toggleGrid: () => void; // Added
+	compressPresentation: () => void; // Added
 }
 
 const createDefaultSlide = (): Slide => ({
@@ -63,6 +68,8 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	selectedElementId: null,
 	presentationOrder: [],
 	isLoading: false,
+	zoomLevel: 1,
+	showGrid: false,
 
 	createPresentation: (
 		title: string,
@@ -592,5 +599,54 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				selectedElementId: null,
 			});
 		}
-	}
+	},
+
+	setZoomLevel: (zoom: number) => {
+		set({ zoomLevel: Math.max(0.1, Math.min(2, zoom)) });
+	},
+
+	toggleGrid: () => {
+		set((state) => ({ showGrid: !state.showGrid }));
+	},
+
+	compressPresentation: () => {
+		const state = get();
+		if (!state.currentPresentation) return;
+
+		set((state) => {
+			if (!state.currentPresentation) return state;
+
+			const compressedSlides = state.currentPresentation.slides.map((slide: Slide) => ({
+				...slide,
+				elements: slide.elements.map((el: SlideElement) => {
+					// Remove default or empty properties to save space
+					const compressedEl = { ...el };
+
+					// If it's text and empty, or other properties that can be trimmed
+					if (compressedEl.type === 'text' && !compressedEl.content) {
+						compressedEl.content = '';
+					}
+
+					return compressedEl;
+				}),
+			}));
+
+			const updatedPresentation = {
+				...state.currentPresentation,
+				slides: compressedSlides,
+				updatedAt: new Date(),
+			};
+
+			return {
+				currentPresentation: updatedPresentation,
+				presentations: state.presentations.map((p) =>
+					p.id === updatedPresentation.id ? updatedPresentation : p
+				),
+			};
+		});
+
+		setTimeout(() => {
+			get().savePresentations();
+		}, 0);
+	},
 }));

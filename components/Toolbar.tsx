@@ -57,6 +57,11 @@ import {
 	Table2,
 	TrendingUp,
 	FileUp,
+	FileDown,
+	Maximize,
+	ZoomIn,
+	ZoomOut,
+	Archive,
 	Minus,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
@@ -156,6 +161,11 @@ export default function Toolbar() {
 		currentSlideIndex,
 		selectedElementId,
 		updateElement,
+		zoomLevel,
+		showGrid,
+		setZoomLevel,
+		toggleGrid,
+		compressPresentation,
 	} = usePresentationStore();
 	const { theme } = useTheme();
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -1405,6 +1415,71 @@ Q4,61000,40000,21000`}</pre>
 					</div>
 
 					<Separator orientation="vertical" className="h-6" />
+
+					{/* Canvas Utilities */}
+					<div className="flex items-center gap-1 bg-muted/30 rounded-lg p-0.5">
+						<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+							<Button
+								variant={showGrid ? "default" : "ghost"}
+								size="icon"
+								className="h-8 w-8"
+								onClick={toggleGrid}
+								title="Toggle Grid"
+							>
+								<Grid className="w-4 h-4" />
+							</Button>
+						</motion.div>
+						<Separator orientation="vertical" className="h-4 mx-0.5" />
+						<div className="flex items-center gap-0.5">
+							<Button
+								variant="ghost"
+								size="icon"
+								className="h-8 w-8"
+								onClick={() => setZoomLevel(zoomLevel - 0.1)}
+								disabled={zoomLevel <= 0.5}
+								title="Zoom Out"
+							>
+								<ZoomOut className="w-4 h-4" />
+							</Button>
+							<span className="text-[10px] font-medium w-8 text-center">
+								{Math.round(zoomLevel * 100)}%
+							</span>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="h-8 w-8"
+								onClick={() => setZoomLevel(zoomLevel + 0.1)}
+								disabled={zoomLevel >= 2}
+								title="Zoom In"
+							>
+								<ZoomIn className="w-4 h-4" />
+							</Button>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="h-8 w-8"
+								onClick={() => setZoomLevel(1)}
+								title="Reset Zoom"
+							>
+								<Maximize className="w-3 h-3" />
+							</Button>
+						</div>
+					</div>
+
+					<Separator orientation="vertical" className="h-6" />
+
+					<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+						<Button
+							variant="ghost"
+							size="sm"
+							className="gap-2 text-primary hover:text-primary hover:bg-primary/10"
+							onClick={compressPresentation}
+							title="Optimize presentation data"
+						>
+							<Archive className="w-4 h-4" />
+							Compress
+						</Button>
+					</motion.div>
 
 					{/* Main Add Elements Dropdown */}
 					<DropdownMenu>

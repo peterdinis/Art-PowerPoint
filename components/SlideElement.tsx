@@ -1,5 +1,8 @@
 "use client";
 
+import { useRef } from "react";
+import { usePresentationStore } from "@/lib/store/presentationStore";
+import { Trash2 } from "lucide-react";
 import { useDrag } from "react-dnd";
 import React from "react";
 import { cn } from "@/lib/utils";
@@ -24,6 +27,7 @@ export default function SlideElement({
 	onSelect,
 	onResize,
 }: SlideElementProps) {
+	const { deleteElement, selectElement } = usePresentationStore();
 	const [{ isDragging }, drag] = useDrag({
 		type: "element",
 		item: { id: element.id },
@@ -286,6 +290,22 @@ export default function SlideElement({
 				onClick={onSelect}
 			>
 				{getElementContent()}
+
+				{isSelected && (
+					<button
+						onClick={(e) => {
+							e.stopPropagation();
+							if (confirm("Are you sure you want to delete this element?")) {
+								deleteElement(element.id);
+								selectElement(null);
+							}
+						}}
+						className="absolute -top-12 left-1/2 -translate-x-1/2 p-2 bg-destructive text-destructive-foreground rounded-full shadow-lg z-50 hover:scale-110 active:scale-95 transition-all"
+						title="Delete element"
+					>
+						<Trash2 className="w-4 h-4" />
+					</button>
+				)}
 			</div>
 		</ResizableBox>
 	);
