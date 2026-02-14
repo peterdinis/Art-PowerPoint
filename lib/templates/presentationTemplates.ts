@@ -1,12 +1,9 @@
 import type {
-	Presentation,
 	Slide,
 	SlideElement,
 	TextAlign,
-	FontWeight,
-	FontStyle,
 	ShapeType,
-} from "@/lib/types/presentation";
+} from "@/types/presentation";
 import { v4 as uuidv4 } from "uuid";
 
 export interface PresentationTemplate {

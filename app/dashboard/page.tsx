@@ -18,8 +18,8 @@ import {
 	X,
 	FileUp,
 } from "lucide-react";
-import { usePresentationStore } from "@/lib/store/presentationStore";
-import { Slide, Presentation } from "@/lib/types/presentation";
+import { usePresentationStore } from "@/store/presentationStore";
+import { Slide, Presentation } from "@/types/presentation";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { importPPTX } from "@/lib/utils/pptxImport";

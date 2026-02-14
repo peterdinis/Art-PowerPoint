@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { usePresentationStore } from "@/lib/store/presentationStore";
+import { usePresentationStore } from "@/store/presentationStore";
 import { Trash2 } from "lucide-react";
 import { useDrag } from "react-dnd";
 import React from "react";
@@ -13,7 +13,7 @@ import type {
 	SlideElement as SlideElementType,
 	GradientStop,
 	AnimationType,
-} from "@/lib/types/presentation";
+} from "@/types/presentation";
 import ChartElement from "./elements/ChartElement";
 import IconElement from "./elements/IconElement";
 import TableElement from "./elements/TableElement";

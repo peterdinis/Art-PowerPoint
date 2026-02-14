@@ -1,10 +1,6 @@
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
-import type {
-	Presentation,
-	Slide,
-	SlideElement,
-} from "@/lib/types/presentation";
+import type { Presentation, Slide, SlideElement } from "@/types/presentation";
 import { getTemplateById } from "@/lib/templates/presentationTemplates";
 
 interface PresentationStore {

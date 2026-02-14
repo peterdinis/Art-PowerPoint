@@ -1,6 +1,6 @@
 "use client";
 
-import { usePresentationStore } from "@/lib/store/presentationStore";
+import { usePresentationStore } from "@/store/presentationStore";
 import * as Icons from "lucide-react";
 import {
 	Type,
@@ -68,7 +68,7 @@ import { exportToPPTX } from "@/lib/utils/pptxExport";
 import { importPPTX } from "@/lib/utils/pptxImport";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
-import { Slide } from "@/lib/types/presentation";
+import { Slide } from "@/types/presentation";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ThemeProvider";
@@ -108,7 +108,7 @@ import {
 	FontWeight,
 	FontStyle,
 	ShapeType,
-} from "@/lib/types/presentation";
+} from "@/types/presentation";
 import { FilePond, registerPlugin } from "react-filepond";
 import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
 import FilePondPluginFileValidateSize from "filepond-plugin-file-validate-size";

@@ -1,6 +1,6 @@
 "use client";
 
-import { usePresentationStore } from "@/lib/store/presentationStore";
+import { usePresentationStore } from "@/store/presentationStore";
 import * as Icons from "lucide-react";
 import {
 	Trash2,
@@ -48,7 +48,7 @@ import type {
 	ObjectFit,
 	BorderStyle,
 	ShapeType,
-} from "@/lib/types/presentation";
+} from "@/types/presentation";
 import SlideBackgroundEditor from "./SlideBackgroundEditor";
 import { useTheme } from "@/components/ThemeProvider";
 

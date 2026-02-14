@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { SlideElement } from "@/lib/types/presentation";
+import { SlideElement } from "@/types/presentation";
 
 interface CodeElementProps {
 	element: SlideElement;

@@ -23,8 +23,8 @@ import {
 } from "@/components/ui/select";
 import { Copy, Check, Globe, Mail, Shield } from "lucide-react";
 import { toast } from "sonner";
-import { usePresentationStore } from "@/lib/store/presentationStore";
-import type { PermissionRole } from "@/lib/types/presentation";
+import { usePresentationStore } from "@/store/presentationStore";
+import type { PermissionRole } from "@/types/presentation";
 
 interface ShareDialogProps {
 	open: boolean;

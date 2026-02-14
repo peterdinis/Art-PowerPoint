@@ -14,7 +14,7 @@ import {
 	Star,
 	Trash2,
 } from "lucide-react";
-import { usePresentationStore } from "@/lib/store/presentationStore";
+import { usePresentationStore } from "@/store/presentationStore";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -82,7 +82,9 @@ export default function DashboardSidebar() {
 						<div className="p-2 bg-primary rounded-lg">
 							<FileText className="w-5 h-5 text-primary-foreground" />
 						</div>
-						<h2 className="text-xl dark:text-white font-bold">Art Powerpoint</h2>
+						<h2 className="text-xl dark:text-white font-bold">
+							Art Powerpoint
+						</h2>
 					</div>
 					<Button
 						onClick={() => {

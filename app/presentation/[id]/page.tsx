@@ -2,12 +2,12 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { usePresentationStore } from "@/lib/store/presentationStore";
+import { usePresentationStore } from "@/store/presentationStore";
 import { X, ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoadingPresentation } from "@/components/ui/LoadingPresentation";
 import { cn } from "@/lib/utils";
-import type { SlideElement, GradientStop } from "@/lib/types/presentation";
+import type { SlideElement, GradientStop } from "@/types/presentation";
 import IconElement from "@/components/elements/IconElement";
 import TableElement from "@/components/elements/TableElement";
 import CodeElement from "@/components/elements/CodeElement";
