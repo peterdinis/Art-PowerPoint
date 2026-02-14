@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
 	reactStrictMode: true,
 	reactCompiler: true,
 	devIndicators: {
-		position: "bottom-right",
+		position: "bottom-left",
 	},
 
 	typedRoutes: true,
