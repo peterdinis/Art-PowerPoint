@@ -13,10 +13,6 @@ export const exportToPPTX = async (presentation: Presentation) => {
 		const module = await import("pptxgenjs");
 		pptxgen = module.default;
 	} catch (e) {
-		console.log("Local pptxgenjs not found, attempting to load from CDN...");
-		// Fallback to CDN injection if needed, but since this is a server/client mixed env,
-		// we'll try to use the global if it was loaded via script tag elsewhere,
-		// or just throw a more descriptive error.
 		const windowAny = window as any;
 		if (windowAny.pptxgen) {
 			pptxgen = windowAny.pptxgen;
