@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     Dialog,
     DialogContent,
@@ -14,9 +14,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Copy, Check, Globe, Mail } from "lucide-react";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Copy, Check, Globe, Mail, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { usePresentationStore } from "@/lib/store/presentationStore";
+import type { PermissionRole } from "@/lib/types/presentation";
 
 interface ShareDialogProps {
     open: boolean;
@@ -24,10 +32,19 @@ interface ShareDialogProps {
 }
 
 export default function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
-    const { currentPresentation } = usePresentationStore();
+    const { currentPresentation, updatePresentation } = usePresentationStore();
     const [isPublic, setIsPublic] = useState(false);
+    const [publicRole, setPublicRole] = useState<PermissionRole>("viewer");
     const [copied, setCopied] = useState(false);
     const [email, setEmail] = useState("");
+    const [inviteRole, setInviteRole] = useState<PermissionRole>("viewer");
+
+    useEffect(() => {
+        if (currentPresentation) {
+            setIsPublic(currentPresentation.visibility === "public");
+            setPublicRole(currentPresentation.publicRole || "viewer");
+        }
+    }, [currentPresentation]);
 
     const shareUrl = typeof window !== "undefined"
         ? `${window.location.origin}/presentation/${currentPresentation?.id}`
@@ -40,9 +57,38 @@ export default function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const handleVisibilityChange = (checked: boolean) => {
+        setIsPublic(checked);
+        if (currentPresentation) {
+            updatePresentation(currentPresentation.id, {
+                visibility: checked ? "public" : "private",
+                publicRole: publicRole,
+            });
+        }
+    };
+
+    const handlePublicRoleChange = (role: PermissionRole) => {
+        setPublicRole(role);
+        if (currentPresentation) {
+            updatePresentation(currentPresentation.id, {
+                publicRole: role,
+            });
+        }
+    };
+
     const handleInvite = () => {
-        if (email.trim()) {
-            toast.success(`Invitation sent to ${email}`);
+        if (email.trim() && currentPresentation) {
+            const newPermission = {
+                email: email.trim(),
+                role: inviteRole,
+            };
+
+            const currentPermissions = currentPresentation.permissions || [];
+            updatePresentation(currentPresentation.id, {
+                permissions: [...currentPermissions, newPermission],
+            });
+
+            toast.success(`Invitation sent to ${email} as ${inviteRole}`);
             setEmail("");
         }
     };
@@ -70,15 +116,33 @@ export default function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
                                     Public Access
                                 </Label>
                                 <span className="text-xs text-muted-foreground">
-                                    Anyone with the link can view
+                                    Anyone with the link can access
                                 </span>
                             </div>
                             <Switch
                                 id="public-mode"
                                 checked={isPublic}
-                                onCheckedChange={setIsPublic}
+                                onCheckedChange={handleVisibilityChange}
                             />
                         </div>
+
+                        {isPublic && (
+                            <div className="flex items-center justify-between space-x-2 p-3 rounded-md bg-muted/50">
+                                <div className="flex items-center gap-2">
+                                    <Shield className="h-4 w-4 text-muted-foreground" />
+                                    <span className="text-sm font-medium">Public Role</span>
+                                </div>
+                                <Select value={publicRole} onValueChange={handlePublicRoleChange}>
+                                    <SelectTrigger className="w-[120px] h-8">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="viewer">Viewer</SelectItem>
+                                        <SelectItem value="editor">Editor</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
 
                         <div className="flex items-center space-x-2">
                             <div className="grid flex-1 gap-2">
@@ -87,7 +151,7 @@ export default function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
                                 </Label>
                                 <Input
                                     id="link"
-                                    defaultValue={shareUrl}
+                                    value={shareUrl}
                                     readOnly
                                     className="h-9"
                                 />
@@ -117,22 +181,48 @@ export default function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
                     </TabsContent>
 
                     <TabsContent value="invite" className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="email">Email address</Label>
-                            <div className="flex w-full max-w-sm items-center space-x-2">
-                                <Input
-                                    type="email"
-                                    id="email"
-                                    placeholder="colleague@example.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                />
-                                <Button type="button" onClick={handleInvite}>
-                                    <Mail className="h-4 w-4 mr-2" />
-                                    Invite
-                                </Button>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="email">Email address</Label>
+                                <div className="flex gap-2">
+                                    <Input
+                                        type="email"
+                                        id="email"
+                                        placeholder="colleague@example.com"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="flex-1"
+                                    />
+                                    <Select value={inviteRole} onValueChange={(v: PermissionRole) => setInviteRole(v)}>
+                                        <SelectTrigger className="w-[110px]">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="viewer">Viewer</SelectItem>
+                                            <SelectItem value="editor">Editor</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
+                            <Button type="button" onClick={handleInvite} className="w-full">
+                                <Mail className="h-4 w-4 mr-2" />
+                                Send Invitation
+                            </Button>
                         </div>
+
+                        {currentPresentation?.permissions && currentPresentation.permissions.length > 0 && (
+                            <div className="mt-4 space-y-2">
+                                <Label className="text-xs uppercase text-muted-foreground font-semibold">Shared with</Label>
+                                <div className="space-y-2 max-h-[120px] overflow-auto pr-1">
+                                    {currentPresentation.permissions.map((p, i) => (
+                                        <div key={i} className="flex items-center justify-between text-sm p-2 rounded-md bg-muted/30 border">
+                                            <span className="truncate flex-1 mr-2">{p.email}</span>
+                                            <span className="text-xs bg-secondary px-2 py-0.5 rounded capitalize">{p.role}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </TabsContent>
                 </Tabs>
 
@@ -145,3 +235,4 @@ export default function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
         </Dialog>
     );
 }
+

@@ -78,7 +78,6 @@ function SortableSlideItem({
 				<div
 					className="aspect-video bg-background relative h-full"
 					style={{
-						backgroundColor: slide.background?.color || "var(--background)",
 						backgroundImage: (() => {
 							const stops =
 								slide.background?.gradientStops &&
