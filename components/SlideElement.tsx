@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { usePresentationStore } from "@/store/presentationStore";
+import { useSettingsStore } from "@/store/settingsStore";
 import { Trash2 } from "lucide-react";
 import { useDrag } from "react-dnd";
 import React from "react";
@@ -100,6 +101,8 @@ export default function SlideElement({
 	onResize,
 }: SlideElementProps) {
 	const { deleteElement, selectElement } = usePresentationStore();
+	const { performance } = useSettingsStore();
+
 	const [{ isDragging }, drag] = useDrag({
 		type: "element",
 		item: { id: element.id },
@@ -109,8 +112,8 @@ export default function SlideElement({
 	});
 
 	const animationVariants = useMemo(
-		() => getAnimationVariants(element.animation?.type),
-		[element.animation?.type],
+		() => (performance.complexAnimations ? getAnimationVariants(element.animation?.type) : { initial: {}, animate: {} }),
+		[element.animation?.type, performance.complexAnimations],
 	);
 
 	const handleResize = (
@@ -142,33 +145,33 @@ export default function SlideElement({
 		if (element.type === "text") {
 			const filterStyles = element.style?.filters
 				? {
-						filter: [
-							element.style.filters.blur
-								? `blur(${element.style.filters.blur}px)`
-								: "",
-							element.style.filters.brightness
-								? `brightness(${element.style.filters.brightness})`
-								: "",
-							element.style.filters.contrast
-								? `contrast(${element.style.filters.contrast})`
-								: "",
-							element.style.filters.grayscale
-								? `grayscale(${element.style.filters.grayscale})`
-								: "",
-							element.style.filters.sepia
-								? `sepia(${element.style.filters.sepia})`
-								: "",
-							element.style.filters.hueRotate
-								? `hue-rotate(${element.style.filters.hueRotate}deg)`
-								: "",
-							element.style.filters.saturate
-								? `saturate(${element.style.filters.saturate})`
-								: "",
-							element.style.filters.invert
-								? `invert(${element.style.filters.invert})`
-								: "",
-						].join(" "),
-					}
+					filter: [
+						element.style.filters.blur
+							? `blur(${element.style.filters.blur}px)`
+							: "",
+						element.style.filters.brightness
+							? `brightness(${element.style.filters.brightness})`
+							: "",
+						element.style.filters.contrast
+							? `contrast(${element.style.filters.contrast})`
+							: "",
+						element.style.filters.grayscale
+							? `grayscale(${element.style.filters.grayscale})`
+							: "",
+						element.style.filters.sepia
+							? `sepia(${element.style.filters.sepia})`
+							: "",
+						element.style.filters.hueRotate
+							? `hue-rotate(${element.style.filters.hueRotate}deg)`
+							: "",
+						element.style.filters.saturate
+							? `saturate(${element.style.filters.saturate})`
+							: "",
+						element.style.filters.invert
+							? `invert(${element.style.filters.invert})`
+							: "",
+					].join(" "),
+				}
 				: {};
 
 			const getBackgroundStyle = () => {
@@ -313,13 +316,13 @@ export default function SlideElement({
 				initial="initial"
 				animate="animate"
 				whileHover={
-					!isSelected
+					!isSelected && performance.complexAnimations
 						? {
-								scale: 1.05,
-								rotateY: 10,
-								rotateX: -5,
-								boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
-							}
+							scale: 1.05,
+							rotateY: 10,
+							rotateX: -5,
+							boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
+						}
 						: {}
 				}
 				transition={{
