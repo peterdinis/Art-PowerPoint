@@ -12,6 +12,7 @@ import {
 	TrendingUp,
 	Clock,
 	Star,
+	Trash2,
 } from "lucide-react";
 import { usePresentationStore } from "@/lib/store/presentationStore";
 import { Button } from "@/components/ui/button";
@@ -81,7 +82,7 @@ export default function DashboardSidebar() {
 						<div className="p-2 bg-primary rounded-lg">
 							<FileText className="w-5 h-5 text-primary-foreground" />
 						</div>
-						<h2 className="text-xl dark:text-white font-bold">Slide Master</h2>
+						<h2 className="text-xl dark:text-white font-bold">Art Powerpoint</h2>
 					</div>
 					<Button
 						onClick={() => {
@@ -92,7 +93,7 @@ export default function DashboardSidebar() {
 						size="lg"
 					>
 						<Plus className="w-4 h-4 mr-2" />
-						Nová prezentácia
+						New Presentation
 					</Button>
 				</div>
 
@@ -163,6 +164,20 @@ export default function DashboardSidebar() {
 					>
 						<TrendingUp className="w-5 h-5" />
 						<span>Statistics</span>
+					</Link>
+					<Link
+						href="/trash"
+						onClick={onItemClick}
+						className={cn(
+							"flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+							"hover:bg-accent hover:text-accent-foreground",
+							isActive("/trash")
+								? "bg-accent text-accent-foreground"
+								: "text-foreground",
+						)}
+					>
+						<Trash2 className="w-5 h-5" />
+						<span>Trash</span>
 					</Link>
 				</nav>
 

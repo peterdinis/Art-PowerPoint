@@ -1,16 +1,18 @@
 "use client";
 
-import { useRef } from "react";
+import { useMemo } from "react";
 import { usePresentationStore } from "@/lib/store/presentationStore";
 import { Trash2 } from "lucide-react";
 import { useDrag } from "react-dnd";
 import React from "react";
 import { cn } from "@/lib/utils";
 import { ResizableBox } from "react-resizable";
+import { motion } from "framer-motion";
 import "react-resizable/css/styles.css";
 import type {
 	SlideElement as SlideElementType,
 	GradientStop,
+	AnimationType,
 } from "@/lib/types/presentation";
 import ChartElement from "./elements/ChartElement";
 import IconElement from "./elements/IconElement";
@@ -23,6 +25,73 @@ interface SlideElementProps {
 	onSelect: () => void;
 	onResize?: (width: number, height: number) => void;
 }
+
+const getAnimationVariants = (type?: AnimationType): any => {
+	switch (type) {
+		case "fadeIn":
+			return { initial: { opacity: 0 }, animate: { opacity: 1 } };
+		case "slideIn":
+			return {
+				initial: { x: -100, opacity: 0 },
+				animate: { x: 0, opacity: 1 },
+			};
+		case "zoomIn":
+			return {
+				initial: { scale: 0, opacity: 0 },
+				animate: { scale: 1, opacity: 1 },
+			};
+		case "bounce":
+			return {
+				initial: { scale: 0.3, opacity: 0 },
+				animate: {
+					scale: 1,
+					opacity: 1,
+					transition: { type: "spring", stiffness: 260, damping: 20 } as any,
+				},
+			};
+		case "rotate":
+			return {
+				initial: { rotate: -180, opacity: 0 },
+				animate: { rotate: 0, opacity: 1 },
+			};
+		case "rotate3d":
+			return {
+				initial: { rotateY: 90, opacity: 0 },
+				animate: { rotateY: 0, opacity: 1 },
+			};
+		case "floating":
+			return {
+				animate: {
+					y: [0, -15, 0],
+					transition: {
+						duration: 3,
+						repeat: Infinity,
+						ease: "easeInOut",
+					} as any,
+				},
+			};
+		case "glitch":
+			return {
+				animate: {
+					x: [0, -2, 2, -2, 2, 0],
+					transition: {
+						duration: 0.2,
+						repeat: Infinity,
+						repeatDelay: 3,
+					} as any,
+				},
+			};
+		case "pulse":
+			return {
+				animate: {
+					scale: [1, 1.05, 1],
+					transition: { duration: 2, repeat: Infinity } as any,
+				},
+			};
+		default:
+			return { initial: {}, animate: {} };
+	}
+};
 
 export default function SlideElement({
 	element,
@@ -39,8 +108,13 @@ export default function SlideElement({
 		}),
 	});
 
+	const animationVariants = useMemo(
+		() => getAnimationVariants(element.animation?.type),
+		[element.animation?.type],
+	);
+
 	const handleResize = (
-		e: any,
+		_e: any,
 		{ size }: { size: { width: number; height: number } },
 	) => {
 		if (onResize) {
@@ -155,37 +229,6 @@ export default function SlideElement({
 		}
 
 		if (element.type === "image") {
-			const filterStyles = element.style?.filters
-				? {
-						filter: [
-							element.style.filters.blur
-								? `blur(${element.style.filters.blur}px)`
-								: "",
-							element.style.filters.brightness
-								? `brightness(${element.style.filters.brightness})`
-								: "",
-							element.style.filters.contrast
-								? `contrast(${element.style.filters.contrast})`
-								: "",
-							element.style.filters.grayscale
-								? `grayscale(${element.style.filters.grayscale})`
-								: "",
-							element.style.filters.sepia
-								? `sepia(${element.style.filters.sepia})`
-								: "",
-							element.style.filters.hueRotate
-								? `hue-rotate(${element.style.filters.hueRotate}deg)`
-								: "",
-							element.style.filters.saturate
-								? `saturate(${element.style.filters.saturate})`
-								: "",
-							element.style.filters.invert
-								? `invert(${element.style.filters.invert})`
-								: "",
-						].join(" "),
-					}
-				: {};
-
 			return (
 				<img
 					src={element.content}
@@ -194,129 +237,43 @@ export default function SlideElement({
 					style={{
 						borderRadius: element.style?.borderRadius,
 						objectFit: element.style?.objectFit as any,
-						...filterStyles,
 					}}
 				/>
 			);
 		}
 
 		if (element.type === "shape") {
-			const filterStyles = element.style?.filters
-				? {
-						filter: [
-							element.style.filters.blur
-								? `blur(${element.style.filters.blur}px)`
-								: "",
-							element.style.filters.brightness
-								? `brightness(${element.style.filters.brightness})`
-								: "",
-							element.style.filters.contrast
-								? `contrast(${element.style.filters.contrast})`
-								: "",
-							element.style.filters.grayscale
-								? `grayscale(${element.style.filters.grayscale})`
-								: "",
-							element.style.filters.sepia
-								? `sepia(${element.style.filters.sepia})`
-								: "",
-							element.style.filters.hueRotate
-								? `hue-rotate(${element.style.filters.hueRotate}deg)`
-								: "",
-							element.style.filters.saturate
-								? `saturate(${element.style.filters.saturate})`
-								: "",
-							element.style.filters.invert
-								? `invert(${element.style.filters.invert})`
-								: "",
-						].join(" "),
-					}
-				: {};
-
 			const getShapeStyle = (): React.CSSProperties => {
-				const getBackgroundImage = () => {
-					if (
-						element.style?.gradientStops &&
-						element.style.gradientStops.length > 0
-					) {
-						const type = element.style.gradientType || "linear";
-						const angle = element.style.gradientAngle || 135;
-						const stops = element.style.gradientStops
-							.map((s: GradientStop) => `${s.color} ${s.offset}%`)
-							.join(", ");
-
-						return type === "linear"
-							? `linear-gradient(${angle}deg, ${stops})`
-							: `radial-gradient(circle, ${stops})`;
-					}
-					return undefined;
-				};
-
 				const baseStyle: React.CSSProperties = {
 					backgroundColor: element.style?.backgroundColor || "#3b82f6",
-					backgroundImage: getBackgroundImage(),
 					borderColor: element.style?.borderColor,
 					borderWidth: element.style?.borderWidth || 0,
 					borderStyle: (element.style?.borderStyle as any) || "solid",
 					borderRadius: element.style?.borderRadius || 0,
 					boxShadow: element.style?.boxShadow,
-					...filterStyles,
 				};
 
-				if (element.content === "circle") {
+				if (element.content === "circle")
 					return { ...baseStyle, borderRadius: "50%" };
-				}
-
 				if (element.content === "triangle") {
 					return {
 						...baseStyle,
 						backgroundColor: "transparent",
-						backgroundImage: "none",
 						borderLeft: `${element.size.width / 2}px solid transparent`,
 						borderRight: `${element.size.width / 2}px solid transparent`,
 						borderBottom: `${element.size.height}px solid ${element.style?.backgroundColor || "#3b82f6"}`,
 					};
 				}
-
-				if (element.content === "heart") {
-					return {
-						...baseStyle,
-						position: "relative",
-						backgroundColor: "transparent",
-						backgroundImage: "none",
-					};
-				}
-
 				return baseStyle;
 			};
 
-			return (
-				<div className="w-full h-full" style={getShapeStyle()}>
-					{element.content === "heart" && (
-						<div className="absolute inset-0 flex items-center justify-center">
-							<div
-								style={{
-									color: element.style?.backgroundColor || "#ec4899",
-									fontSize:
-										Math.min(element.size.width, element.size.height) * 0.6,
-								}}
-							>
-								❤️
-							</div>
-						</div>
-					)}
-				</div>
-			);
+			return <div className="w-full h-full" style={getShapeStyle()} />;
 		}
 
 		if (element.type === "video") {
 			return (
-				<div className="w-full h-full bg-muted rounded-lg overflow-hidden border border-border">
-					<div className="w-full h-full flex items-center justify-center">
-						<div className="text-muted-foreground text-center">
-							<div className="text-4xl mb-2">▶️</div>
-							<div className="text-sm">Video: {element.content}</div>
-						</div>
-					</div>
+				<div className="w-full h-full bg-muted rounded-lg flex items-center justify-center border">
+					<div className="text-sm">Video: {element.content}</div>
 				</div>
 			);
 		}
@@ -324,9 +281,13 @@ export default function SlideElement({
 		return null;
 	};
 
-	if (element.type === "chart") {
-		return getElementContent();
-	}
+	const elementStyles = {
+		left: element.position.x,
+		top: element.position.y,
+		zIndex: element.style?.zIndex || 1,
+		transform: `rotate(${element.rotation || 0}deg)`,
+		opacity: element.style?.opacity || 1,
+	};
 
 	return (
 		<ResizableBox
@@ -338,20 +299,33 @@ export default function SlideElement({
 			resizeHandles={isSelected ? ["se"] : []}
 			handleSize={[8, 8]}
 		>
-			<div
+			<motion.div
 				ref={(node) => {
 					if (node) drag(node);
 				}}
 				className={cn(
-					"absolute cursor-move",
-					isSelected && "ring-2 ring-primary ring-offset-2",
+					"absolute cursor-move overflow-visible",
+					isSelected && "ring-2 ring-primary ring-offset-2 z-[1000]",
 					isDragging && "opacity-50",
 				)}
-				style={{
-					left: element.position.x,
-					top: element.position.y,
-					transform: `rotate(${element.rotation || 0}deg)`,
-					opacity: element.style?.opacity || 1,
+				style={elementStyles}
+				variants={animationVariants}
+				initial="initial"
+				animate="animate"
+				whileHover={
+					!isSelected
+						? {
+								scale: 1.05,
+								rotateY: 10,
+								rotateX: -5,
+								boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
+							}
+						: {}
+				}
+				transition={{
+					duration: (element.animation?.duration || 500) / 1000,
+					delay: (element.animation?.delay || 0) / 1000,
+					ease: (element.animation?.easing || "easeOut") as any,
 				}}
 				onClick={onSelect}
 			>
@@ -361,18 +335,17 @@ export default function SlideElement({
 					<button
 						onClick={(e) => {
 							e.stopPropagation();
-							if (confirm("Are you sure you want to delete this element?")) {
+							if (confirm("Delete this element?")) {
 								deleteElement(element.id);
 								selectElement(null);
 							}
 						}}
-						className="absolute -top-12 left-1/2 -translate-x-1/2 p-2 bg-destructive text-destructive-foreground rounded-full shadow-lg z-50 hover:scale-110 active:scale-95 transition-all"
-						title="Delete element"
+						className="absolute -top-12 left-1/2 -translate-x-1/2 p-2 bg-destructive text-destructive-foreground rounded-full shadow-lg z-50 transition-all hover:scale-110"
 					>
 						<Trash2 className="w-4 h-4" />
 					</button>
 				)}
-			</div>
+			</motion.div>
 		</ResizableBox>
 	);
 }

@@ -23,7 +23,8 @@ export default function RecentPage() {
 	}, [loadPresentations]);
 
 	const recentPresentations = useMemo(() => {
-		return [...presentations]
+		return presentations
+			.filter((p) => !p.deletedAt)
 			.sort((a, b) => {
 				return (
 					new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
@@ -38,11 +39,11 @@ export default function RecentPage() {
 		const diffTime = Math.abs(now.getTime() - d.getTime());
 		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-		if (diffDays === 0) return "Dnes";
-		if (diffDays === 1) return "Včera";
-		if (diffDays < 7) return `Pred ${diffDays} dňami`;
-		if (diffDays < 30) return `Pred ${Math.floor(diffDays / 7)} týždňami`;
-		return d.toLocaleDateString("sk-SK", {
+		if (diffDays === 0) return "Today";
+		if (diffDays === 1) return "Yesterday";
+		if (diffDays < 7) return `${diffDays} days ago`;
+		if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+		return d.toLocaleDateString("en-US", {
 			day: "numeric",
 			month: "short",
 			year: "numeric",
@@ -67,7 +68,7 @@ export default function RecentPage() {
 								<h1 className="text-3xl font-bold">Recent</h1>
 							</div>
 							<p className="text-muted-foreground">
-								Nedávno upravené prezentácie
+								Recently edited presentations
 							</p>
 						</div>
 
@@ -77,13 +78,13 @@ export default function RecentPage() {
 									<div className="text-center py-16">
 										<Clock className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
 										<h3 className="text-xl font-semibold mb-2">
-											Žiadne nedávne prezentácie
+											No recent presentations
 										</h3>
 										<p className="text-muted-foreground mb-6">
-											Zatiaľ ste neupravovali žiadne prezentácie
+											You haven't edited any presentations yet
 										</p>
 										<Button asChild>
-											<Link href="/dashboard">Prejsť na dashboard</Link>
+											<Link href="/dashboard">Go to dashboard</Link>
 										</Button>
 									</div>
 								</CardContent>
@@ -104,8 +105,8 @@ export default function RecentPage() {
 													{presentation.slides.length}
 												</div>
 												<div className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm text-xs px-2 py-1 rounded">
-													{presentation.slides.length} slajd
-													{presentation.slides.length !== 1 ? "ov" : ""}
+													{presentation.slides.length} slide
+													{presentation.slides.length !== 1 ? "s" : ""}
 												</div>
 											</div>
 											<CardHeader>

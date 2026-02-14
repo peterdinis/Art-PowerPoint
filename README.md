@@ -1,62 +1,61 @@
-# Presentation Builder
+# 🎨 Art Powerpoint
 
-A PowerPoint-like presentation application built with Next.js, TypeScript, and React.
+**Art Powerpoint** is a premium, high-performance presentation builder designed for professional creators. Built with Next.js and Framer Motion, it offers a smooth, desktop-like experience entirely in the browser.
 
-## Features
+## ✨ Core Features
 
-- 📊 **Dashboard** - Overview of all presentations
-- ✏️ **Editor** - Create and edit slides
-- 🎨 **Elements** - Text, images, shapes
-- 💾 **Auto-save** - Automatic saving to localStorage
-- 🎯 **Drag & Drop** - Move elements on slides
+### 🎬 Advanced Animations
+- **Motion Engine**: Powered by `framer-motion` for fluid, hardware-accelerated transitions.
+- **Animation Types**: Select from `Fade In`, `Slide In`, `Zoom In`, `Bounce`, `Rotate`, `Rotate 3D`, `Floating`, `Glitch`, and `Pulse`.
+- **Entrance Effects**: Configure duration, delay, and easing for every element.
 
-## Technologies
+### 🛠️ Professional Editor
+- **3D Hover Effects**: Elements respond dynamically to your cursor with depth and tilt effects.
+- **Layering Controls**: Precise "Bring to Front" and "Send to Back" layering (Z-Index).
+- **Alignment Tools**: Instant Left, Center, and Right alignment relative to the slide.
+- **Floating Context Bar**: Quickly access animations and layer controls for selected elements.
 
-- **Next.js 16** - React framework
-- **TypeScript** - Type safety
-- **Zustand** - State management
-- **React DnD** - Drag and drop
-- **Tailwind CSS** - Styling
-- **Lucide React** - Icons
+### 🤝 Collaboration & Sharing
+- **Public Links**: Generate shareable links for anyone to view.
+- **Permissions System**: Granular role control (Viewer vs. Editor) for public links and private invites.
+- **Email Invites**: Invite collaborators directly via email.
 
-## Installation
+### 📁 Management & Workflow
+- **History & Restore**: View version history and restore previous states.
+- **Trash System**: Safety-first deletion with a dedicated Trash bin for restoring deleted presentations.
+- **Drag & Drop Reordering**: Organize your presentations on the dashboard with intuitive drag-and-drop.
+- **PPTX Import**: Import existing PowerPoint files directly into the editor.
+
+## 🚀 Tech Stack
+
+- **Framework**: [Next.js](https://nextjs.org/) (App Router)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **UI Components**: [Radix UI](https://www.radix-ui.com/) & [Shadcn UI](https://ui.shadcn.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Drag & Drop**: [React DnD](https://react-dnd.github.io/react-dnd/)
+
+## 🛠️ Installation
+
 ```bash
-npm install
+# Install dependencies
+pnpm install
+
+# Run the development server
+pnpm dev
 ```
 
-## Running the App
-```bash
-npm run dev
-```
+The application will be available at [http://localhost:3000](http://localhost:3000).
 
-The app will run on [http://localhost:3000](http://localhost:3000)
+## 📂 Project Structure
 
-## Project Structure
-```
-presentation-builder/
-├── app/
-│   ├── page.tsx          # Dashboard
-│   ├── editor/
-│   │   └── page.tsx       # Editor page
-│   └── layout.tsx
-├── components/
-│   ├── EditorCanvas.tsx   # Main canvas for editing
-│   ├── SlideElement.tsx   # Slide element
-│   ├── SlidePanel.tsx     # Slide panel
-│   ├── Toolbar.tsx        # Toolbar
-│   └── PropertiesPanel.tsx # Element properties panel
-├── lib/
-│   ├── types/
-│   │   └── presentation.ts # Presentation types
-│   └── store/
-│       └── presentationStore.ts # Zustand store
-└── components/
-```
+- `app/`: Next.js App Router pages and layouts.
+- `components/`: Reusable UI components and element-specific logic.
+- `lib/store/`: Zustand stores for global state (presentation, selection, etc.).
+- `lib/types/`: TypeScript definitions and schemas.
+- `lib/templates/`: Pre-designed presentation templates.
 
-## Usage
+## 📝 License
 
-1. **Create a presentation**: Click "Create New Presentation" on the dashboard
-2. **Add elements**: Use the toolbar in the editor to add text, images, or shapes
-3. **Edit elements**: Click on an element and modify it in the properties panel
-4. **Manage slides**: Add, delete, and duplicate slides in the left panel
-5. **Save**: Presentations are automatically saved to localStorage
+This project is licensed under the MIT License.

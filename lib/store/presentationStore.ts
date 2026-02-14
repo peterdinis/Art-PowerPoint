@@ -25,6 +25,8 @@ interface PresentationStore {
 	) => string;
 	updatePresentation: (id: string, updates: Partial<Presentation>) => void;
 	deletePresentation: (id: string) => void;
+	restorePresentation: (id: string) => void;
+	permanentlyDeletePresentation: (id: string) => void;
 	selectPresentation: (id: string) => void;
 	loadPresentations: () => void;
 	savePresentations: () => void;
@@ -48,6 +50,14 @@ interface PresentationStore {
 	updateElement: (elementId: string, updates: Partial<SlideElement>) => void;
 	deleteElement: (elementId: string) => void;
 	selectElement: (elementId: string | null) => void;
+	moveElementLayer: (
+		elementId: string,
+		direction: "front" | "back" | "forward" | "backward",
+	) => void;
+	alignElement: (
+		elementId: string,
+		alignment: "left" | "center" | "right" | "top" | "middle" | "bottom",
+	) => void;
 	previousSlide: () => void;
 	nextSlide: () => void;
 	setZoomLevel: (zoom: number) => void; // Added
@@ -139,6 +149,45 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	},
 
 	deletePresentation: (id: string) => {
+		set((state) => ({
+			presentations: state.presentations.map((p) =>
+				p.id === id
+					? { ...p, deletedAt: new Date(), updatedAt: new Date() }
+					: p,
+			),
+			presentationOrder: state.presentationOrder.filter(
+				(orderId) => orderId !== id,
+			),
+			currentPresentation:
+				state.currentPresentation?.id === id ? null : state.currentPresentation,
+		}));
+
+		setTimeout(() => {
+			get().savePresentations();
+		}, 0);
+	},
+
+	restorePresentation: (id: string) => {
+		set((state) => {
+			const presentation = state.presentations.find((p) => p.id === id);
+			if (!presentation) return state;
+
+			return {
+				presentations: state.presentations.map((p) =>
+					p.id === id
+						? { ...p, deletedAt: undefined, updatedAt: new Date() }
+						: p,
+				),
+				presentationOrder: [...state.presentationOrder, id],
+			};
+		});
+
+		setTimeout(() => {
+			get().savePresentations();
+		}, 0);
+	},
+
+	permanentlyDeletePresentation: (id: string) => {
 		set((state) => ({
 			presentations: state.presentations.filter((p) => p.id !== id),
 			presentationOrder: state.presentationOrder.filter(
@@ -550,6 +599,94 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 	selectElement: (elementId: string | null) => {
 		set({ selectedElementId: elementId });
+	},
+
+	moveElementLayer: (
+		elementId: string,
+		direction: "front" | "back" | "forward" | "backward",
+	) => {
+		set((state) => {
+			if (!state.currentPresentation) return state;
+
+			const slides = state.currentPresentation.slides.map((slide) => {
+				const element = slide.elements.find((el) => el.id === elementId);
+				if (!element) return slide;
+
+				const elements = [...slide.elements];
+				const index = elements.indexOf(element);
+
+				if (direction === "front") {
+					elements.splice(index, 1);
+					elements.push(element);
+				} else if (direction === "back") {
+					elements.splice(index, 1);
+					elements.unshift(element);
+				} else if (direction === "forward" && index < elements.length - 1) {
+					[elements[index], elements[index + 1]] = [
+						elements[index + 1],
+						elements[index],
+					];
+				} else if (direction === "backward" && index > 0) {
+					[elements[index], elements[index - 1]] = [
+						elements[index - 1],
+						elements[index],
+					];
+				}
+
+				return { ...slide, elements };
+			});
+
+			return {
+				currentPresentation: {
+					...state.currentPresentation,
+					slides,
+					updatedAt: new Date(),
+				},
+			};
+		});
+		setTimeout(() => get().savePresentations(), 0);
+	},
+
+	alignElement: (
+		elementId: string,
+		alignment: "left" | "center" | "right" | "top" | "middle" | "bottom",
+	) => {
+		set((state) => {
+			if (!state.currentPresentation) return state;
+
+			const slides = state.currentPresentation.slides.map((slide) => ({
+				...slide,
+				elements: slide.elements.map((el) => {
+					if (el.id !== elementId) return el;
+
+					const updates: Partial<typeof el.position> = {};
+					const canvasWidth = 960;
+					const canvasHeight = 540;
+
+					if (alignment === "left") updates.x = 0;
+					else if (alignment === "center")
+						updates.x = (canvasWidth - el.size.width) / 2;
+					else if (alignment === "right")
+						updates.x = canvasWidth - el.size.width;
+					else if (alignment === "top") updates.y = 0;
+					else if (alignment === "middle")
+						updates.y = (canvasHeight - el.size.height) / 2;
+					else if (alignment === "bottom")
+						updates.y = canvasHeight - el.size.height;
+
+					return { ...el, position: { ...el.position, ...updates } };
+				}),
+			}));
+
+			return {
+				currentPresentation: {
+					...state.currentPresentation,
+					slides,
+					updatedAt: new Date(),
+				},
+			};
+		});
+		setTimeout(() => get().savePresentations(), 0);
 	},
 
 	addElementToSlide: (slideId: string, element: any) => {

@@ -63,8 +63,8 @@ const createShapeElement = (
 export const templates: PresentationTemplate[] = [
 	{
 		id: "blank",
-		name: "Prázdna prezentácia",
-		description: "Začnite s prázdnou prezentáciou",
+		name: "Blank Presentation",
+		description: "Start with a blank presentation",
 		thumbnail: "blank",
 		category: "minimal",
 		slides: [
@@ -78,7 +78,7 @@ export const templates: PresentationTemplate[] = [
 	{
 		id: "business-pitch",
 		name: "Business Pitch",
-		description: "Profesionálna šablóna pre business prezentácie",
+		description: "Professional template for business presentations",
 		thumbnail: "business",
 		category: "business",
 		slides: [
@@ -86,7 +86,7 @@ export const templates: PresentationTemplate[] = [
 				id: uuidv4(),
 				elements: [
 					createTextElement(
-						"NÁZOV PREZENTÁCIE",
+						"PRESENTATION TITLE",
 						100,
 						150,
 						760,
@@ -96,7 +96,7 @@ export const templates: PresentationTemplate[] = [
 						"center",
 					),
 					createTextElement(
-						"Podnadpis alebo popis",
+						"Subtitle or description",
 						100,
 						280,
 						760,
@@ -113,9 +113,18 @@ export const templates: PresentationTemplate[] = [
 			{
 				id: uuidv4(),
 				elements: [
-					createTextElement("O nás", 100, 100, 760, 60, 36, "#1a1a1a", "left"),
 					createTextElement(
-						"Stručný popis vašej spoločnosti a jej poslania.",
+						"About Us",
+						100,
+						100,
+						760,
+						60,
+						36,
+						"#1a1a1a",
+						"left",
+					),
+					createTextElement(
+						"Brief description of your company and its mission.",
 						100,
 						180,
 						760,
@@ -131,7 +140,7 @@ export const templates: PresentationTemplate[] = [
 				id: uuidv4(),
 				elements: [
 					createTextElement(
-						"Naše služby",
+						"Our Services",
 						100,
 						100,
 						760,
@@ -142,18 +151,18 @@ export const templates: PresentationTemplate[] = [
 					),
 					createShapeElement("rounded", 100, 200, 200, 150, "#667eea"),
 					createTextElement(
-						"Služba 1",
+						"Service 1",
 						100,
 						370,
 						200,
-						40,
+						149,
 						20,
 						"#1a1a1a",
 						"center",
 					),
 					createShapeElement("rounded", 380, 200, 200, 150, "#764ba2"),
 					createTextElement(
-						"Služba 2",
+						"Service 2",
 						380,
 						370,
 						200,
@@ -164,7 +173,7 @@ export const templates: PresentationTemplate[] = [
 					),
 					createShapeElement("rounded", 660, 200, 200, 150, "#f093fb"),
 					createTextElement(
-						"Služba 3",
+						"Service 3",
 						660,
 						370,
 						200,
@@ -180,8 +189,8 @@ export const templates: PresentationTemplate[] = [
 	},
 	{
 		id: "education",
-		name: "Vzdelávacia prezentácia",
-		description: "Šablóna vhodná pre výučbu a školské prezentácie",
+		name: "Educational Presentation",
+		description: "Template suitable for teaching and school presentations",
 		thumbnail: "education",
 		category: "education",
 		slides: [
@@ -189,7 +198,7 @@ export const templates: PresentationTemplate[] = [
 				id: uuidv4(),
 				elements: [
 					createTextElement(
-						"NÁZOV PREDMETU",
+						"SUBJECT TITLE",
 						100,
 						100,
 						760,
@@ -199,7 +208,7 @@ export const templates: PresentationTemplate[] = [
 						"center",
 					),
 					createTextElement(
-						"Téma prezentácie",
+						"Presentation Topic",
 						100,
 						220,
 						760,
@@ -209,7 +218,7 @@ export const templates: PresentationTemplate[] = [
 						"center",
 					),
 					createTextElement(
-						"Meno prednášajúceho",
+						"Presenter Name",
 						100,
 						400,
 						760,
@@ -226,9 +235,18 @@ export const templates: PresentationTemplate[] = [
 			{
 				id: uuidv4(),
 				elements: [
-					createTextElement("Úvod", 100, 80, 760, 50, 32, "#1a1a1a", "left"),
 					createTextElement(
-						"• Prvý bod",
+						"Introduction",
+						100,
+						80,
+						760,
+						50,
+						32,
+						"#1a1a1a",
+						"left",
+					),
+					createTextElement(
+						"• First point",
 						120,
 						160,
 						700,
@@ -238,7 +256,7 @@ export const templates: PresentationTemplate[] = [
 						"left",
 					),
 					createTextElement(
-						"• Druhý bod",
+						"• Second point",
 						120,
 						220,
 						700,
@@ -248,7 +266,7 @@ export const templates: PresentationTemplate[] = [
 						"left",
 					),
 					createTextElement(
-						"• Tretí bod",
+						"• Third point",
 						120,
 						280,
 						700,
@@ -264,7 +282,7 @@ export const templates: PresentationTemplate[] = [
 				id: uuidv4(),
 				elements: [
 					createTextElement(
-						"Hlavný obsah",
+						"Main Content",
 						100,
 						80,
 						760,
@@ -274,7 +292,7 @@ export const templates: PresentationTemplate[] = [
 						"left",
 					),
 					createTextElement(
-						"Tu môžete pridať hlavný obsah vašej prezentácie.",
+						"You can add the main content of your presentation here.",
 						100,
 						160,
 						760,
@@ -290,8 +308,8 @@ export const templates: PresentationTemplate[] = [
 	},
 	{
 		id: "creative",
-		name: "Kreatívna prezentácia",
-		description: "Moderná a farebná šablóna pre kreatívne projekty",
+		name: "Creative Presentation",
+		description: "Modern and colorful template for creative projects",
 		thumbnail: "creative",
 		category: "creative",
 		slides: [
@@ -299,7 +317,7 @@ export const templates: PresentationTemplate[] = [
 				id: uuidv4(),
 				elements: [
 					createTextElement(
-						"KREATÍVNY NÁZOV",
+						"CREATIVE TITLE",
 						100,
 						150,
 						760,
@@ -317,16 +335,7 @@ export const templates: PresentationTemplate[] = [
 			{
 				id: uuidv4(),
 				elements: [
-					createTextElement(
-						"NÁPAD",
-						100,
-						100,
-						760,
-						80,
-						48,
-						"#1a1a1a",
-						"center",
-					),
+					createTextElement("IDEA", 100, 100, 760, 80, 48, "#1a1a1a", "center"),
 					createShapeElement("rounded", 200, 220, 200, 150, "#fa709a"),
 					createShapeElement("rounded", 560, 220, 200, 150, "#fee140"),
 				],
@@ -335,18 +344,9 @@ export const templates: PresentationTemplate[] = [
 			{
 				id: uuidv4(),
 				elements: [
+					createTextElement("Result", 100, 80, 760, 50, 32, "#ffffff", "left"),
 					createTextElement(
-						"Výsledok",
-						100,
-						80,
-						760,
-						50,
-						32,
-						"#ffffff",
-						"left",
-					),
-					createTextElement(
-						"Popis vášho kreatívneho projektu",
+						"Description of your creative project",
 						100,
 						160,
 						760,
@@ -364,8 +364,8 @@ export const templates: PresentationTemplate[] = [
 	},
 	{
 		id: "minimal",
-		name: "Minimalistická",
-		description: "Čistá a jednoduchá šablóna",
+		name: "Minimalist",
+		description: "Clean and simple template",
 		thumbnail: "minimal",
 		category: "minimal",
 		slides: [
@@ -373,7 +373,7 @@ export const templates: PresentationTemplate[] = [
 				id: uuidv4(),
 				elements: [
 					createTextElement(
-						"NÁZOV",
+						"TITLE",
 						100,
 						200,
 						760,
@@ -383,7 +383,7 @@ export const templates: PresentationTemplate[] = [
 						"center",
 					),
 					createTextElement(
-						"Podnadpis",
+						"Subtitle",
 						100,
 						320,
 						760,
@@ -398,9 +398,18 @@ export const templates: PresentationTemplate[] = [
 			{
 				id: uuidv4(),
 				elements: [
-					createTextElement("Sekcia", 100, 100, 760, 50, 36, "#1a1a1a", "left"),
 					createTextElement(
-						"Obsah sekcie",
+						"Section",
+						100,
+						100,
+						760,
+						50,
+						36,
+						"#1a1a1a",
+						"left",
+					),
+					createTextElement(
+						"Section Content",
 						100,
 						180,
 						760,

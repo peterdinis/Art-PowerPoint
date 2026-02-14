@@ -16,10 +16,15 @@ import {
 	Clock,
 	GripVertical,
 	X,
+	FileUp,
 } from "lucide-react";
 import { usePresentationStore } from "@/lib/store/presentationStore";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { Slide, Presentation } from "@/lib/types/presentation";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { importPPTX } from "@/lib/utils/pptxImport";
+import { toast } from "sonner";
+import { v4 as uuidv4 } from "uuid";
 import { Input } from "@/components/ui/input";
 import {
 	Card,
@@ -65,13 +70,11 @@ function SortableGridItem({
 	presentation,
 	handleDelete,
 	formatDate,
-	showDeleteConfirm,
 	isOverlay = false,
 }: {
 	presentation: any;
-	handleDelete: (id: string) => void;
+	handleDelete: (id: string, title?: string) => void;
 	formatDate: (date: Date) => string;
-	showDeleteConfirm: string | null;
 	isOverlay?: boolean;
 }) {
 	const {
@@ -167,7 +170,7 @@ function SortableGridItem({
 								<DropdownMenuItem
 									onClick={(e) => {
 										e.preventDefault();
-										handleDelete(presentation.id);
+										handleDelete(presentation.id, presentation.title);
 									}}
 									className="text-destructive focus:text-destructive rounded-md"
 								>
@@ -179,40 +182,6 @@ function SortableGridItem({
 					</div>
 				</>
 			)}
-			{showDeleteConfirm === presentation.id && (
-				<div className="absolute inset-0 bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg z-10">
-					<div className="text-center p-4">
-						<p className="font-medium mb-2">Delete presentation?</p>
-						<p className="text-sm text-muted-foreground mb-4">
-							This action cannot be undone.
-						</p>
-						<div className="flex gap-2 justify-center">
-							<Button
-								variant="destructive"
-								size="sm"
-								onClick={(e) => {
-									e.preventDefault();
-									handleDelete(presentation.id);
-								}}
-								className="rounded-md"
-							>
-								Yes, delete
-							</Button>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={(e) => {
-									e.preventDefault();
-									handleDelete("cancel");
-								}}
-								className="rounded-md"
-							>
-								Cancel
-							</Button>
-						</div>
-					</div>
-				</div>
-			)}
 		</Card>
 	);
 }
@@ -222,13 +191,11 @@ function SortableListItem({
 	presentation,
 	handleDelete,
 	formatDate,
-	showDeleteConfirm,
 	isOverlay = false,
 }: {
 	presentation: any;
-	handleDelete: (id: string) => void;
+	handleDelete: (id: string, title?: string) => void;
 	formatDate: (date: Date) => string;
-	showDeleteConfirm: string | null;
 	isOverlay?: boolean;
 }) {
 	const {
@@ -317,7 +284,7 @@ function SortableListItem({
 									<DropdownMenuItem
 										onClick={(e) => {
 											e.preventDefault();
-											handleDelete(presentation.id);
+											handleDelete(presentation.id, presentation.title);
 										}}
 										className="text-destructive focus:text-destructive rounded-md"
 									>
@@ -330,40 +297,6 @@ function SortableListItem({
 					</div>
 				</CardContent>
 			</Link>
-			{showDeleteConfirm === presentation.id && (
-				<div className="absolute inset-0 bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg z-10">
-					<div className="text-center p-4">
-						<p className="font-medium mb-2">Delete presentation?</p>
-						<p className="text-sm text-muted-foreground mb-4">
-							This action cannot be undone.
-						</p>
-						<div className="flex gap-2 justify-center">
-							<Button
-								variant="destructive"
-								size="sm"
-								onClick={(e) => {
-									e.preventDefault();
-									handleDelete(presentation.id);
-								}}
-								className="rounded-md"
-							>
-								Yes, delete
-							</Button>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={(e) => {
-									e.preventDefault();
-									handleDelete("cancel");
-								}}
-								className="rounded-md"
-							>
-								Cancel
-							</Button>
-						</div>
-					</div>
-				</div>
-			)}
 		</Card>
 	);
 }
@@ -375,19 +308,52 @@ export default function Home() {
 		loadPresentations,
 		createPresentation,
 		deletePresentation,
+		restorePresentation,
+		permanentlyDeletePresentation,
 		reorderPresentationsByIds,
 		presentationOrder,
 	} = usePresentationStore();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [viewMode, setViewMode] = useState<ViewMode>("grid");
 	const [sortBy, setSortBy] = useState<SortOption>("recent");
-	const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
-		null,
-	);
+
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [localOrder, setLocalOrder] = useState<string[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	const handleImportPPTX = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		try {
+			toast.loading("Importing PowerPoint...", { id: "import-pptx" });
+			const importedData = await importPPTX(file);
+
+			const newPresentationId = createPresentation(
+				importedData.title || "Imported Presentation",
+				"Imported from PowerPoint",
+			);
+
+			// We need to update the newly created presentation with the imported slides
+			const store = usePresentationStore.getState();
+			store.updatePresentation(newPresentationId, {
+				slides: (importedData.slides || []).map((slide: Slide) => ({
+					...slide,
+					id: uuidv4(),
+				})),
+			});
+
+			toast.success("Presentation imported successfully!", {
+				id: "import-pptx",
+			});
+			router.push(`/editor?id=${newPresentationId}`);
+		} catch (error) {
+			console.error("Failed to import PPTX:", error);
+			toast.error("Failed to import PowerPoint file.", { id: "import-pptx" });
+		}
+	};
 
 	// Load presentations
 	useEffect(() => {
@@ -433,8 +399,9 @@ export default function Home() {
 	const filteredAndSorted = useMemo(() => {
 		let filtered = orderedPresentations.filter(
 			(p) =>
-				p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				p.description?.toLowerCase().includes(searchQuery.toLowerCase()),
+				!p.deletedAt &&
+				(p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					p.description?.toLowerCase().includes(searchQuery.toLowerCase())),
 		);
 
 		if (sortBy === "custom") {
@@ -491,6 +458,7 @@ export default function Home() {
 
 						setLocalOrder(newLocalOrder);
 						reorderPresentationsByIds(newLocalOrder);
+						setSortBy("custom");
 					}
 				}
 			}
@@ -531,22 +499,22 @@ export default function Home() {
 	}, [createPresentation, router]);
 
 	const handleDelete = useCallback(
-		(id: string) => {
-			if (id === "cancel") {
-				setShowDeleteConfirm(null);
-				return;
-			}
+		(id: string, title?: string) => {
+			deletePresentation(id);
+			setLocalOrder((prev) => prev.filter((itemId) => itemId !== id));
 
-			if (showDeleteConfirm === id) {
-				deletePresentation(id);
-				setShowDeleteConfirm(null);
-				setLocalOrder((prev) => prev.filter((itemId) => itemId !== id));
-			} else {
-				setShowDeleteConfirm(id);
-				setTimeout(() => setShowDeleteConfirm(null), 3000);
-			}
+			toast.success("Presentation moved to trash", {
+				description: title ? `"${title}" has been moved to trash` : undefined,
+				action: {
+					label: "Undo",
+					onClick: () => {
+						restorePresentation(id);
+						toast.success("Presentation restored");
+					},
+				},
+			});
 		},
-		[deletePresentation, showDeleteConfirm],
+		[deletePresentation, restorePresentation],
 	);
 
 	const formatDate = useCallback((date: Date) => {
@@ -626,14 +594,32 @@ export default function Home() {
 										Create and manage professional presentations
 									</p>
 								</div>
-								<Button
-									onClick={handleCreateNew}
-									size="lg"
-									className="w-full sm:w-auto rounded-lg"
-								>
-									<Plus className="w-4 h-4 mr-2" />
-									New Presentation
-								</Button>
+								<div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+									<input
+										type="file"
+										accept=".pptx"
+										className="hidden"
+										ref={fileInputRef}
+										onChange={handleImportPPTX}
+									/>
+									<Button
+										onClick={() => fileInputRef.current?.click()}
+										variant="outline"
+										size="lg"
+										className="rounded-lg shadow-sm hover:shadow-md transition-all border-primary/20 hover:border-primary/50 text-primary"
+									>
+										<FileUp className="w-4 h-4 mr-2" />
+										Import PowerPoint
+									</Button>
+									<Button
+										onClick={handleCreateNew}
+										size="lg"
+										className="rounded-lg shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all bg-gradient-to-r from-primary to-primary/90"
+									>
+										<Plus className="w-4 h-4 mr-2" />
+										New Presentation
+									</Button>
+								</div>
 							</div>
 
 							{/* Statistics */}
@@ -858,7 +844,6 @@ export default function Home() {
 													presentation={presentation}
 													handleDelete={handleDelete}
 													formatDate={formatDate}
-													showDeleteConfirm={showDeleteConfirm}
 												/>
 											))}
 										</div>
@@ -870,7 +855,6 @@ export default function Home() {
 													presentation={presentation}
 													handleDelete={handleDelete}
 													formatDate={formatDate}
-													showDeleteConfirm={showDeleteConfirm}
 												/>
 											))}
 										</div>
@@ -884,7 +868,6 @@ export default function Home() {
 													presentation={activePresentation}
 													handleDelete={handleDelete}
 													formatDate={formatDate}
-													showDeleteConfirm={null}
 													isOverlay={true}
 												/>
 											) : (
@@ -892,7 +875,6 @@ export default function Home() {
 													presentation={activePresentation}
 													handleDelete={handleDelete}
 													formatDate={formatDate}
-													showDeleteConfirm={null}
 													isOverlay={true}
 												/>
 											)

@@ -7,6 +7,16 @@ import { cn } from "@/lib/utils";
 import { Sparkles, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import ChartElement from "./elements/ChartElement";
 import SlideElement from "./SlideElement";
+import { Button } from "./ui/button";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Wand2 } from "lucide-react";
 
 export default function EditorCanvas() {
 	const {
@@ -18,9 +28,15 @@ export default function EditorCanvas() {
 		previousSlide,
 		nextSlide,
 		deleteElement,
+		moveElementLayer,
+		alignElement,
 		zoomLevel,
 		showGrid,
 	} = usePresentationStore();
+
+	const selectedElement = currentPresentation?.slides[
+		currentSlideIndex
+	]?.elements.find((el) => el.id === selectedElementId);
 	const dropRef = useRef<HTMLDivElement>(null);
 
 	const [{ isOver }, drop] = useDrop({
@@ -150,8 +166,6 @@ export default function EditorCanvas() {
 						width: "100%",
 						maxWidth: "960px",
 						aspectRatio: "16/9",
-						backgroundColor:
-							currentSlide.background?.color || "var(--background)",
 						backgroundImage: (() => {
 							const stops =
 								currentSlide.background?.gradientStops &&
@@ -286,6 +300,121 @@ export default function EditorCanvas() {
 						</div>
 					</div>
 				</div>
+
+				{/* Floating Toolbar for Selected Element */}
+				<AnimatePresence>
+					{selectedElementId && (
+						<motion.div
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							exit={{ opacity: 0, y: 20 }}
+							className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-background/95 backdrop-blur-md border border-border px-4 py-2 rounded-2xl shadow-2xl shadow-primary/20"
+						>
+							<div className="flex items-center gap-1 pr-3 border-r border-border">
+								<Button
+									variant="ghost"
+									size="sm"
+									className="h-8 w-8 p-0"
+									onClick={() => moveElementLayer(selectedElementId, "front")}
+									title="Bring to Front"
+								>
+									<span className="text-xs font-bold">↑↑</span>
+								</Button>
+								<Button
+									variant="ghost"
+									size="sm"
+									className="h-8 w-8 p-0"
+									onClick={() => moveElementLayer(selectedElementId, "back")}
+									title="Send to Back"
+								>
+									<span className="text-xs font-bold">↓↓</span>
+								</Button>
+							</div>
+
+							<div className="flex items-center gap-1 px-3 border-r border-border">
+								<Button
+									variant="ghost"
+									size="sm"
+									className="h-8 w-8 p-0"
+									onClick={() => alignElement(selectedElementId, "left")}
+									title="Align Left"
+								>
+									<div className="w-1 h-4 bg-foreground/50 rounded-full mr-1" />
+									<div className="w-2 h-2 bg-foreground/20 rounded-full" />
+								</Button>
+								<Button
+									variant="ghost"
+									size="sm"
+									className="h-8 w-8 p-0"
+									onClick={() => alignElement(selectedElementId, "center")}
+									title="Align Center"
+								>
+									<div className="flex flex-col items-center">
+										<div className="w-px h-1 bg-foreground/50" />
+										<div className="w-3 h-2 bg-foreground/20 rounded-sm" />
+										<div className="w-px h-1 bg-foreground/50" />
+									</div>
+								</Button>
+								<Button
+									variant="ghost"
+									size="sm"
+									className="h-8 w-8 p-0"
+									onClick={() => alignElement(selectedElementId, "right")}
+									title="Align Right"
+								>
+									<div className="w-2 h-2 bg-foreground/20 rounded-full mr-1" />
+									<div className="w-1 h-4 bg-foreground/50 rounded-full" />
+								</Button>
+							</div>
+
+							<div className="flex items-center gap-2 px-3 border-r border-border">
+								<Select
+									value={selectedElement?.animation?.type || "none"}
+									onValueChange={(val) =>
+										updateElement(selectedElementId, {
+											animation: {
+												...(selectedElement?.animation || { duration: 500 }),
+												type: val as any,
+											},
+										})
+									}
+								>
+									<SelectTrigger className="w-[110px] h-8 text-xs">
+										<Wand2 className="w-3 h-3 mr-1.5" />
+										<SelectValue placeholder="Animate" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="none">None</SelectItem>
+										<SelectItem value="fadeIn">Fade In</SelectItem>
+										<SelectItem value="slideIn">Slide In</SelectItem>
+										<SelectItem value="zoomIn">Zoom In</SelectItem>
+										<SelectItem value="bounce">Bounce</SelectItem>
+										<SelectItem value="rotate">Rotate</SelectItem>
+										<SelectItem value="rotate3d">Rotate 3D</SelectItem>
+										<SelectItem value="floating">Floating</SelectItem>
+										<SelectItem value="glitch">Glitch</SelectItem>
+										<SelectItem value="pulse">Pulse</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+
+							<Button
+								variant="ghost"
+								size="sm"
+								className="h-8 pl-2 pr-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
+								onClick={() => {
+									if (confirm("Delete this element?")) {
+										deleteElement(selectedElementId);
+										selectElement(null);
+									}
+								}}
+							>
+								<Trash2 className="w-4 h-4 mr-1.5" />
+								<span className="text-xs font-medium">Delete</span>
+							</Button>
+						</motion.div>
+					)}
+				</AnimatePresence>
 			</div>
 		</div>
 	);

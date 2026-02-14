@@ -52,7 +52,12 @@ export type AnimationType =
 	| "slideOut"
 	| "zoomOut"
 	| "pulse"
-	| "shake";
+	| "shake"
+	| "rotate3d"
+	| "floating"
+	| "glitch"
+	| "stagger"
+	| "parallax";
 
 export type SlideTransitionType =
 	| "none"
@@ -145,6 +150,7 @@ export interface SlideElement {
 		// Common
 		opacity?: number;
 		padding?: string;
+		zIndex?: number;
 
 		// Chart specific
 		chartType?: "bar" | "line" | "pie" | "area";
@@ -157,6 +163,8 @@ export interface SlideElement {
 		easing?: string;
 		direction?: "normal" | "reverse" | "alternate" | "alternate-reverse";
 	};
+	hoverAnimation?: AnimationType;
+	exitAnimation?: AnimationType;
 	autoplay?: boolean;
 	controls?: boolean;
 	loop?: boolean;
@@ -182,12 +190,23 @@ export interface Slide {
 	};
 }
 
+export type PermissionRole = "viewer" | "editor";
+
+export interface PresentationPermission {
+	email?: string;
+	role: PermissionRole;
+}
+
 export interface Presentation {
 	id: string;
 	title: string;
 	description?: string;
 	slides: Slide[];
 	selectedSlideId?: string;
+	visibility?: "private" | "public";
+	publicRole?: PermissionRole;
+	permissions?: PresentationPermission[];
 	createdAt: Date;
 	updatedAt: Date;
+	deletedAt?: Date;
 }
