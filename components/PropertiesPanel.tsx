@@ -1133,7 +1133,7 @@ export default function PropertiesPanel() {
 											<SelectValue placeholder="Select icon" />
 										</div>
 									</SelectTrigger>
-									<SelectContent className="max-h-[300px]">
+									<SelectContent className="max-h-75">
 										{[
 											"Calendar",
 											"Clock",
