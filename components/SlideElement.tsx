@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { usePresentationStore } from "@/lib/store/presentationStore";
+import { usePresentationStore } from "@/store/presentationStore";
 import { Trash2 } from "lucide-react";
 import { useDrag } from "react-dnd";
 import React from "react";

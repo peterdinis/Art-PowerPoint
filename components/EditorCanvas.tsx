@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { usePresentationStore } from "@/lib/store/presentationStore";
+import { usePresentationStore } from "@/store/presentationStore";
 import { useDrop } from "react-dnd";
 import { cn } from "@/lib/utils";
 import { Sparkles, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";

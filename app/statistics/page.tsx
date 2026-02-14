@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import DashboardSidebar from "@/components/DashboardSidebar";
-import { usePresentationStore } from "@/lib/store/presentationStore";
+import { usePresentationStore } from "@/store/presentationStore";
 import { useEffect, useMemo } from "react";
 
 export default function StatisticsPage() {

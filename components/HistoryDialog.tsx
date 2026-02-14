@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Clock, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { usePresentationStore } from "@/lib/store/presentationStore";
+import { usePresentationStore } from "@/store/presentationStore";
 import { formatDistanceToNow } from "date-fns";
 
 interface HistoryDialogProps {

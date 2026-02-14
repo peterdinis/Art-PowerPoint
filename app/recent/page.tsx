@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock } from "lucide-react";
 import Link from "next/link";
 import DashboardSidebar from "@/components/DashboardSidebar";
-import { usePresentationStore } from "@/lib/store/presentationStore";
+import { usePresentationStore } from "@/store/presentationStore";
 import { useEffect, useMemo } from "react";
 import { Calendar } from "lucide-react";
 

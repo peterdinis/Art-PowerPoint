@@ -1,6 +1,6 @@
 "use client";
 
-import { usePresentationStore } from "@/lib/store/presentationStore";
+import { usePresentationStore } from "@/store/presentationStore";
 import * as Icons from "lucide-react";
 import {
 	Type,

@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import DashboardSidebar from "@/components/DashboardSidebar";
-import { usePresentationStore } from "@/lib/store/presentationStore";
+import { usePresentationStore } from "@/store/presentationStore";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
