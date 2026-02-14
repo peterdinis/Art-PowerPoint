@@ -25,16 +25,23 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 export function ThemeProvider({
 	children,
 	defaultTheme = "system",
-	storageKey = "presentation-builder-theme",
+	storageKey = "excel-editor-theme",
 	...props
 }: ThemeProviderProps) {
-	const [theme, setTheme] = useState<Theme>(() => {
-		if (typeof window === "undefined") return defaultTheme;
-		const stored = localStorage.getItem(storageKey) as Theme;
-		return stored || defaultTheme;
-	});
+	const [theme, setTheme] = useState<Theme>(defaultTheme);
+	const [mounted, setMounted] = useState(false);
 
 	useEffect(() => {
+		setMounted(true);
+		const stored = localStorage.getItem(storageKey) as Theme;
+		if (stored) {
+			setTheme(stored);
+		}
+	}, [storageKey]);
+
+	useEffect(() => {
+		if (!mounted) return;
+
 		const root = window.document.documentElement;
 
 		// Remove existing theme classes
@@ -53,14 +60,15 @@ export function ThemeProvider({
 		}
 
 		root.classList.add(effectiveTheme);
-
-		// Also set data-theme attribute for better compatibility
 		root.setAttribute("data-theme", effectiveTheme);
-	}, [theme]);
+		
+		// Save to localStorage
+		localStorage.setItem(storageKey, theme);
+	}, [theme, mounted, storageKey]);
 
 	// Listen for system theme changes
 	useEffect(() => {
-		if (theme !== "system") return;
+		if (!mounted || theme !== "system") return;
 
 		const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 		const handleChange = () => {
@@ -73,18 +81,17 @@ export function ThemeProvider({
 
 		mediaQuery.addEventListener("change", handleChange);
 		return () => mediaQuery.removeEventListener("change", handleChange);
-	}, [theme]);
+	}, [theme, mounted]);
 
 	const handleSetTheme = (newTheme: Theme) => {
 		setTheme(newTheme);
-		if (typeof window !== "undefined") {
-			localStorage.setItem(storageKey, newTheme);
-		}
 	};
 
+	// Prevent hydration mismatch by not rendering theme-dependent content until mounted
 	const value = {
 		theme,
 		setTheme: handleSetTheme,
+		mounted,
 	};
 
 	return (
@@ -101,4 +108,4 @@ export const useTheme = () => {
 		throw new Error("useTheme must be used within a ThemeProvider");
 
 	return context;
-};
+}
