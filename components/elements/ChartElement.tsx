@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { cn } from "@/lib/utils";
-import { SlideElement } from "@/lib/types/presentation";
+import { SlideElement } from "@/types/presentation";
 
 interface ChartElementProps {
 	element: SlideElement;

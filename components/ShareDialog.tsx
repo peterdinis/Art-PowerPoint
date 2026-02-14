@@ -24,7 +24,7 @@ import {
 import { Copy, Check, Globe, Mail, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { usePresentationStore } from "@/store/presentationStore";
-import type { PermissionRole } from "@/lib/types/presentation";
+import type { PermissionRole } from "@/types/presentation";
 
 interface ShareDialogProps {
 	open: boolean;

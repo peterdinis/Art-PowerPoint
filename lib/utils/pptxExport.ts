@@ -1,6 +1,6 @@
 "use client";
 
-import type { Presentation, Slide, SlideElement } from "../types/presentation";
+import type { Presentation, Slide, SlideElement } from "../../types/presentation";
 
 export const exportToPPTX = async (presentation: Presentation) => {
 	let pptxgen;

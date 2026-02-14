@@ -2,7 +2,7 @@
 
 import * as Icons from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SlideElement } from "@/lib/types/presentation";
+import { SlideElement } from "@/types/presentation";
 
 interface IconElementProps {
 	element: SlideElement;

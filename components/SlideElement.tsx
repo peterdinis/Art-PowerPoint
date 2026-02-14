@@ -13,7 +13,7 @@ import type {
 	SlideElement as SlideElementType,
 	GradientStop,
 	AnimationType,
-} from "@/lib/types/presentation";
+} from "@/types/presentation";
 import ChartElement from "./elements/ChartElement";
 import IconElement from "./elements/IconElement";
 import TableElement from "./elements/TableElement";

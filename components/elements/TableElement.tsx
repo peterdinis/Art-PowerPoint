@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { SlideElement, TableCell } from "@/lib/types/presentation";
+import { SlideElement, TableCell } from "@/types/presentation";
 
 interface TableElementProps {
 	element: SlideElement;

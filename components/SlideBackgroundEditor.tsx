@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 
-import { GradientStop } from "@/lib/types/presentation";
+import { GradientStop } from "@/types/presentation";
 
 interface SlideBackgroundEditorProps {
 	currentBackground?: {

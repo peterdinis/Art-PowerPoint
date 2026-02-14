@@ -48,7 +48,7 @@ import type {
 	ObjectFit,
 	BorderStyle,
 	ShapeType,
-} from "@/lib/types/presentation";
+} from "@/types/presentation";
 import SlideBackgroundEditor from "./SlideBackgroundEditor";
 import { useTheme } from "@/components/ThemeProvider";
 

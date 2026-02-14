@@ -4,7 +4,7 @@ import type {
 	Presentation,
 	Slide,
 	SlideElement,
-} from "@/lib/types/presentation";
+} from "@/types/presentation";
 
 /**
  * Utility to import .pptx files and convert them to internal Presentation format.
