@@ -10,7 +10,17 @@ import {
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useTheme } from "@/components/ThemeProvider";
-import { Moon, Sun, Monitor, ArrowLeft, Globe, HardDrive, Zap, Bell, Loader2 } from "lucide-react";
+import {
+	Moon,
+	Sun,
+	Monitor,
+	ArrowLeft,
+	Globe,
+	HardDrive,
+	Zap,
+	Bell,
+	Loader2,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -34,7 +44,8 @@ export default function SettingsPage() {
 		resetSettings,
 	} = useSettingsStore();
 
-	const { presentations, permanentlyDeletePresentation } = usePresentationStore();
+	const { presentations, permanentlyDeletePresentation } =
+		usePresentationStore();
 
 	useEffect(() => {
 		setIsMounted(true);
@@ -61,7 +72,9 @@ export default function SettingsPage() {
 		return (
 			<div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
 				<Loader2 className="w-8 h-8 animate-spin text-primary" />
-				<p className="text-muted-foreground animate-pulse">Loading settings...</p>
+				<p className="text-muted-foreground animate-pulse">
+					Loading settings...
+				</p>
 			</div>
 		);
 	}
@@ -111,7 +124,11 @@ export default function SettingsPage() {
 												htmlFor="light"
 												className="flex items-center space-x-2 p-4 border rounded-xl hover:bg-accent cursor-pointer transition-all has-[:checked]:bg-primary/5 has-[:checked]:border-primary"
 											>
-												<RadioGroupItem value="light" id="light" className="sr-only" />
+												<RadioGroupItem
+													value="light"
+													id="light"
+													className="sr-only"
+												/>
 												<Sun className="w-4 h-4" />
 												<span>Light Mode</span>
 											</Label>
@@ -119,7 +136,11 @@ export default function SettingsPage() {
 												htmlFor="dark"
 												className="flex items-center space-x-2 p-4 border rounded-xl hover:bg-accent cursor-pointer transition-all has-[:checked]:bg-primary/5 has-[:checked]:border-primary"
 											>
-												<RadioGroupItem value="dark" id="dark" className="sr-only" />
+												<RadioGroupItem
+													value="dark"
+													id="dark"
+													className="sr-only"
+												/>
 												<Moon className="w-4 h-4" />
 												<span>Dark Mode</span>
 											</Label>
@@ -127,7 +148,11 @@ export default function SettingsPage() {
 												htmlFor="system"
 												className="flex items-center space-x-2 p-4 border rounded-xl hover:bg-accent cursor-pointer transition-all has-[:checked]:bg-primary/5 has-[:checked]:border-primary"
 											>
-												<RadioGroupItem value="system" id="system" className="sr-only" />
+												<RadioGroupItem
+													value="system"
+													id="system"
+													className="sr-only"
+												/>
 												<Monitor className="w-4 h-4" />
 												<span>System</span>
 											</Label>
@@ -165,7 +190,12 @@ export default function SettingsPage() {
 											htmlFor="sk"
 											className="flex items-center space-x-2 p-4 border rounded-xl hover:bg-accent cursor-pointer transition-all has-[:checked]:bg-primary/5 has-[:checked]:border-primary opacity-60"
 										>
-											<RadioGroupItem value="sk" id="sk" className="sr-only" disabled />
+											<RadioGroupItem
+												value="sk"
+												id="sk"
+												className="sr-only"
+												disabled
+											/>
 											<span className="text-xl">🇸🇰</span>
 											<span className="font-medium text-muted-foreground">
 												Slovenčina (Coming Soon)
@@ -277,9 +307,12 @@ export default function SettingsPage() {
 								<CardContent className="space-y-4">
 									<div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border border-destructive/20 rounded-xl bg-background/50">
 										<div className="space-y-1">
-											<p className="font-semibold text-destructive">Danger Zone</p>
+											<p className="font-semibold text-destructive">
+												Danger Zone
+											</p>
 											<p className="text-sm text-muted-foreground max-w-md">
-												Clearing data will permanently delete all your local presentations and reset all application settings.
+												Clearing data will permanently delete all your local
+												presentations and reset all application settings.
 											</p>
 										</div>
 										<Button

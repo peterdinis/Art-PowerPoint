@@ -61,7 +61,7 @@ export function ThemeProvider({
 
 		root.classList.add(effectiveTheme);
 		root.setAttribute("data-theme", effectiveTheme);
-		
+
 		// Save to localStorage
 		localStorage.setItem(storageKey, theme);
 	}, [theme, mounted, storageKey]);
@@ -108,4 +108,4 @@ export const useTheme = () => {
 		throw new Error("useTheme must be used within a ThemeProvider");
 
 	return context;
-}
+};

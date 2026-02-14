@@ -27,15 +27,15 @@ export function ScrollToTop({
 			// Check scroll position from top
 			const scrollY = window.scrollY;
 			const shouldShow = scrollY > threshold;
-			
+
 			// Check if at bottom
 			const windowHeight = window.innerHeight;
 			const documentHeight = document.documentElement.scrollHeight;
 			const scrollPosition = scrollY + windowHeight;
 			const atBottom = scrollPosition >= documentHeight - bottomOffset;
-			
+
 			setIsAtBottom(atBottom);
-			
+
 			if (showAtBottom) {
 				setIsVisible(shouldShow || atBottom);
 			} else {
@@ -74,7 +74,7 @@ export function ScrollToTop({
 					transition={{ duration: 0.2 }}
 					className={cn(
 						"fixed bottom-6 right-6 z-50 flex flex-col gap-2",
-						className
+						className,
 					)}
 				>
 					{isAtBottom && showAtBottom ? (
@@ -122,12 +122,12 @@ export function ScrollToTopWithProgress({
 			const scrollY = window.scrollY;
 			const windowHeight = window.innerHeight;
 			const documentHeight = document.documentElement.scrollHeight;
-			
+
 			// Calculate scroll progress percentage
 			const maxScroll = documentHeight - windowHeight;
 			const progress = (scrollY / maxScroll) * 100;
 			setScrollProgress(Math.min(100, Math.max(0, progress)));
-			
+
 			// Show/hide button
 			setIsVisible(scrollY > threshold);
 		};
@@ -152,10 +152,7 @@ export function ScrollToTopWithProgress({
 					animate={{ opacity: 1, scale: 1 }}
 					exit={{ opacity: 0, scale: 0.5 }}
 					transition={{ duration: 0.2 }}
-					className={cn(
-						"fixed bottom-6 right-6 z-50",
-						className
-					)}
+					className={cn("fixed bottom-6 right-6 z-50", className)}
 				>
 					<div className="relative">
 						{showProgress && (
@@ -235,7 +232,7 @@ export function SimpleScrollToTop({
 			size="icon"
 			className={cn(
 				"fixed bottom-6 right-6 z-50 h-10 w-10 rounded-full shadow-lg hover:shadow-xl transition-shadow",
-				className
+				className,
 			)}
 			title="Scroll to top"
 		>
@@ -263,13 +260,13 @@ export function ScrollToTopWithBottom({
 			const scrollY = window.scrollY;
 			const windowHeight = window.innerHeight;
 			const documentHeight = document.documentElement.scrollHeight;
-			
+
 			// Show main button after threshold
 			setIsVisible(scrollY > threshold);
-			
+
 			// Show top button when not at top
 			setShowTop(scrollY > 100);
-			
+
 			// Show bottom button when not at bottom
 			const atBottom = scrollY + windowHeight >= documentHeight - 100;
 			setShowBottomBtn(!atBottom && showBottom);
@@ -303,7 +300,7 @@ export function ScrollToTopWithBottom({
 			exit={{ opacity: 0, x: 20 }}
 			className={cn(
 				"fixed bottom-6 right-6 z-50 flex flex-col gap-2",
-				className
+				className,
 			)}
 		>
 			{showTop && (

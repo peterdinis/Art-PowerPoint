@@ -518,7 +518,7 @@ export default function Home() {
 
 		const newId = createPresentation(
 			newTitle.trim(),
-			newDescription.trim() || undefined
+			newDescription.trim() || undefined,
 		);
 		setIsDialogOpen(false);
 		router.push(`/editor?id=${newId}`);
@@ -917,9 +917,12 @@ export default function Home() {
 			<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
 				<DialogContent className="sm:max-w-md rounded-lg">
 					<DialogHeader>
-						<DialogTitle className="text-xl">Create New Presentation</DialogTitle>
+						<DialogTitle className="text-xl">
+							Create New Presentation
+						</DialogTitle>
 						<DialogDescription>
-							Enter the details for your new presentation. You can always change them later.
+							Enter the details for your new presentation. You can always change
+							them later.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 py-4">

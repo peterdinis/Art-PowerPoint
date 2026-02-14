@@ -396,7 +396,10 @@ export default function PropertiesPanel() {
 						<Label className="mb-3">Position</Label>
 						<div className="grid grid-cols-2 gap-3 mt-2">
 							<div>
-								<Label htmlFor="pos-x" className="text-xs text-muted-foreground">
+								<Label
+									htmlFor="pos-x"
+									className="text-xs text-muted-foreground"
+								>
 									X
 								</Label>
 								<Input
@@ -415,7 +418,10 @@ export default function PropertiesPanel() {
 								/>
 							</div>
 							<div>
-								<Label htmlFor="pos-y" className="text-xs text-muted-foreground">
+								<Label
+									htmlFor="pos-y"
+									className="text-xs text-muted-foreground"
+								>
 									Y
 								</Label>
 								<Input
@@ -443,7 +449,10 @@ export default function PropertiesPanel() {
 						<Label className="mb-3">Size</Label>
 						<div className="grid grid-cols-2 gap-3 mt-2">
 							<div>
-								<Label htmlFor="size-w" className="text-xs text-muted-foreground">
+								<Label
+									htmlFor="size-w"
+									className="text-xs text-muted-foreground"
+								>
 									Width
 								</Label>
 								<Input
@@ -463,7 +472,10 @@ export default function PropertiesPanel() {
 								/>
 							</div>
 							<div>
-								<Label htmlFor="size-h" className="text-xs text-muted-foreground">
+								<Label
+									htmlFor="size-h"
+									className="text-xs text-muted-foreground"
+								>
 									Height
 								</Label>
 								<Input
@@ -577,7 +589,9 @@ export default function PropertiesPanel() {
 									<Input
 										id="text-color"
 										type="color"
-										value={extendedElement.style?.color || getDefaultTextColor()}
+										value={
+											extendedElement.style?.color || getDefaultTextColor()
+										}
 										onChange={(e) =>
 											handleUpdate({
 												style: {
@@ -650,7 +664,8 @@ export default function PropertiesPanel() {
 										size="icon"
 										className={cn(
 											"h-8 w-full rounded-none",
-											extendedElement.style?.fontWeight === "bold" && "bg-accent",
+											extendedElement.style?.fontWeight === "bold" &&
+												"bg-accent",
 										)}
 										onClick={() =>
 											handleUpdate({
@@ -703,7 +718,8 @@ export default function PropertiesPanel() {
 												style: {
 													...extendedElement.style,
 													textDecoration:
-														extendedElement.style?.textDecoration === "underline"
+														extendedElement.style?.textDecoration ===
+														"underline"
 															? "none"
 															: "underline",
 												},
@@ -744,7 +760,10 @@ export default function PropertiesPanel() {
 										)}
 										onClick={() =>
 											handleUpdate({
-												style: { ...extendedElement.style, textAlign: "center" },
+												style: {
+													...extendedElement.style,
+													textAlign: "center",
+												},
 											})
 										}
 										title="Align center"
@@ -756,7 +775,8 @@ export default function PropertiesPanel() {
 										size="icon"
 										className={cn(
 											"h-8 w-full rounded-none border-l",
-											extendedElement.style?.textAlign === "right" && "bg-accent",
+											extendedElement.style?.textAlign === "right" &&
+												"bg-accent",
 										)}
 										onClick={() =>
 											handleUpdate({
@@ -909,7 +929,9 @@ export default function PropertiesPanel() {
 								<div>
 									<Label htmlFor="video-controls">Show Controls</Label>
 									<Select
-										value={extendedElement.controls !== false ? "true" : "false"}
+										value={
+											extendedElement.controls !== false ? "true" : "false"
+										}
 										onValueChange={(value) =>
 											handleUpdate({ controls: value === "true" })
 										}
@@ -1399,7 +1421,8 @@ export default function PropertiesPanel() {
 											style: {
 												...extendedElement.style,
 												theme: value as "dark" | "light",
-												backgroundColor: value === "dark" ? "#1e1e1e" : "#f5f5f5",
+												backgroundColor:
+													value === "dark" ? "#1e1e1e" : "#f5f5f5",
 												color: value === "dark" ? "#d4d4d4" : "#333333",
 											},
 										})
@@ -1458,7 +1481,8 @@ export default function PropertiesPanel() {
 												gradientStops: [
 													{
 														color:
-															extendedElement.style?.backgroundColor || "#3b82f6",
+															extendedElement.style?.backgroundColor ||
+															"#3b82f6",
 														offset: 0,
 													},
 													{ color: "#ffffff", offset: 100 },
@@ -1737,8 +1761,9 @@ export default function PropertiesPanel() {
 										<div className="flex justify-between mb-1">
 											<Label className="text-xs">{filter.label}</Label>
 											<span className="text-[10px] text-muted-foreground">
-												{(extendedElement.style?.filters as any)?.[filter.key] ??
-													0}
+												{(extendedElement.style?.filters as any)?.[
+													filter.key
+												] ?? 0}
 												{filter.unit}
 											</span>
 										</div>
@@ -1748,7 +1773,8 @@ export default function PropertiesPanel() {
 											max={filter.max}
 											step={filter.step}
 											value={
-												(extendedElement.style?.filters as any)?.[filter.key] ?? 0
+												(extendedElement.style?.filters as any)?.[filter.key] ??
+												0
 											}
 											onChange={(e) =>
 												handleUpdate({
@@ -1881,7 +1907,9 @@ export default function PropertiesPanel() {
 													<SelectItem value="linear">Linear</SelectItem>
 													<SelectItem value="ease-in">Ease In</SelectItem>
 													<SelectItem value="ease-out">Ease Out</SelectItem>
-													<SelectItem value="ease-in-out">Ease In Out</SelectItem>
+													<SelectItem value="ease-in-out">
+														Ease In Out
+													</SelectItem>
 												</SelectContent>
 											</Select>
 										</div>
