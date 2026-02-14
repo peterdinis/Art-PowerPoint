@@ -88,7 +88,8 @@ export default function TemplateSelector({
 				<DialogHeader>
 					<DialogTitle>Select a template</DialogTitle>
 					<DialogDescription>
-						Choose a template for your new presentation or start with a blank one
+						Choose a template for your new presentation or start with a blank
+						one
 					</DialogDescription>
 				</DialogHeader>
 

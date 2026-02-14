@@ -113,7 +113,16 @@ export const templates: PresentationTemplate[] = [
 			{
 				id: uuidv4(),
 				elements: [
-					createTextElement("About Us", 100, 100, 760, 60, 36, "#1a1a1a", "left"),
+					createTextElement(
+						"About Us",
+						100,
+						100,
+						760,
+						60,
+						36,
+						"#1a1a1a",
+						"left",
+					),
 					createTextElement(
 						"Brief description of your company and its mission.",
 						100,
@@ -226,7 +235,16 @@ export const templates: PresentationTemplate[] = [
 			{
 				id: uuidv4(),
 				elements: [
-					createTextElement("Introduction", 100, 80, 760, 50, 32, "#1a1a1a", "left"),
+					createTextElement(
+						"Introduction",
+						100,
+						80,
+						760,
+						50,
+						32,
+						"#1a1a1a",
+						"left",
+					),
 					createTextElement(
 						"• First point",
 						120,
@@ -317,16 +335,7 @@ export const templates: PresentationTemplate[] = [
 			{
 				id: uuidv4(),
 				elements: [
-					createTextElement(
-						"IDEA",
-						100,
-						100,
-						760,
-						80,
-						48,
-						"#1a1a1a",
-						"center",
-					),
+					createTextElement("IDEA", 100, 100, 760, 80, 48, "#1a1a1a", "center"),
 					createShapeElement("rounded", 200, 220, 200, 150, "#fa709a"),
 					createShapeElement("rounded", 560, 220, 200, 150, "#fee140"),
 				],
@@ -335,16 +344,7 @@ export const templates: PresentationTemplate[] = [
 			{
 				id: uuidv4(),
 				elements: [
-					createTextElement(
-						"Result",
-						100,
-						80,
-						760,
-						50,
-						32,
-						"#ffffff",
-						"left",
-					),
+					createTextElement("Result", 100, 80, 760, 50, 32, "#ffffff", "left"),
 					createTextElement(
 						"Description of your creative project",
 						100,
@@ -398,7 +398,16 @@ export const templates: PresentationTemplate[] = [
 			{
 				id: uuidv4(),
 				elements: [
-					createTextElement("Section", 100, 100, 760, 50, 36, "#1a1a1a", "left"),
+					createTextElement(
+						"Section",
+						100,
+						100,
+						760,
+						50,
+						36,
+						"#1a1a1a",
+						"left",
+					),
 					createTextElement(
 						"Section Content",
 						100,

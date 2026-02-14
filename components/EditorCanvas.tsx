@@ -34,9 +34,9 @@ export default function EditorCanvas() {
 		showGrid,
 	} = usePresentationStore();
 
-	const selectedElement = currentPresentation?.slides[currentSlideIndex]?.elements.find(
-		(el) => el.id === selectedElementId,
-	);
+	const selectedElement = currentPresentation?.slides[
+		currentSlideIndex
+	]?.elements.find((el) => el.id === selectedElementId);
 	const dropRef = useRef<HTMLDivElement>(null);
 
 	const [{ isOver }, drop] = useDrop({
@@ -169,10 +169,10 @@ export default function EditorCanvas() {
 						backgroundImage: (() => {
 							const stops =
 								currentSlide.background?.gradientStops &&
-									currentSlide.background.gradientStops.length > 0
+								currentSlide.background.gradientStops.length > 0
 									? currentSlide.background.gradientStops
-										.map((s: any) => `${s.color} ${s.offset}%`)
-										.join(", ")
+											.map((s: any) => `${s.color} ${s.offset}%`)
+											.join(", ")
 									: currentSlide.background?.gradient;
 
 							const image = currentSlide.background?.image

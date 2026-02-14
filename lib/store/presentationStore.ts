@@ -50,8 +50,14 @@ interface PresentationStore {
 	updateElement: (elementId: string, updates: Partial<SlideElement>) => void;
 	deleteElement: (elementId: string) => void;
 	selectElement: (elementId: string | null) => void;
-	moveElementLayer: (elementId: string, direction: "front" | "back" | "forward" | "backward") => void;
-	alignElement: (elementId: string, alignment: "left" | "center" | "right" | "top" | "middle" | "bottom") => void;
+	moveElementLayer: (
+		elementId: string,
+		direction: "front" | "back" | "forward" | "backward",
+	) => void;
+	alignElement: (
+		elementId: string,
+		alignment: "left" | "center" | "right" | "top" | "middle" | "bottom",
+	) => void;
 	previousSlide: () => void;
 	nextSlide: () => void;
 	setZoomLevel: (zoom: number) => void; // Added
@@ -145,7 +151,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	deletePresentation: (id: string) => {
 		set((state) => ({
 			presentations: state.presentations.map((p) =>
-				p.id === id ? { ...p, deletedAt: new Date(), updatedAt: new Date() } : p,
+				p.id === id
+					? { ...p, deletedAt: new Date(), updatedAt: new Date() }
+					: p,
 			),
 			presentationOrder: state.presentationOrder.filter(
 				(orderId) => orderId !== id,
@@ -166,7 +174,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 			return {
 				presentations: state.presentations.map((p) =>
-					p.id === id ? { ...p, deletedAt: undefined, updatedAt: new Date() } : p,
+					p.id === id
+						? { ...p, deletedAt: undefined, updatedAt: new Date() }
+						: p,
 				),
 				presentationOrder: [...state.presentationOrder, id],
 			};
@@ -591,7 +601,10 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set({ selectedElementId: elementId });
 	},
 
-	moveElementLayer: (elementId: string, direction: "front" | "back" | "forward" | "backward") => {
+	moveElementLayer: (
+		elementId: string,
+		direction: "front" | "back" | "forward" | "backward",
+	) => {
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
@@ -609,9 +622,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 					elements.splice(index, 1);
 					elements.unshift(element);
 				} else if (direction === "forward" && index < elements.length - 1) {
-					[elements[index], elements[index + 1]] = [elements[index + 1], elements[index]];
+					[elements[index], elements[index + 1]] = [
+						elements[index + 1],
+						elements[index],
+					];
 				} else if (direction === "backward" && index > 0) {
-					[elements[index], elements[index - 1]] = [elements[index - 1], elements[index]];
+					[elements[index], elements[index - 1]] = [
+						elements[index - 1],
+						elements[index],
+					];
 				}
 
 				return { ...slide, elements };
@@ -628,7 +647,10 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		setTimeout(() => get().savePresentations(), 0);
 	},
 
-	alignElement: (elementId: string, alignment: "left" | "center" | "right" | "top" | "middle" | "bottom") => {
+	alignElement: (
+		elementId: string,
+		alignment: "left" | "center" | "right" | "top" | "middle" | "bottom",
+	) => {
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
@@ -642,11 +664,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 					const canvasHeight = 540;
 
 					if (alignment === "left") updates.x = 0;
-					else if (alignment === "center") updates.x = (canvasWidth - el.size.width) / 2;
-					else if (alignment === "right") updates.x = canvasWidth - el.size.width;
+					else if (alignment === "center")
+						updates.x = (canvasWidth - el.size.width) / 2;
+					else if (alignment === "right")
+						updates.x = canvasWidth - el.size.width;
 					else if (alignment === "top") updates.y = 0;
-					else if (alignment === "middle") updates.y = (canvasHeight - el.size.height) / 2;
-					else if (alignment === "bottom") updates.y = canvasHeight - el.size.height;
+					else if (alignment === "middle")
+						updates.y = (canvasHeight - el.size.height) / 2;
+					else if (alignment === "bottom")
+						updates.y = canvasHeight - el.size.height;
 
 					return { ...el, position: { ...el.position, ...updates } };
 				}),

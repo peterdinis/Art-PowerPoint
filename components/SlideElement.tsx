@@ -31,45 +31,62 @@ const getAnimationVariants = (type?: AnimationType): any => {
 		case "fadeIn":
 			return { initial: { opacity: 0 }, animate: { opacity: 1 } };
 		case "slideIn":
-			return { initial: { x: -100, opacity: 0 }, animate: { x: 0, opacity: 1 } };
+			return {
+				initial: { x: -100, opacity: 0 },
+				animate: { x: 0, opacity: 1 },
+			};
 		case "zoomIn":
-			return { initial: { scale: 0, opacity: 0 }, animate: { scale: 1, opacity: 1 } };
+			return {
+				initial: { scale: 0, opacity: 0 },
+				animate: { scale: 1, opacity: 1 },
+			};
 		case "bounce":
 			return {
 				initial: { scale: 0.3, opacity: 0 },
 				animate: {
 					scale: 1,
 					opacity: 1,
-					transition: { type: "spring", stiffness: 260, damping: 20 } as any
-				}
+					transition: { type: "spring", stiffness: 260, damping: 20 } as any,
+				},
 			};
 		case "rotate":
-			return { initial: { rotate: -180, opacity: 0 }, animate: { rotate: 0, opacity: 1 } };
+			return {
+				initial: { rotate: -180, opacity: 0 },
+				animate: { rotate: 0, opacity: 1 },
+			};
 		case "rotate3d":
 			return {
 				initial: { rotateY: 90, opacity: 0 },
-				animate: { rotateY: 0, opacity: 1 }
+				animate: { rotateY: 0, opacity: 1 },
 			};
 		case "floating":
 			return {
 				animate: {
 					y: [0, -15, 0],
-					transition: { duration: 3, repeat: Infinity, ease: "easeInOut" } as any
-				}
+					transition: {
+						duration: 3,
+						repeat: Infinity,
+						ease: "easeInOut",
+					} as any,
+				},
 			};
 		case "glitch":
 			return {
 				animate: {
 					x: [0, -2, 2, -2, 2, 0],
-					transition: { duration: 0.2, repeat: Infinity, repeatDelay: 3 } as any
-				}
+					transition: {
+						duration: 0.2,
+						repeat: Infinity,
+						repeatDelay: 3,
+					} as any,
+				},
 			};
 		case "pulse":
 			return {
 				animate: {
 					scale: [1, 1.05, 1],
-					transition: { duration: 2, repeat: Infinity } as any
-				}
+					transition: { duration: 2, repeat: Infinity } as any,
+				},
 			};
 		default:
 			return { initial: {}, animate: {} };
@@ -91,7 +108,10 @@ export default function SlideElement({
 		}),
 	});
 
-	const animationVariants = useMemo(() => getAnimationVariants(element.animation?.type), [element.animation?.type]);
+	const animationVariants = useMemo(
+		() => getAnimationVariants(element.animation?.type),
+		[element.animation?.type],
+	);
 
 	const handleResize = (
 		_e: any,
@@ -122,17 +142,33 @@ export default function SlideElement({
 		if (element.type === "text") {
 			const filterStyles = element.style?.filters
 				? {
-					filter: [
-						element.style.filters.blur ? `blur(${element.style.filters.blur}px)` : "",
-						element.style.filters.brightness ? `brightness(${element.style.filters.brightness})` : "",
-						element.style.filters.contrast ? `contrast(${element.style.filters.contrast})` : "",
-						element.style.filters.grayscale ? `grayscale(${element.style.filters.grayscale})` : "",
-						element.style.filters.sepia ? `sepia(${element.style.filters.sepia})` : "",
-						element.style.filters.hueRotate ? `hue-rotate(${element.style.filters.hueRotate}deg)` : "",
-						element.style.filters.saturate ? `saturate(${element.style.filters.saturate})` : "",
-						element.style.filters.invert ? `invert(${element.style.filters.invert})` : "",
-					].join(" "),
-				}
+						filter: [
+							element.style.filters.blur
+								? `blur(${element.style.filters.blur}px)`
+								: "",
+							element.style.filters.brightness
+								? `brightness(${element.style.filters.brightness})`
+								: "",
+							element.style.filters.contrast
+								? `contrast(${element.style.filters.contrast})`
+								: "",
+							element.style.filters.grayscale
+								? `grayscale(${element.style.filters.grayscale})`
+								: "",
+							element.style.filters.sepia
+								? `sepia(${element.style.filters.sepia})`
+								: "",
+							element.style.filters.hueRotate
+								? `hue-rotate(${element.style.filters.hueRotate}deg)`
+								: "",
+							element.style.filters.saturate
+								? `saturate(${element.style.filters.saturate})`
+								: "",
+							element.style.filters.invert
+								? `invert(${element.style.filters.invert})`
+								: "",
+						].join(" "),
+					}
 				: {};
 
 			const getBackgroundStyle = () => {
@@ -140,7 +176,10 @@ export default function SlideElement({
 					backgroundColor: element.style?.backgroundColor,
 				};
 
-				if (element.style?.gradientStops && element.style.gradientStops.length > 0) {
+				if (
+					element.style?.gradientStops &&
+					element.style.gradientStops.length > 0
+				) {
 					const type = element.style.gradientType || "linear";
 					const angle = element.style.gradientAngle || 135;
 					const stops = element.style.gradientStops
@@ -148,7 +187,9 @@ export default function SlideElement({
 						.join(", ");
 
 					style.backgroundImage =
-						type === "linear" ? `linear-gradient(${angle}deg, ${stops})` : `radial-gradient(circle, ${stops})`;
+						type === "linear"
+							? `linear-gradient(${angle}deg, ${stops})`
+							: `radial-gradient(circle, ${stops})`;
 				}
 
 				return style;
@@ -212,7 +253,8 @@ export default function SlideElement({
 					boxShadow: element.style?.boxShadow,
 				};
 
-				if (element.content === "circle") return { ...baseStyle, borderRadius: "50%" };
+				if (element.content === "circle")
+					return { ...baseStyle, borderRadius: "50%" };
 				if (element.content === "triangle") {
 					return {
 						...baseStyle,
@@ -258,7 +300,9 @@ export default function SlideElement({
 			handleSize={[8, 8]}
 		>
 			<motion.div
-				ref={(node) => { if (node) drag(node); }}
+				ref={(node) => {
+					if (node) drag(node);
+				}}
 				className={cn(
 					"absolute cursor-move overflow-visible",
 					isSelected && "ring-2 ring-primary ring-offset-2 z-[1000]",
@@ -268,16 +312,20 @@ export default function SlideElement({
 				variants={animationVariants}
 				initial="initial"
 				animate="animate"
-				whileHover={!isSelected ? {
-					scale: 1.05,
-					rotateY: 10,
-					rotateX: -5,
-					boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)"
-				} : {}}
+				whileHover={
+					!isSelected
+						? {
+								scale: 1.05,
+								rotateY: 10,
+								rotateX: -5,
+								boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
+							}
+						: {}
+				}
 				transition={{
 					duration: (element.animation?.duration || 500) / 1000,
 					delay: (element.animation?.delay || 0) / 1000,
-					ease: (element.animation?.easing || "easeOut") as any
+					ease: (element.animation?.easing || "easeOut") as any,
 				}}
 				onClick={onSelect}
 			>

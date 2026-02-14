@@ -182,7 +182,6 @@ function SortableGridItem({
 					</div>
 				</>
 			)}
-
 		</Card>
 	);
 }
@@ -298,7 +297,6 @@ function SortableListItem({
 					</div>
 				</CardContent>
 			</Link>
-
 		</Card>
 	);
 }
@@ -319,7 +317,6 @@ export default function Home() {
 	const [viewMode, setViewMode] = useState<ViewMode>("grid");
 	const [sortBy, setSortBy] = useState<SortOption>("recent");
 
-
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [localOrder, setLocalOrder] = useState<string[]>([]);
@@ -336,7 +333,7 @@ export default function Home() {
 
 			const newPresentationId = createPresentation(
 				importedData.title || "Imported Presentation",
-				"Imported from PowerPoint"
+				"Imported from PowerPoint",
 			);
 
 			// We need to update the newly created presentation with the imported slides
@@ -344,11 +341,13 @@ export default function Home() {
 			store.updatePresentation(newPresentationId, {
 				slides: (importedData.slides || []).map((slide: Slide) => ({
 					...slide,
-					id: uuidv4()
-				}))
+					id: uuidv4(),
+				})),
 			});
 
-			toast.success("Presentation imported successfully!", { id: "import-pptx" });
+			toast.success("Presentation imported successfully!", {
+				id: "import-pptx",
+			});
 			router.push(`/editor?id=${newPresentationId}`);
 		} catch (error) {
 			console.error("Failed to import PPTX:", error);

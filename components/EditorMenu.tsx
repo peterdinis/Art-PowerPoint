@@ -68,7 +68,10 @@ export default function EditorMenu({
 								</Link>
 							</Button>
 
-							<Separator orientation="vertical" className="h-6 hidden md:block" />
+							<Separator
+								orientation="vertical"
+								className="h-6 hidden md:block"
+							/>
 
 							<div className="hidden md:flex items-center gap-3">
 								<div className="flex items-center gap-2">
@@ -125,7 +128,11 @@ export default function EditorMenu({
 
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
-									<Button variant="ghost" size="icon" className="hover:bg-accent">
+									<Button
+										variant="ghost"
+										size="icon"
+										className="hover:bg-accent"
+									>
 										<Grid className="w-4 h-4" />
 									</Button>
 								</DropdownMenuTrigger>

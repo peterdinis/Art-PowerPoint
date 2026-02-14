@@ -1305,10 +1305,11 @@ export default function Toolbar() {
 											{CHART_TEMPLATES.map((template) => (
 												<div
 													key={template.name}
-													className={`border rounded-lg p-4 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${selectedChartTemplate.name === template.name
-														? "border-primary ring-2 ring-primary/20 bg-primary/5"
-														: "border-border"
-														}`}
+													className={`border rounded-lg p-4 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${
+														selectedChartTemplate.name === template.name
+															? "border-primary ring-2 ring-primary/20 bg-primary/5"
+															: "border-border"
+													}`}
 													onClick={() => handleChartTemplateSelect(template)}
 												>
 													<div className="flex items-center gap-3 mb-2">
@@ -1557,21 +1558,30 @@ Q4,61000,40000,21000`}
 								const file = e.target.files?.[0];
 								if (!file || !currentPresentation) return;
 								try {
-									toast.loading("Importing slides...", { id: "toolbar-import-pptx" });
+									toast.loading("Importing slides...", {
+										id: "toolbar-import-pptx",
+									});
 									const importedData = await importPPTX(file);
-									const newSlides = (importedData.slides || []).map((slide: Slide) => ({
-										...slide,
-										id: uuidv4(),
-									}));
+									const newSlides = (importedData.slides || []).map(
+										(slide: Slide) => ({
+											...slide,
+											id: uuidv4(),
+										}),
+									);
 
 									updatePresentation(currentPresentation.id, {
 										slides: [...currentPresentation.slides, ...newSlides],
 									});
 
-									toast.success(`Imported ${newSlides.length} slides successfully!`, { id: "toolbar-import-pptx" });
+									toast.success(
+										`Imported ${newSlides.length} slides successfully!`,
+										{ id: "toolbar-import-pptx" },
+									);
 								} catch (error) {
 									console.error("Failed to import slides:", error);
-									toast.error("Failed to import slides from PowerPoint.", { id: "toolbar-import-pptx" });
+									toast.error("Failed to import slides from PowerPoint.", {
+										id: "toolbar-import-pptx",
+									});
 								}
 							}}
 						/>
