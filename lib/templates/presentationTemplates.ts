@@ -1,10 +1,7 @@
 import type {
-	Presentation,
 	Slide,
 	SlideElement,
 	TextAlign,
-	FontWeight,
-	FontStyle,
 	ShapeType,
 } from "@/types/presentation";
 import { v4 as uuidv4 } from "uuid";
