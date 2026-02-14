@@ -94,7 +94,7 @@ export default function StatisticsPage() {
 								<h1 className="text-3xl font-bold">Statistics</h1>
 							</div>
 							<p className="text-muted-foreground">
-								Prehľad vašich prezentácií a aktivity
+								Overview of your presentations and activity
 							</p>
 						</div>
 
@@ -102,14 +102,14 @@ export default function StatisticsPage() {
 							<Card>
 								<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 									<CardTitle className="text-sm font-medium">
-										Celkom prezentácií
+										Total Presentations
 									</CardTitle>
 									<FileText className="h-4 w-4 text-muted-foreground" />
 								</CardHeader>
 								<CardContent>
 									<div className="text-2xl font-bold">{stats.total}</div>
 									<p className="text-xs text-muted-foreground mt-1">
-										Všetky vaše prezentácie
+										All your presentations
 									</p>
 								</CardContent>
 							</Card>
@@ -117,14 +117,14 @@ export default function StatisticsPage() {
 							<Card>
 								<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 									<CardTitle className="text-sm font-medium">
-										Celkom slajdov
+										Total Slides
 									</CardTitle>
 									<Grid3x3 className="h-4 w-4 text-muted-foreground" />
 								</CardHeader>
 								<CardContent>
 									<div className="text-2xl font-bold">{stats.totalSlides}</div>
 									<p className="text-xs text-muted-foreground mt-1">
-										Priemer: {stats.avgSlides} na prezentáciu
+										Average: {stats.avgSlides} per presentation
 									</p>
 								</CardContent>
 							</Card>
@@ -132,7 +132,7 @@ export default function StatisticsPage() {
 							<Card>
 								<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 									<CardTitle className="text-sm font-medium">
-										Celkom elementov
+										Total Elements
 									</CardTitle>
 									<BarChart3 className="h-4 w-4 text-muted-foreground" />
 								</CardHeader>
@@ -141,7 +141,7 @@ export default function StatisticsPage() {
 										{stats.totalElements}
 									</div>
 									<p className="text-xs text-muted-foreground mt-1">
-										Priemer: {stats.avgElements} na prezentáciu
+										Average: {stats.avgElements} per presentation
 									</p>
 								</CardContent>
 							</Card>
@@ -149,14 +149,14 @@ export default function StatisticsPage() {
 							<Card>
 								<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 									<CardTitle className="text-sm font-medium">
-										Nedávno upravené
+										Recently Modified
 									</CardTitle>
 									<Clock className="h-4 w-4 text-muted-foreground" />
 								</CardHeader>
 								<CardContent>
 									<div className="text-2xl font-bold">{stats.recent}</div>
 									<p className="text-xs text-muted-foreground mt-1">
-										Posledných 7 dní
+										Last 7 days
 									</p>
 								</CardContent>
 							</Card>
@@ -167,24 +167,24 @@ export default function StatisticsPage() {
 								<CardHeader>
 									<CardTitle className="flex items-center gap-2">
 										<Calendar className="w-5 h-5" />
-										Aktivita
+										Activity
 									</CardTitle>
 								</CardHeader>
 								<CardContent className="space-y-4">
 									<div className="flex items-center justify-between">
 										<span className="text-sm text-muted-foreground">
-											Tento týždeň
+											This Week
 										</span>
 										<span className="font-semibold">
-											{stats.thisWeek} prezentácií
+											{stats.thisWeek} presentations
 										</span>
 									</div>
 									<div className="flex items-center justify-between">
 										<span className="text-sm text-muted-foreground">
-											Tento mesiac
+											This Month
 										</span>
 										<span className="font-semibold">
-											{stats.thisMonth} prezentácií
+											{stats.thisMonth} presentations
 										</span>
 									</div>
 								</CardContent>
@@ -192,18 +192,18 @@ export default function StatisticsPage() {
 
 							<Card>
 								<CardHeader>
-									<CardTitle>Prehľad</CardTitle>
+									<CardTitle>Overview</CardTitle>
 								</CardHeader>
 								<CardContent className="space-y-4">
 									<div className="flex items-center justify-between">
 										<span className="text-sm text-muted-foreground">
-											Priemerný počet slajdov
+											Average Slides
 										</span>
 										<span className="font-semibold">{stats.avgSlides}</span>
 									</div>
 									<div className="flex items-center justify-between">
 										<span className="text-sm text-muted-foreground">
-											Priemerný počet elementov
+											Average Elements
 										</span>
 										<span className="font-semibold">{stats.avgElements}</span>
 									</div>

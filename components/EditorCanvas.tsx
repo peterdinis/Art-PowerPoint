@@ -150,15 +150,13 @@ export default function EditorCanvas() {
 						width: "100%",
 						maxWidth: "960px",
 						aspectRatio: "16/9",
-						backgroundColor:
-							currentSlide.background?.color || "var(--background)",
 						backgroundImage: (() => {
 							const stops =
 								currentSlide.background?.gradientStops &&
-								currentSlide.background.gradientStops.length > 0
+									currentSlide.background.gradientStops.length > 0
 									? currentSlide.background.gradientStops
-											.map((s: any) => `${s.color} ${s.offset}%`)
-											.join(", ")
+										.map((s: any) => `${s.color} ${s.offset}%`)
+										.join(", ")
 									: currentSlide.background?.gradient;
 
 							const image = currentSlide.background?.image

@@ -47,9 +47,9 @@ const categoryIcons = {
 
 const categoryLabels = {
 	business: "Business",
-	education: "Vzdelávanie",
-	creative: "Kreatívne",
-	minimal: "Minimálne",
+	education: "Education",
+	creative: "Creative",
+	minimal: "Minimal",
 };
 
 export default function TemplateSelector({
@@ -86,9 +86,9 @@ export default function TemplateSelector({
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
 				<DialogHeader>
-					<DialogTitle>Vyberte šablónu</DialogTitle>
+					<DialogTitle>Select a template</DialogTitle>
 					<DialogDescription>
-						Vyberte šablónu pre vašu novú prezentáciu alebo začnite s prázdnou
+						Choose a template for your new presentation or start with a blank one
 					</DialogDescription>
 				</DialogHeader>
 
@@ -99,22 +99,22 @@ export default function TemplateSelector({
 						onValueChange={setSelectedCategory}
 					>
 						<TabsList className="grid w-full grid-cols-5 mb-6">
-							<TabsTrigger value="all">Všetky</TabsTrigger>
+							<TabsTrigger value="all">All</TabsTrigger>
 							<TabsTrigger value="business">
 								<Briefcase className="w-4 h-4 mr-2" />
 								Business
 							</TabsTrigger>
 							<TabsTrigger value="education">
 								<GraduationCap className="w-4 h-4 mr-2" />
-								Vzdelávanie
+								Education
 							</TabsTrigger>
 							<TabsTrigger value="creative">
 								<Palette className="w-4 h-4 mr-2" />
-								Kreatívne
+								Creative
 							</TabsTrigger>
 							<TabsTrigger value="minimal">
 								<Minus className="w-4 h-4 mr-2" />
-								Minimálne
+								Minimal
 							</TabsTrigger>
 						</TabsList>
 
@@ -130,15 +130,15 @@ export default function TemplateSelector({
 											<Sparkles className="w-16 h-16 text-muted-foreground/50" />
 										</div>
 										<div className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm text-xs px-2 py-1 rounded">
-											Prázdna
+											Blank
 										</div>
 									</div>
 									<CardHeader>
 										<CardTitle className="group-hover:text-primary transition-colors">
-											Prázdna prezentácia
+											Blank Presentation
 										</CardTitle>
 										<CardDescription>
-											Začnite s prázdnou prezentáciou
+											Start with a blank presentation
 										</CardDescription>
 									</CardHeader>
 								</Card>
@@ -256,8 +256,8 @@ export default function TemplateSelector({
 													{categoryLabels[template.category]}
 												</div>
 												<div className="absolute bottom-2 left-2 bg-background/80 backdrop-blur-sm text-xs px-2 py-1 rounded">
-													{template.slides.length} slajd
-													{template.slides.length !== 1 ? "ov" : ""}
+													{template.slides.length} slide
+													{template.slides.length !== 1 ? "s" : ""}
 												</div>
 											</div>
 											<CardHeader>

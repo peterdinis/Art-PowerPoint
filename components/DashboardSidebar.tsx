@@ -93,7 +93,7 @@ export default function DashboardSidebar() {
 						size="lg"
 					>
 						<Plus className="w-4 h-4 mr-2" />
-						Nová prezentácia
+						New Presentation
 					</Button>
 				</div>
 
