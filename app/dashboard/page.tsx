@@ -70,13 +70,11 @@ function SortableGridItem({
 	presentation,
 	handleDelete,
 	formatDate,
-	showDeleteConfirm,
 	isOverlay = false,
 }: {
 	presentation: any;
-	handleDelete: (id: string) => void;
+	handleDelete: (id: string, title?: string) => void;
 	formatDate: (date: Date) => string;
-	showDeleteConfirm: string | null;
 	isOverlay?: boolean;
 }) {
 	const {
@@ -172,7 +170,7 @@ function SortableGridItem({
 								<DropdownMenuItem
 									onClick={(e) => {
 										e.preventDefault();
-										handleDelete(presentation.id);
+										handleDelete(presentation.id, presentation.title);
 									}}
 									className="text-destructive focus:text-destructive rounded-md"
 								>
@@ -184,40 +182,7 @@ function SortableGridItem({
 					</div>
 				</>
 			)}
-			{showDeleteConfirm === presentation.id && (
-				<div className="absolute inset-0 bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg z-10">
-					<div className="text-center p-4">
-						<p className="font-medium mb-2">Delete presentation?</p>
-						<p className="text-sm text-muted-foreground mb-4">
-							This action cannot be undone.
-						</p>
-						<div className="flex gap-2 justify-center">
-							<Button
-								variant="destructive"
-								size="sm"
-								onClick={(e) => {
-									e.preventDefault();
-									handleDelete(presentation.id);
-								}}
-								className="rounded-md"
-							>
-								Yes, delete
-							</Button>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={(e) => {
-									e.preventDefault();
-									handleDelete("cancel");
-								}}
-								className="rounded-md"
-							>
-								Cancel
-							</Button>
-						</div>
-					</div>
-				</div>
-			)}
+
 		</Card>
 	);
 }
@@ -227,13 +192,11 @@ function SortableListItem({
 	presentation,
 	handleDelete,
 	formatDate,
-	showDeleteConfirm,
 	isOverlay = false,
 }: {
 	presentation: any;
-	handleDelete: (id: string) => void;
+	handleDelete: (id: string, title?: string) => void;
 	formatDate: (date: Date) => string;
-	showDeleteConfirm: string | null;
 	isOverlay?: boolean;
 }) {
 	const {
@@ -322,7 +285,7 @@ function SortableListItem({
 									<DropdownMenuItem
 										onClick={(e) => {
 											e.preventDefault();
-											handleDelete(presentation.id);
+											handleDelete(presentation.id, presentation.title);
 										}}
 										className="text-destructive focus:text-destructive rounded-md"
 									>
@@ -335,40 +298,7 @@ function SortableListItem({
 					</div>
 				</CardContent>
 			</Link>
-			{showDeleteConfirm === presentation.id && (
-				<div className="absolute inset-0 bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg z-10">
-					<div className="text-center p-4">
-						<p className="font-medium mb-2">Delete presentation?</p>
-						<p className="text-sm text-muted-foreground mb-4">
-							This action cannot be undone.
-						</p>
-						<div className="flex gap-2 justify-center">
-							<Button
-								variant="destructive"
-								size="sm"
-								onClick={(e) => {
-									e.preventDefault();
-									handleDelete(presentation.id);
-								}}
-								className="rounded-md"
-							>
-								Yes, delete
-							</Button>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={(e) => {
-									e.preventDefault();
-									handleDelete("cancel");
-								}}
-								className="rounded-md"
-							>
-								Cancel
-							</Button>
-						</div>
-					</div>
-				</div>
-			)}
+
 		</Card>
 	);
 }
@@ -388,9 +318,8 @@ export default function Home() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [viewMode, setViewMode] = useState<ViewMode>("grid");
 	const [sortBy, setSortBy] = useState<SortOption>("recent");
-	const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
-		null,
-	);
+
+
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [localOrder, setLocalOrder] = useState<string[]>([]);
@@ -530,6 +459,7 @@ export default function Home() {
 
 						setLocalOrder(newLocalOrder);
 						reorderPresentationsByIds(newLocalOrder);
+						setSortBy("custom");
 					}
 				}
 			}
@@ -570,22 +500,22 @@ export default function Home() {
 	}, [createPresentation, router]);
 
 	const handleDelete = useCallback(
-		(id: string) => {
-			if (id === "cancel") {
-				setShowDeleteConfirm(null);
-				return;
-			}
+		(id: string, title?: string) => {
+			deletePresentation(id);
+			setLocalOrder((prev) => prev.filter((itemId) => itemId !== id));
 
-			if (showDeleteConfirm === id) {
-				deletePresentation(id);
-				setShowDeleteConfirm(null);
-				setLocalOrder((prev) => prev.filter((itemId) => itemId !== id));
-			} else {
-				setShowDeleteConfirm(id);
-				setTimeout(() => setShowDeleteConfirm(null), 3000);
-			}
+			toast.success("Presentation moved to trash", {
+				description: title ? `"${title}" has been moved to trash` : undefined,
+				action: {
+					label: "Undo",
+					onClick: () => {
+						restorePresentation(id);
+						toast.success("Presentation restored");
+					},
+				},
+			});
 		},
-		[deletePresentation, showDeleteConfirm],
+		[deletePresentation, restorePresentation],
 	);
 
 	const formatDate = useCallback((date: Date) => {
@@ -915,7 +845,6 @@ export default function Home() {
 													presentation={presentation}
 													handleDelete={handleDelete}
 													formatDate={formatDate}
-													showDeleteConfirm={showDeleteConfirm}
 												/>
 											))}
 										</div>
@@ -927,7 +856,6 @@ export default function Home() {
 													presentation={presentation}
 													handleDelete={handleDelete}
 													formatDate={formatDate}
-													showDeleteConfirm={showDeleteConfirm}
 												/>
 											))}
 										</div>
@@ -941,7 +869,6 @@ export default function Home() {
 													presentation={activePresentation}
 													handleDelete={handleDelete}
 													formatDate={formatDate}
-													showDeleteConfirm={null}
 													isOverlay={true}
 												/>
 											) : (
@@ -949,7 +876,6 @@ export default function Home() {
 													presentation={activePresentation}
 													handleDelete={handleDelete}
 													formatDate={formatDate}
-													showDeleteConfirm={null}
 													isOverlay={true}
 												/>
 											)
