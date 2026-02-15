@@ -5,7 +5,6 @@ import { usePresentationStore } from "@/store/presentationStore";
 import { useDrop } from "react-dnd";
 import { cn } from "@/lib/utils";
 import { Sparkles, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
-import ChartElement from "./elements/ChartElement";
 import SlideElement from "./SlideElement";
 import { Button } from "./ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -209,7 +208,7 @@ export default function EditorCanvas() {
 					{/* Grid Overlay */}
 					{showGrid && (
 						<div
-							className="absolute inset-0 pointer-events-none z-[5]"
+							className="absolute inset-0 pointer-events-none z-5"
 							style={{
 								backgroundImage: showGrid
 									? `linear-gradient(to right, color-mix(in srgb, var(--foreground), transparent 90%) 1px, transparent 1px),
@@ -379,7 +378,7 @@ export default function EditorCanvas() {
 										})
 									}
 								>
-									<SelectTrigger className="w-[110px] h-8 text-xs">
+									<SelectTrigger className="w-27.5 h-8 text-xs">
 										<Wand2 className="w-3 h-3 mr-1.5" />
 										<SelectValue placeholder="Animate" />
 									</SelectTrigger>

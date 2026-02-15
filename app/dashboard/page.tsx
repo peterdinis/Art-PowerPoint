@@ -39,6 +39,16 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { cn } from "@/lib/utils";
 import {
@@ -114,7 +124,7 @@ function SortableGridItem({
 					}
 				}}
 			>
-				<div className="h-40 bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center relative overflow-hidden rounded-t-lg">
+				<div className="h-40 bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center relative overflow-hidden rounded-t-lg">
 					<div className="text-5xl font-bold opacity-20 text-primary">
 						{presentation.slides.length}
 					</div>
@@ -248,7 +258,7 @@ function SortableListItem({
 									<GripVertical className="w-4 h-4" />
 								</Button>
 							)}
-							<div className="w-20 h-20 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+							<div className="w-20 h-20 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
 								<FileText className="w-10 h-10 text-primary" />
 							</div>
 						</div>
@@ -322,6 +332,11 @@ export default function Home() {
 	const [localOrder, setLocalOrder] = useState<string[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	// Dialog state
+	const [isDialogOpen, setIsDialogOpen] = useState(false);
+	const [newTitle, setNewTitle] = useState("");
+	const [newDescription, setNewDescription] = useState("");
 
 	const handleImportPPTX = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -490,13 +505,24 @@ export default function Home() {
 	}, [presentations]);
 
 	const handleCreateNew = useCallback(() => {
-		const title = prompt("Enter presentation title:");
-		if (title) {
-			const description = prompt("Enter description (optional):") || undefined;
-			const newId = createPresentation(title, description);
-			router.push(`/editor?id=${newId}`);
+		setNewTitle("");
+		setNewDescription("");
+		setIsDialogOpen(true);
+	}, []);
+
+	const handleCreateSubmit = useCallback(() => {
+		if (!newTitle.trim()) {
+			toast.error("Please enter a title");
+			return;
 		}
-	}, [createPresentation, router]);
+
+		const newId = createPresentation(
+			newTitle.trim(),
+			newDescription.trim() || undefined,
+		);
+		setIsDialogOpen(false);
+		router.push(`/editor?id=${newId}`);
+	}, [newTitle, newDescription, createPresentation, router]);
 
 	const handleDelete = useCallback(
 		(id: string, title?: string) => {
@@ -614,7 +640,7 @@ export default function Home() {
 									<Button
 										onClick={handleCreateNew}
 										size="lg"
-										className="rounded-lg shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all bg-gradient-to-r from-primary to-primary/90"
+										className="rounded-lg shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all bg-linear-to-r from-primary to-primary/90"
 									>
 										<Plus className="w-4 h-4 mr-2" />
 										New Presentation
@@ -886,6 +912,64 @@ export default function Home() {
 					</div>
 				</div>
 			</div>
+
+			{/* Create Presentation Dialog */}
+			<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+				<DialogContent className="sm:max-w-md rounded-lg">
+					<DialogHeader>
+						<DialogTitle className="text-xl">
+							Create New Presentation
+						</DialogTitle>
+						<DialogDescription>
+							Enter the details for your new presentation. You can always change
+							them later.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-4 py-4">
+						<div className="space-y-2">
+							<Label htmlFor="title" className="text-sm font-medium">
+								Title <span className="text-destructive">*</span>
+							</Label>
+							<Input
+								id="title"
+								placeholder="Enter presentation title"
+								value={newTitle}
+								onChange={(e) => setNewTitle(e.target.value)}
+								autoFocus
+								className="rounded-lg"
+							/>
+						</div>
+						<div className="space-y-2">
+							<Label htmlFor="description" className="text-sm font-medium">
+								Description (optional)
+							</Label>
+							<Textarea
+								id="description"
+								placeholder="Enter a brief description"
+								value={newDescription}
+								onChange={(e) => setNewDescription(e.target.value)}
+								className="min-h-25 rounded-lg"
+							/>
+						</div>
+					</div>
+					<DialogFooter className="sm:justify-end gap-2">
+						<Button
+							variant="outline"
+							onClick={() => setIsDialogOpen(false)}
+							className="rounded-lg"
+						>
+							Cancel
+						</Button>
+						<Button
+							onClick={handleCreateSubmit}
+							disabled={!newTitle.trim()}
+							className="rounded-lg"
+						>
+							Create Presentation
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

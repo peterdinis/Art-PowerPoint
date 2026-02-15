@@ -112,7 +112,10 @@ export default function SlideElement({
 	});
 
 	const animationVariants = useMemo(
-		() => (performance.complexAnimations ? getAnimationVariants(element.animation?.type) : { initial: {}, animate: {} }),
+		() =>
+			performance.complexAnimations
+				? getAnimationVariants(element.animation?.type)
+				: { initial: {}, animate: {} },
 		[element.animation?.type, performance.complexAnimations],
 	);
 
@@ -145,33 +148,33 @@ export default function SlideElement({
 		if (element.type === "text") {
 			const filterStyles = element.style?.filters
 				? {
-					filter: [
-						element.style.filters.blur
-							? `blur(${element.style.filters.blur}px)`
-							: "",
-						element.style.filters.brightness
-							? `brightness(${element.style.filters.brightness})`
-							: "",
-						element.style.filters.contrast
-							? `contrast(${element.style.filters.contrast})`
-							: "",
-						element.style.filters.grayscale
-							? `grayscale(${element.style.filters.grayscale})`
-							: "",
-						element.style.filters.sepia
-							? `sepia(${element.style.filters.sepia})`
-							: "",
-						element.style.filters.hueRotate
-							? `hue-rotate(${element.style.filters.hueRotate}deg)`
-							: "",
-						element.style.filters.saturate
-							? `saturate(${element.style.filters.saturate})`
-							: "",
-						element.style.filters.invert
-							? `invert(${element.style.filters.invert})`
-							: "",
-					].join(" "),
-				}
+						filter: [
+							element.style.filters.blur
+								? `blur(${element.style.filters.blur}px)`
+								: "",
+							element.style.filters.brightness
+								? `brightness(${element.style.filters.brightness})`
+								: "",
+							element.style.filters.contrast
+								? `contrast(${element.style.filters.contrast})`
+								: "",
+							element.style.filters.grayscale
+								? `grayscale(${element.style.filters.grayscale})`
+								: "",
+							element.style.filters.sepia
+								? `sepia(${element.style.filters.sepia})`
+								: "",
+							element.style.filters.hueRotate
+								? `hue-rotate(${element.style.filters.hueRotate}deg)`
+								: "",
+							element.style.filters.saturate
+								? `saturate(${element.style.filters.saturate})`
+								: "",
+							element.style.filters.invert
+								? `invert(${element.style.filters.invert})`
+								: "",
+						].join(" "),
+					}
 				: {};
 
 			const getBackgroundStyle = () => {
@@ -318,11 +321,11 @@ export default function SlideElement({
 				whileHover={
 					!isSelected && performance.complexAnimations
 						? {
-							scale: 1.05,
-							rotateY: 10,
-							rotateX: -5,
-							boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
-						}
+								scale: 1.05,
+								rotateY: 10,
+								rotateX: -5,
+								boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
+							}
 						: {}
 				}
 				transition={{

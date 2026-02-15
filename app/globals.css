@@ -165,6 +165,124 @@
   --shadow-2xl: var(--shadow-2xl);
 }
 
+/* Scrollbar hiding options */
+:root {
+  --scrollbar-hidden: false;
+}
+
+/* Hide scrollbars globally */
+.scrollbar-hidden {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Hide scrollbars for specific elements */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbars but keep functionality */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overflow: auto;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom scrollbar styling (optional) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: var(--radius-sm);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+  opacity: 0.8;
+}
+
+/* Firefox custom scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) var(--muted);
+}
+
+/* Auto-hide scrollbar (only shows when scrolling) */
+.auto-hide-scrollbar {
+  scrollbar-width: thin;
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+.auto-hide-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background: transparent;
+}
+
+.auto-hide-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: var(--radius-sm);
+  visibility: hidden;
+}
+
+.auto-hide-scrollbar:hover::-webkit-scrollbar-thumb {
+  visibility: visible;
+}
+
+.auto-hide-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+  opacity: 0.8;
+}
+
+/* Thin scrollbar */
+.thin-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: var(--radius-sm);
+}
+
+/* Hide scrollbar for the entire page */
+html.hide-page-scrollbar,
+body.hide-page-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overflow: auto;
+}
+
+html.hide-page-scrollbar::-webkit-scrollbar,
+body.hide-page-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 @layer base {
   * {
     border-color: var(--border);
@@ -232,6 +350,57 @@
     }
   }
 
+  @keyframes slide-up {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-down {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
   .animate-fade-in {
     animation: fade-in 0.5s ease-in-out;
   }
@@ -242,5 +411,114 @@
 
   .animate-zoom-in {
     animation: zoom-in 0.5s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.5s ease-out;
+  }
+
+  .animate-slide-down {
+    animation: slide-down 0.5s ease-out;
+  }
+
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-bounce {
+    animation: bounce 1s infinite;
+  }
+
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+
+  /* Scrollbar utility classes */
+  .scrollbar-hidden {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overflow: auto;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--muted);
+    border-radius: var(--radius-sm);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: var(--radius-sm);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+    opacity: 0.8;
+  }
+
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) var(--muted);
+  }
+
+  .auto-hide-scrollbar {
+    scrollbar-width: thin;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+  }
+
+  .auto-hide-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background: transparent;
+  }
+
+  .auto-hide-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: var(--radius-sm);
+    visibility: hidden;
+  }
+
+  .auto-hide-scrollbar:hover::-webkit-scrollbar-thumb {
+    visibility: visible;
+  }
+
+  .thin-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .thin-scrollbar::-webkit-scrollbar-track {
+    background: var(--muted);
+  }
+
+  .thin-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: var(--radius-sm);
   }
 }
