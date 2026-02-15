@@ -48,14 +48,6 @@ pnpm dev
 
 The application will be available at [http://localhost:3000](http://localhost:3000).
 
-## 📂 Project Structure
-
-- `app/`: Next.js App Router pages and layouts.
-- `components/`: Reusable UI components and element-specific logic.
-- `lib/store/`: Zustand stores for global state (presentation, selection, etc.).
-- `lib/types/`: TypeScript definitions and schemas.
-- `lib/templates/`: Pre-designed presentation templates.
-
 ## 📝 License
 
 This project is licensed under the MIT License.
