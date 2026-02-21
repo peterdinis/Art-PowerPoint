@@ -101,7 +101,7 @@ export default function PropertiesPanel() {
 
 			// Handle direct property updates
 			Object.keys(updates).forEach((key) => {
-				if (key !== 'style' && key !== 'animation') {
+				if (key !== "style" && key !== "animation") {
 					(updateData as any)[key] = (updates as any)[key];
 				}
 			});
@@ -117,9 +117,9 @@ export default function PropertiesPanel() {
 			// Handle animation updates properly
 			if (updates.animation) {
 				updateData.animation = {
-					...(selectedElement.animation || { 
-						type: "none", 
-						duration: 500 
+					...(selectedElement.animation || {
+						type: "none",
+						duration: 500,
 					}),
 					...updates.animation,
 				};
@@ -606,9 +606,7 @@ export default function PropertiesPanel() {
 									<Input
 										id="background-color"
 										type="color"
-										value={
-											selectedElement.style?.backgroundColor || "#ffffff"
-										}
+										value={selectedElement.style?.backgroundColor || "#ffffff"}
 										onChange={(e) =>
 											handleUpdate({
 												style: {
@@ -628,9 +626,9 @@ export default function PropertiesPanel() {
 									value={selectedElement.style?.fontFamily || "Arial"}
 									onValueChange={(value: FontFamilyType) =>
 										handleUpdate({
-											style: { 
-												...(selectedElement.style || {}), 
-												fontFamily: value 
+											style: {
+												...(selectedElement.style || {}),
+												fontFamily: value,
 											},
 										})
 									}
@@ -743,9 +741,9 @@ export default function PropertiesPanel() {
 										)}
 										onClick={() =>
 											handleUpdate({
-												style: { 
-													...(selectedElement.style || {}), 
-													textAlign: "left" 
+												style: {
+													...(selectedElement.style || {}),
+													textAlign: "left",
 												},
 											})
 										}
@@ -783,9 +781,9 @@ export default function PropertiesPanel() {
 										)}
 										onClick={() =>
 											handleUpdate({
-												style: { 
-													...(selectedElement.style || {}), 
-													textAlign: "right" 
+												style: {
+													...(selectedElement.style || {}),
+													textAlign: "right",
 												},
 											})
 										}

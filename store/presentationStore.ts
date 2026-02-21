@@ -7,8 +7,8 @@ import localforage from "localforage";
 
 // Initialize localforage
 localforage.config({
-	name: 'PresentationBuilder',
-	storeName: 'presentations_store'
+	name: "PresentationBuilder",
+	storeName: "presentations_store",
 });
 
 interface PresentationStore {
@@ -239,7 +239,8 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			}
 
 			// Načítanie poradia
-			const orderStored = await localforage.getItem<string>("presentationOrder");
+			const orderStored =
+				await localforage.getItem<string>("presentationOrder");
 			let presentationOrder: string[] = [];
 
 			if (orderStored) {
@@ -299,7 +300,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			console.error("Error saving presentations to IndexedDB:", error);
 			toast.error(
 				"Failed to save your presentation locally. If the issue persists, export it to avoid losing changes.",
-				{ id: "save-error", duration: 8000 }
+				{ id: "save-error", duration: 8000 },
 			);
 		}
 	},
@@ -399,7 +400,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 			return {
 				currentPresentation: newCurrent,
-				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
+				presentations: state.presentations.map((p) =>
+					p.id === newCurrent.id ? newCurrent : p,
+				),
 				currentSlideIndex: state.currentPresentation.slides.length,
 				selectedElementId: null,
 			};
@@ -437,7 +440,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 			return {
 				currentPresentation: newCurrent,
-				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
+				presentations: state.presentations.map((p) =>
+					p.id === newCurrent.id ? newCurrent : p,
+				),
 				currentSlideIndex: Math.max(0, newIndex),
 				selectedElementId: null,
 			};
@@ -482,7 +487,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 			return {
 				currentPresentation: newCurrent,
-				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
+				presentations: state.presentations.map((p) =>
+					p.id === newCurrent.id ? newCurrent : p,
+				),
 				currentSlideIndex: slideIndex + 1,
 			};
 		});
@@ -518,7 +525,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 			return {
 				currentPresentation: newCurrent,
-				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
+				presentations: state.presentations.map((p) =>
+					p.id === newCurrent.id ? newCurrent : p,
+				),
 				currentSlideIndex: toIndex,
 			};
 		});
@@ -559,7 +568,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 			return {
 				currentPresentation: newCurrent,
-				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
+				presentations: state.presentations.map((p) =>
+					p.id === newCurrent.id ? newCurrent : p,
+				),
 				selectedElementId: newElement.id,
 			};
 		});
@@ -591,7 +602,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 			return {
 				currentPresentation: newCurrent,
-				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
+				presentations: state.presentations.map((p) =>
+					p.id === newCurrent.id ? newCurrent : p,
+				),
 			};
 		});
 
@@ -622,7 +635,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 			return {
 				currentPresentation: newCurrent,
-				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
+				presentations: state.presentations.map((p) =>
+					p.id === newCurrent.id ? newCurrent : p,
+				),
 				selectedElementId: null,
 			};
 		});
@@ -679,7 +694,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 			return {
 				currentPresentation: newCurrent,
-				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
+				presentations: state.presentations.map((p) =>
+					p.id === newCurrent.id ? newCurrent : p,
+				),
 			};
 		});
 		setTimeout(() => get().savePresentations(), 0);
@@ -724,7 +741,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 			return {
 				currentPresentation: newCurrent,
-				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
+				presentations: state.presentations.map((p) =>
+					p.id === newCurrent.id ? newCurrent : p,
+				),
 			};
 		});
 		setTimeout(() => get().savePresentations(), 0);
