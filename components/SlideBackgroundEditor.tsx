@@ -16,6 +16,16 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogFooter,
+} from "@/components/ui/dialog";
+import Cropper from "react-easy-crop";
+import { getCroppedImg } from "@/lib/utils/imageUtils";
+import { toast } from "sonner";
 
 import { GradientStop } from "@/types/presentation";
 
@@ -88,6 +98,13 @@ export default function SlideBackgroundEditor({
 		currentBackground?.gradient || "",
 	);
 
+	// Crop state
+	const [showCropDialog, setShowCropDialog] = useState(false);
+	const [crop, setCrop] = useState({ x: 0, y: 0 });
+	const [zoom, setZoom] = useState(1);
+	const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+	const [isCropping, setIsCropping] = useState(false);
+
 	const handleColorChange = (newColor: string) => {
 		setColor(newColor);
 		onUpdate({
@@ -127,6 +144,26 @@ export default function SlideBackgroundEditor({
 				handleImageChange(base64String);
 			};
 			reader.readAsDataURL(file);
+		}
+	};
+
+	const onCropComplete = (_croppedArea: any, pixels: any) => {
+		setCroppedAreaPixels(pixels);
+	};
+
+	const handleCropConfirm = async () => {
+		if (!imageUrl || !croppedAreaPixels) return;
+		try {
+			setIsCropping(true);
+			const croppedImage = await getCroppedImg(imageUrl, croppedAreaPixels);
+			handleImageChange(croppedImage);
+			setShowCropDialog(false);
+			toast.success("Image cropped successfully");
+		} catch (error) {
+			console.error("Crop error:", error);
+			toast.error("Failed to crop image");
+		} finally {
+			setIsCropping(false);
 		}
 	};
 
@@ -430,21 +467,82 @@ export default function SlideBackgroundEditor({
 					</div>
 
 					{imageUrl && (
-						<Card>
-							<CardContent className="p-0">
-								<div className="relative w-full h-32 rounded-lg overflow-hidden">
-									<img
-										src={imageUrl}
-										alt="Preview"
-										className="w-full h-full object-cover"
-										onError={(e) => {
-											(e.target as HTMLImageElement).style.display = "none";
-										}}
+						<div className="space-y-4">
+							<Card>
+								<CardContent className="p-0">
+									<div className="relative w-full h-32 rounded-lg overflow-hidden">
+										<img
+											src={imageUrl}
+											alt="Preview"
+											className="w-full h-full object-cover"
+											onError={(e) => {
+												(e.target as HTMLImageElement).style.display = "none";
+											}}
+										/>
+									</div>
+								</CardContent>
+							</Card>
+							<Button
+								variant="outline"
+								className="w-full gap-2"
+								onClick={() => setShowCropDialog(true)}
+							>
+								<Image className="w-4 h-4" />
+								Crop Image
+							</Button>
+						</div>
+					)}
+
+					{/* Crop Dialog */}
+					<Dialog open={showCropDialog} onOpenChange={setShowCropDialog}>
+						<DialogContent className="max-w-2xl h-[80vh] flex flex-col">
+							<DialogHeader>
+								<DialogTitle>Crop Background Image</DialogTitle>
+							</DialogHeader>
+							<div className="relative flex-1 bg-black rounded-lg overflow-hidden mt-4">
+								{imageUrl && (
+									<Cropper
+										image={imageUrl}
+										crop={crop}
+										zoom={zoom}
+										aspect={16 / 9}
+										onCropChange={setCrop}
+										onCropComplete={onCropComplete}
+										onZoomChange={setZoom}
+									/>
+								)}
+							</div>
+							<div className="mt-4 space-y-4">
+								<div className="flex items-center gap-4">
+									<Label className="text-xs">Zoom</Label>
+									<Input
+										type="range"
+										min={1}
+										max={3}
+										step={0.1}
+										value={zoom}
+										onChange={(e) => setZoom(Number(e.target.value))}
+										className="flex-1"
 									/>
 								</div>
-							</CardContent>
-						</Card>
-					)}
+							</div>
+							<DialogFooter className="mt-4">
+								<Button
+									variant="outline"
+									onClick={() => setShowCropDialog(false)}
+								>
+									Cancel
+								</Button>
+								<Button
+									onClick={handleCropConfirm}
+									disabled={isCropping}
+									className="gap-2"
+								>
+									{isCropping ? "Cropping..." : "Confirm Crop"}
+								</Button>
+							</DialogFooter>
+						</DialogContent>
+					</Dialog>
 				</TabsContent>
 			</Tabs>
 		</div>

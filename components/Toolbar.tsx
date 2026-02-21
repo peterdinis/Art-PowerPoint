@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { exportToPPTX } from "@/lib/utils/pptxExport";
 import { importPPTX } from "@/lib/utils/pptxImport";
+import { importODP } from "@/lib/utils/odpImport";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import { Slide } from "@/types/presentation";
@@ -190,8 +191,12 @@ export default function Toolbar() {
 	const [documentFiles, setDocumentFiles] = useState<any[]>([]);
 	const [isFileProcessing, setIsFileProcessing] = useState(false);
 
-	const [showImportPPTXDialog, setShowImportPPTXDialog] = useState(false);
-	const [importPPTXFiles, setImportPPTXFiles] = useState<any[]>([]);
+	const [showImportDialog, setShowImportDialog] = useState(false);
+	const [showImportODPDialog, setShowImportODPDialog] = useState(false);
+	const [showAnalysisDialog, setShowAnalysisDialog] = useState(false);
+	const [importFiles, setImportFiles] = useState<any[]>([]);
+	const [importODPFiles, setImportODPFiles] = useState<any[]>([]);
+	const [toolbarImportedData, setToolbarImportedData] = useState<any>(null);
 
 	// Get default text color based on theme
 	const getDefaultTextColor = () => {
@@ -212,24 +217,57 @@ export default function Toolbar() {
 				setCsvFiles([]);
 			}, 300);
 		}
-		if (!showImportPPTXDialog) {
+		if (!showImportDialog) {
 			setTimeout(() => {
-				setImportPPTXFiles([]);
+				setImportFiles([]);
 			}, 300);
 		}
-	}, [imageDialogOpen, chartDialogOpen, showImportPPTXDialog]);
+		if (!showImportODPDialog) {
+			setTimeout(() => {
+				setImportODPFiles([]);
+			}, 300);
+		}
+		if (!showAnalysisDialog) {
+			setTimeout(() => {
+				setToolbarImportedData(null);
+			}, 300);
+		}
+	}, [imageDialogOpen, chartDialogOpen, showImportDialog, showImportODPDialog, showAnalysisDialog]);
 
 	if (!currentPresentation) return null;
 
-	const handlePPTXImport = async (fileItem: any) => {
+	const handleFileImport = async (fileItem: any) => {
 		const file = fileItem.file;
 		if (!file || !currentPresentation) return;
 		try {
-			toast.loading("Importing slides...", {
-				id: "toolbar-import-pptx",
-			});
-			const importedData = await importPPTX(file);
-			const newSlides = (importedData.slides || []).map(
+			toast.loading("Analyzing presentation...", { id: "toolbar-handle-parse" });
+			let importedData;
+
+			if (file.name.toLowerCase().endsWith(".odp") || file.type === "application/vnd.oasis.opendocument.presentation") {
+				importedData = await importODP(file);
+			} else {
+				importedData = await importPPTX(file);
+			}
+
+			toast.dismiss("toolbar-handle-parse");
+			setShowImportDialog(false);
+			setShowImportODPDialog(false);
+
+			// Open analysis instead of direct append
+			setToolbarImportedData(importedData);
+			setShowAnalysisDialog(true);
+		} catch (error) {
+			console.error("Failed to parse presentation:", error);
+			toast.error("Failed to parse presentation file.");
+		}
+	};
+
+	const handleConfirmToolbarImport = async () => {
+		if (!toolbarImportedData || !currentPresentation) return;
+		try {
+			toast.loading("Adding slides...", { id: "toolbar-confirm-import" });
+
+			const newSlides = (toolbarImportedData.slides || []).map(
 				(slide: Slide) => ({
 					...slide,
 					id: uuidv4(),
@@ -240,17 +278,12 @@ export default function Toolbar() {
 				slides: [...currentPresentation.slides, ...newSlides],
 			});
 
-			toast.success(
-				`Imported ${newSlides.length} slides successfully!`,
-				{ id: "toolbar-import-pptx" },
-			);
-			setShowImportPPTXDialog(false);
-			setImportPPTXFiles([]);
+			toast.success(`Successfully added ${newSlides.length} slides!`, { id: "toolbar-confirm-import" });
+			setShowAnalysisDialog(false);
+			setToolbarImportedData(null);
 		} catch (error) {
-			console.error("Failed to import slides:", error);
-			toast.error("Failed to import slides from PowerPoint.", {
-				id: "toolbar-import-pptx",
-			});
+			console.error("Failed to append slides:", error);
+			toast.error("Failed to add slides to presentation.");
 		}
 	};
 
@@ -1566,11 +1599,24 @@ Q4,61000,40000,21000`}
 							variant="outline"
 							size="sm"
 							className="gap-2 border-primary/20 hover:border-primary/50 text-primary"
-							onClick={() => setShowImportPPTXDialog(true)}
-							title="Import slides from PowerPoint (.pptx)"
+							onClick={() => setShowImportDialog(true)}
+							title="Import slides from PowerPoint"
 						>
 							<FileUp className="w-4 h-4" />
 							Import PPTX
+						</Button>
+					</motion.div>
+
+					<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+						<Button
+							variant="outline"
+							size="sm"
+							className="gap-2 border-primary/20 hover:border-primary/50 text-primary"
+							onClick={() => setShowImportODPDialog(true)}
+							title="Import slides from LibreOffice"
+						>
+							<FileUp className="w-4 h-4" />
+							Import ODP
 						</Button>
 					</motion.div>
 
@@ -1908,9 +1954,9 @@ Q4,61000,40000,21000`}
 				</div>
 			</div>
 			{/* Import PPTX Dialog */}
-			<Dialog open={showImportPPTXDialog} onOpenChange={(open) => {
-				setShowImportPPTXDialog(open);
-				if (!open) setImportPPTXFiles([]);
+			<Dialog open={showImportDialog} onOpenChange={(open) => {
+				setShowImportDialog(open);
+				if (!open) setImportFiles([]);
 			}}>
 				<DialogContent className="sm:max-w-md rounded-lg">
 					<DialogHeader>
@@ -1921,18 +1967,29 @@ Q4,61000,40000,21000`}
 					</DialogHeader>
 					<div className="py-4">
 						<FilePond
-							files={importPPTXFiles}
-							onupdatefiles={setImportPPTXFiles}
+							files={importFiles}
+							onupdatefiles={setImportFiles}
 							allowMultiple={false}
 							maxFiles={1}
 							acceptedFileTypes={[
 								"application/vnd.openxmlformats-officedocument.presentationml.presentation",
 								"application/vnd.ms-powerpoint"
 							]}
+							fileValidateTypeDetectType={(source, type) =>
+								new Promise((resolve, reject) => {
+									if (source.name.toLowerCase().endsWith(".pptx")) {
+										resolve("application/vnd.openxmlformats-officedocument.presentationml.presentation");
+									} else if (source.name.toLowerCase().endsWith(".odp")) {
+										resolve("application/vnd.oasis.opendocument.presentation");
+									} else {
+										resolve(type);
+									}
+								})
+							}
 							labelIdle='Drag & Drop your .pptx file or <span class="filepond--label-action">Browse</span>'
 							onprocessfile={(error, file) => {
 								if (!error) {
-									handlePPTXImport(file);
+									handleFileImport(file);
 								}
 							}}
 							server={{
@@ -1948,12 +2005,136 @@ Q4,61000,40000,21000`}
 						<Button
 							variant="outline"
 							onClick={() => {
-								setShowImportPPTXDialog(false);
-								setImportPPTXFiles([]);
+								setShowImportDialog(false);
+								setImportFiles([]);
 							}}
 							className="rounded-lg"
 						>
 							Cancel
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+			{/* Import ODP Dialog */}
+			<Dialog open={showImportODPDialog} onOpenChange={(open) => {
+				setShowImportODPDialog(open);
+				if (!open) setImportODPFiles([]);
+			}}>
+				<DialogContent className="sm:max-w-md rounded-lg">
+					<DialogHeader>
+						<DialogTitle className="text-xl">Import LibreOffice Slides</DialogTitle>
+						<DialogDescription>
+							Upload an .odp file to append its slides to the current presentation.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="py-4">
+						<FilePond
+							files={importODPFiles}
+							onupdatefiles={setImportODPFiles}
+							allowMultiple={false}
+							maxFiles={1}
+							acceptedFileTypes={[
+								"application/vnd.oasis.opendocument.presentation"
+							]}
+							fileValidateTypeDetectType={(source, type) =>
+								new Promise((resolve, reject) => {
+									if (source.name.toLowerCase().endsWith(".odp")) {
+										resolve("application/vnd.oasis.opendocument.presentation");
+									} else {
+										resolve(type);
+									}
+								})
+							}
+							labelIdle='Drag & Drop your .odp file or <span class="filepond--label-action">Browse</span>'
+							onprocessfile={(error, file) => {
+								if (!error) {
+									handleFileImport(file);
+								}
+							}}
+							server={{
+								process: (_fieldName, file, _metadata, load) => {
+									setTimeout(() => {
+										load(file.name);
+									}, 1000);
+								},
+							}}
+						/>
+					</div>
+					<DialogFooter className="sm:justify-end gap-2">
+						<Button
+							variant="outline"
+							onClick={() => {
+								setShowImportODPDialog(false);
+								setImportODPFiles([]);
+							}}
+							className="rounded-lg"
+						>
+							Cancel
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+			{/* Pre-Import Analysis Dialog */}
+			<Dialog open={showAnalysisDialog} onOpenChange={(open) => {
+				setShowAnalysisDialog(open);
+				if (!open) {
+					setToolbarImportedData(null);
+					setImportFiles([]);
+					setImportODPFiles([]);
+				}
+			}}>
+				<DialogContent className="sm:max-w-md rounded-lg">
+					<DialogHeader>
+						<DialogTitle className="text-xl">Analysis Complete</DialogTitle>
+						<DialogDescription>
+							Preview the slides before appending them to your presentation.
+						</DialogDescription>
+					</DialogHeader>
+					{toolbarImportedData && (
+						<div className="py-4 space-y-4">
+							<div className="bg-muted p-4 rounded-lg space-y-2">
+								<div className="flex justify-between items-center">
+									<span className="text-sm text-muted-foreground">Title</span>
+									<span className="font-medium truncate max-w-[200px]" title={toolbarImportedData.title || "Untitled"}>
+										{toolbarImportedData.title || "Untitled"}
+									</span>
+								</div>
+								<div className="flex justify-between items-center">
+									<span className="text-sm text-muted-foreground">Total Slides</span>
+									<span className="font-medium">
+										{toolbarImportedData.slides?.length || 0}
+									</span>
+								</div>
+								<div className="flex justify-between items-center">
+									<span className="text-sm text-muted-foreground">Total Elements</span>
+									<span className="font-medium">
+										{toolbarImportedData.slides?.reduce((count: number, slide: any) => count + (slide.elements?.length || 0), 0) || 0}
+									</span>
+								</div>
+							</div>
+							<p className="text-sm text-muted-foreground">
+								These slides will be appended to your current presentation.
+							</p>
+						</div>
+					)}
+					<DialogFooter className="sm:justify-end gap-2">
+						<Button
+							variant="outline"
+							onClick={() => {
+								setShowAnalysisDialog(false);
+								setToolbarImportedData(null);
+								setImportFiles([]);
+								setImportODPFiles([]);
+							}}
+							className="rounded-lg"
+						>
+							Cancel
+						</Button>
+						<Button
+							onClick={handleConfirmToolbarImport}
+							className="rounded-lg gap-2"
+						>
+							Confirm Import
 						</Button>
 					</DialogFooter>
 				</DialogContent>

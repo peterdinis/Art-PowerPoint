@@ -23,6 +23,7 @@ import { Slide, Presentation } from "@/types/presentation";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { importPPTX } from "@/lib/utils/pptxImport";
+import { importODP } from "@/lib/utils/odpImport";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import { Input } from "@/components/ui/input";
@@ -356,18 +357,24 @@ export default function Home() {
 		if (!file) return;
 
 		try {
-			toast.loading("Analyzing PowerPoint...", { id: "import-pptx" });
-			const parsedData = await importPPTX(file);
+			toast.loading("Analyzing presentation...", { id: "import-file" });
+			let parsedData;
 
-			toast.dismiss("import-pptx");
+			if (file.name.toLowerCase().endsWith(".odp") || file.type === "application/vnd.oasis.opendocument.presentation") {
+				parsedData = await importODP(file);
+			} else {
+				parsedData = await importPPTX(file);
+			}
+
+			toast.dismiss("import-file");
 			setShowImportDialog(false);
 
 			// Open the analysis dialog instead of importing instantly
 			setImportedData(parsedData);
 			setShowAnalysisDialog(true);
 		} catch (error) {
-			console.error("Failed to parse PPTX:", error);
-			toast.error("Failed to parse PowerPoint file.", { id: "import-pptx" });
+			console.error("Failed to parse presentation:", error);
+			toast.error("Failed to parse presentation file.", { id: "import-file" });
 		}
 	};
 
@@ -1015,9 +1022,21 @@ export default function Home() {
 							maxFiles={1}
 							acceptedFileTypes={[
 								"application/vnd.openxmlformats-officedocument.presentationml.presentation",
-								"application/vnd.ms-powerpoint"
+								"application/vnd.ms-powerpoint",
+								"application/vnd.oasis.opendocument.presentation"
 							]}
-							labelIdle='Drag & Drop your .pptx file or <span class="filepond--label-action">Browse</span>'
+							labelIdle='Drag & Drop your .pptx or .odp file or <span class="filepond--label-action">Browse</span>'
+							fileValidateTypeDetectType={(source, type) =>
+								new Promise((resolve, reject) => {
+									if (source.name.toLowerCase().endsWith(".pptx")) {
+										resolve("application/vnd.openxmlformats-officedocument.presentationml.presentation");
+									} else if (source.name.toLowerCase().endsWith(".odp")) {
+										resolve("application/vnd.oasis.opendocument.presentation");
+									} else {
+										resolve(type);
+									}
+								})
+							}
 							onprocessfile={(error, file) => {
 								if (!error) {
 									handleFilePondImport(file);

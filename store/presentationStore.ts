@@ -391,12 +391,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
+			const newCurrent = {
+				...state.currentPresentation,
+				slides: [...state.currentPresentation.slides, newSlide],
+				updatedAt: new Date(),
+			};
+
 			return {
-				currentPresentation: {
-					...state.currentPresentation,
-					slides: [...state.currentPresentation.slides, newSlide],
-					updatedAt: new Date(),
-				},
+				currentPresentation: newCurrent,
+				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
 				currentSlideIndex: state.currentPresentation.slides.length,
 				selectedElementId: null,
 			};
@@ -426,12 +429,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 			const newIndex = Math.min(state.currentSlideIndex, newSlides.length - 1);
 
+			const newCurrent = {
+				...state.currentPresentation,
+				slides: newSlides,
+				updatedAt: new Date(),
+			};
+
 			return {
-				currentPresentation: {
-					...state.currentPresentation,
-					slides: newSlides,
-					updatedAt: new Date(),
-				},
+				currentPresentation: newCurrent,
+				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
 				currentSlideIndex: Math.max(0, newIndex),
 				selectedElementId: null,
 			};
@@ -468,12 +474,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			const newSlides = [...state.currentPresentation.slides];
 			newSlides.splice(slideIndex + 1, 0, duplicatedSlide);
 
+			const newCurrent = {
+				...state.currentPresentation,
+				slides: newSlides,
+				updatedAt: new Date(),
+			};
+
 			return {
-				currentPresentation: {
-					...state.currentPresentation,
-					slides: newSlides,
-					updatedAt: new Date(),
-				},
+				currentPresentation: newCurrent,
+				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
 				currentSlideIndex: slideIndex + 1,
 			};
 		});
@@ -501,12 +510,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
+			const newCurrent = {
+				...state.currentPresentation,
+				slides: newSlides,
+				updatedAt: new Date(),
+			};
+
 			return {
-				currentPresentation: {
-					...state.currentPresentation,
-					slides: newSlides,
-					updatedAt: new Date(),
-				},
+				currentPresentation: newCurrent,
+				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
 				currentSlideIndex: toIndex,
 			};
 		});
@@ -539,12 +551,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 						: slide,
 			);
 
+			const newCurrent = {
+				...state.currentPresentation,
+				slides,
+				updatedAt: new Date(),
+			};
+
 			return {
-				currentPresentation: {
-					...state.currentPresentation,
-					slides,
-					updatedAt: new Date(),
-				},
+				currentPresentation: newCurrent,
+				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
 				selectedElementId: newElement.id,
 			};
 		});
@@ -568,12 +583,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				),
 			}));
 
+			const newCurrent = {
+				...state.currentPresentation,
+				slides,
+				updatedAt: new Date(),
+			};
+
 			return {
-				currentPresentation: {
-					...state.currentPresentation,
-					slides,
-					updatedAt: new Date(),
-				},
+				currentPresentation: newCurrent,
+				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
 			};
 		});
 
@@ -596,12 +614,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				),
 			}));
 
+			const newCurrent = {
+				...state.currentPresentation,
+				slides,
+				updatedAt: new Date(),
+			};
+
 			return {
-				currentPresentation: {
-					...state.currentPresentation,
-					slides,
-					updatedAt: new Date(),
-				},
+				currentPresentation: newCurrent,
+				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
 				selectedElementId: null,
 			};
 		});
@@ -650,12 +671,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				return { ...slide, elements };
 			});
 
+			const newCurrent = {
+				...state.currentPresentation,
+				slides,
+				updatedAt: new Date(),
+			};
+
 			return {
-				currentPresentation: {
-					...state.currentPresentation,
-					slides,
-					updatedAt: new Date(),
-				},
+				currentPresentation: newCurrent,
+				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
 			};
 		});
 		setTimeout(() => get().savePresentations(), 0);
@@ -692,12 +716,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				}),
 			}));
 
+			const newCurrent = {
+				...state.currentPresentation,
+				slides,
+				updatedAt: new Date(),
+			};
+
 			return {
-				currentPresentation: {
-					...state.currentPresentation,
-					slides,
-					updatedAt: new Date(),
-				},
+				currentPresentation: newCurrent,
+				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
 			};
 		});
 		setTimeout(() => get().savePresentations(), 0);
