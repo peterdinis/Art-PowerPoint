@@ -157,7 +157,6 @@ export default function Toolbar() {
 		compressPresentation,
 	} = usePresentationStore();
 	const { theme } = useTheme();
-	const toolbarFileInputRef = useRef<HTMLInputElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [imageDialogOpen, setImageDialogOpen] = useState(false);
 	const [videoDialogOpen, setVideoDialogOpen] = useState(false);
@@ -191,6 +190,9 @@ export default function Toolbar() {
 	const [documentFiles, setDocumentFiles] = useState<any[]>([]);
 	const [isFileProcessing, setIsFileProcessing] = useState(false);
 
+	const [showImportPPTXDialog, setShowImportPPTXDialog] = useState(false);
+	const [importPPTXFiles, setImportPPTXFiles] = useState<any[]>([]);
+
 	// Get default text color based on theme
 	const getDefaultTextColor = () => {
 		if (typeof window === "undefined") return "#212121";
@@ -210,9 +212,47 @@ export default function Toolbar() {
 				setCsvFiles([]);
 			}, 300);
 		}
-	}, [imageDialogOpen, chartDialogOpen]);
+		if (!showImportPPTXDialog) {
+			setTimeout(() => {
+				setImportPPTXFiles([]);
+			}, 300);
+		}
+	}, [imageDialogOpen, chartDialogOpen, showImportPPTXDialog]);
 
 	if (!currentPresentation) return null;
+
+	const handlePPTXImport = async (fileItem: any) => {
+		const file = fileItem.file;
+		if (!file || !currentPresentation) return;
+		try {
+			toast.loading("Importing slides...", {
+				id: "toolbar-import-pptx",
+			});
+			const importedData = await importPPTX(file);
+			const newSlides = (importedData.slides || []).map(
+				(slide: Slide) => ({
+					...slide,
+					id: uuidv4(),
+				}),
+			);
+
+			updatePresentation(currentPresentation.id, {
+				slides: [...currentPresentation.slides, ...newSlides],
+			});
+
+			toast.success(
+				`Imported ${newSlides.length} slides successfully!`,
+				{ id: "toolbar-import-pptx" },
+			);
+			setShowImportPPTXDialog(false);
+			setImportPPTXFiles([]);
+		} catch (error) {
+			console.error("Failed to import slides:", error);
+			toast.error("Failed to import slides from PowerPoint.", {
+				id: "toolbar-import-pptx",
+			});
+		}
+	};
 
 	const currentSlide = currentPresentation.slides[currentSlideIndex];
 	const selectedElement = currentSlide?.elements.find(
@@ -1279,11 +1319,10 @@ export default function Toolbar() {
 											{CHART_TEMPLATES.map((template) => (
 												<div
 													key={template.name}
-													className={`border rounded-lg p-4 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${
-														selectedChartTemplate.name === template.name
-															? "border-primary ring-2 ring-primary/20 bg-primary/5"
-															: "border-border"
-													}`}
+													className={`border rounded-lg p-4 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${selectedChartTemplate.name === template.name
+														? "border-primary ring-2 ring-primary/20 bg-primary/5"
+														: "border-border"
+														}`}
 													onClick={() => handleChartTemplateSelect(template)}
 												>
 													<div className="flex items-center gap-3 mb-2">
@@ -1523,47 +1562,11 @@ Q4,61000,40000,21000`}
 					</motion.div>
 
 					<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-						<input
-							type="file"
-							accept=".pptx"
-							className="hidden"
-							ref={toolbarFileInputRef}
-							onChange={async (e) => {
-								const file = e.target.files?.[0];
-								if (!file || !currentPresentation) return;
-								try {
-									toast.loading("Importing slides...", {
-										id: "toolbar-import-pptx",
-									});
-									const importedData = await importPPTX(file);
-									const newSlides = (importedData.slides || []).map(
-										(slide: Slide) => ({
-											...slide,
-											id: uuidv4(),
-										}),
-									);
-
-									updatePresentation(currentPresentation.id, {
-										slides: [...currentPresentation.slides, ...newSlides],
-									});
-
-									toast.success(
-										`Imported ${newSlides.length} slides successfully!`,
-										{ id: "toolbar-import-pptx" },
-									);
-								} catch (error) {
-									console.error("Failed to import slides:", error);
-									toast.error("Failed to import slides from PowerPoint.", {
-										id: "toolbar-import-pptx",
-									});
-								}
-							}}
-						/>
 						<Button
 							variant="outline"
 							size="sm"
 							className="gap-2 border-primary/20 hover:border-primary/50 text-primary"
-							onClick={() => toolbarFileInputRef.current?.click()}
+							onClick={() => setShowImportPPTXDialog(true)}
 							title="Import slides from PowerPoint (.pptx)"
 						>
 							<FileUp className="w-4 h-4" />
@@ -1904,6 +1907,57 @@ Q4,61000,40000,21000`}
 					)}
 				</div>
 			</div>
+			{/* Import PPTX Dialog */}
+			<Dialog open={showImportPPTXDialog} onOpenChange={(open) => {
+				setShowImportPPTXDialog(open);
+				if (!open) setImportPPTXFiles([]);
+			}}>
+				<DialogContent className="sm:max-w-md rounded-lg">
+					<DialogHeader>
+						<DialogTitle className="text-xl">Import PowerPoint Slides</DialogTitle>
+						<DialogDescription>
+							Upload a .pptx file to append its slides to the current presentation.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="py-4">
+						<FilePond
+							files={importPPTXFiles}
+							onupdatefiles={setImportPPTXFiles}
+							allowMultiple={false}
+							maxFiles={1}
+							acceptedFileTypes={[
+								"application/vnd.openxmlformats-officedocument.presentationml.presentation",
+								"application/vnd.ms-powerpoint"
+							]}
+							labelIdle='Drag & Drop your .pptx file or <span class="filepond--label-action">Browse</span>'
+							onprocessfile={(error, file) => {
+								if (!error) {
+									handlePPTXImport(file);
+								}
+							}}
+							server={{
+								process: (_fieldName, file, _metadata, load) => {
+									setTimeout(() => {
+										load(file.name);
+									}, 1000);
+								},
+							}}
+						/>
+					</div>
+					<DialogFooter className="sm:justify-end gap-2">
+						<Button
+							variant="outline"
+							onClick={() => {
+								setShowImportPPTXDialog(false);
+								setImportPPTXFiles([]);
+							}}
+							className="rounded-lg"
+						>
+							Cancel
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

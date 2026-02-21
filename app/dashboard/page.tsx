@@ -71,6 +71,13 @@ import {
 } from "@dnd-kit/sortable";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { FilePond, registerPlugin } from "react-filepond";
+import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
+import FilePondPluginFileValidateSize from "filepond-plugin-file-validate-size";
+import "filepond/dist/filepond.min.css";
+
+// Register plugins
+registerPlugin(FilePondPluginFileValidateType, FilePondPluginFileValidateSize);
 
 type ViewMode = "grid" | "list";
 type SortOption = "recent" | "oldest" | "name" | "slides" | "custom";
@@ -331,15 +338,17 @@ export default function Home() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [localOrder, setLocalOrder] = useState<string[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
-	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	const [showImportDialog, setShowImportDialog] = useState(false);
+	const [importFiles, setImportFiles] = useState<any[]>([]);
 
 	// Dialog state
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [newTitle, setNewTitle] = useState("");
 	const [newDescription, setNewDescription] = useState("");
 
-	const handleImportPPTX = async (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
+	const handleFilePondImport = async (fileItem: any) => {
+		const file = fileItem.file;
 		if (!file) return;
 
 		try {
@@ -363,7 +372,8 @@ export default function Home() {
 			toast.success("Presentation imported successfully!", {
 				id: "import-pptx",
 			});
-			router.push(`/editor?id=${newPresentationId}`);
+			setShowImportDialog(false);
+			setImportFiles([]);
 		} catch (error) {
 			console.error("Failed to import PPTX:", error);
 			toast.error("Failed to import PowerPoint file.", { id: "import-pptx" });
@@ -621,15 +631,8 @@ export default function Home() {
 									</p>
 								</div>
 								<div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-									<input
-										type="file"
-										accept=".pptx"
-										className="hidden"
-										ref={fileInputRef}
-										onChange={handleImportPPTX}
-									/>
 									<Button
-										onClick={() => fileInputRef.current?.click()}
+										onClick={() => setShowImportDialog(true)}
 										variant="outline"
 										size="lg"
 										className="rounded-lg shadow-sm hover:shadow-md transition-all border-primary/20 hover:border-primary/50 text-primary"
@@ -966,6 +969,58 @@ export default function Home() {
 							className="rounded-lg"
 						>
 							Create Presentation
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			{/* Import PPTX Dialog */}
+			<Dialog open={showImportDialog} onOpenChange={(open) => {
+				setShowImportDialog(open);
+				if (!open) setImportFiles([]);
+			}}>
+				<DialogContent className="sm:max-w-md rounded-lg">
+					<DialogHeader>
+						<DialogTitle className="text-xl">Import PowerPoint</DialogTitle>
+						<DialogDescription>
+							Upload a .pptx file to convert it into a Presentation.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="py-4">
+						<FilePond
+							files={importFiles}
+							onupdatefiles={setImportFiles}
+							allowMultiple={false}
+							maxFiles={1}
+							acceptedFileTypes={[
+								"application/vnd.openxmlformats-officedocument.presentationml.presentation",
+								"application/vnd.ms-powerpoint"
+							]}
+							labelIdle='Drag & Drop your .pptx file or <span class="filepond--label-action">Browse</span>'
+							onprocessfile={(error, file) => {
+								if (!error) {
+									handleFilePondImport(file);
+								}
+							}}
+							server={{
+								process: (_fieldName, file, _metadata, load) => {
+									setTimeout(() => {
+										load(file.name);
+									}, 1000);
+								},
+							}}
+						/>
+					</div>
+					<DialogFooter className="sm:justify-end gap-2">
+						<Button
+							variant="outline"
+							onClick={() => {
+								setShowImportDialog(false);
+								setImportFiles([]);
+							}}
+							className="rounded-lg"
+						>
+							Cancel
 						</Button>
 					</DialogFooter>
 				</DialogContent>
