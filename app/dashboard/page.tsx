@@ -23,6 +23,7 @@ import { Slide, Presentation } from "@/types/presentation";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { importPPTX } from "@/lib/utils/pptxImport";
+import { importODP } from "@/lib/utils/odpImport";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import { Input } from "@/components/ui/input";
@@ -71,6 +72,13 @@ import {
 } from "@dnd-kit/sortable";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { FilePond, registerPlugin } from "react-filepond";
+import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
+import FilePondPluginFileValidateSize from "filepond-plugin-file-validate-size";
+import "filepond/dist/filepond.min.css";
+
+// Register plugins
+registerPlugin(FilePondPluginFileValidateType, FilePondPluginFileValidateSize);
 
 type ViewMode = "grid" | "list";
 type SortOption = "recent" | "oldest" | "name" | "slides" | "custom";
@@ -331,27 +339,55 @@ export default function Home() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [localOrder, setLocalOrder] = useState<string[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
-	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	const [showImportDialog, setShowImportDialog] = useState(false);
+	const [importFiles, setImportFiles] = useState<any[]>([]);
+
+	// Analysis state
+	const [showAnalysisDialog, setShowAnalysisDialog] = useState(false);
+	const [importedData, setImportedData] = useState<any>(null);
 
 	// Dialog state
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [newTitle, setNewTitle] = useState("");
 	const [newDescription, setNewDescription] = useState("");
 
-	const handleImportPPTX = async (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
+	const handleFilePondImport = async (fileItem: any) => {
+		const file = fileItem.file;
 		if (!file) return;
 
 		try {
-			toast.loading("Importing PowerPoint...", { id: "import-pptx" });
-			const importedData = await importPPTX(file);
+			toast.loading("Analyzing presentation...", { id: "import-file" });
+			let parsedData;
+
+			if (file.name.toLowerCase().endsWith(".odp") || file.type === "application/vnd.oasis.opendocument.presentation") {
+				parsedData = await importODP(file);
+			} else {
+				parsedData = await importPPTX(file);
+			}
+
+			toast.dismiss("import-file");
+			setShowImportDialog(false);
+
+			// Open the analysis dialog instead of importing instantly
+			setImportedData(parsedData);
+			setShowAnalysisDialog(true);
+		} catch (error) {
+			console.error("Failed to parse presentation:", error);
+			toast.error("Failed to parse presentation file.", { id: "import-file" });
+		}
+	};
+
+	const handleConfirmImport = () => {
+		if (!importedData) return;
+		try {
+			toast.loading("Importing Presentation...", { id: "confirm-import-pptx" });
 
 			const newPresentationId = createPresentation(
 				importedData.title || "Imported Presentation",
 				"Imported from PowerPoint",
 			);
 
-			// We need to update the newly created presentation with the imported slides
 			const store = usePresentationStore.getState();
 			store.updatePresentation(newPresentationId, {
 				slides: (importedData.slides || []).map((slide: Slide) => ({
@@ -361,12 +397,14 @@ export default function Home() {
 			});
 
 			toast.success("Presentation imported successfully!", {
-				id: "import-pptx",
+				id: "confirm-import-pptx",
 			});
-			router.push(`/editor?id=${newPresentationId}`);
+			setShowAnalysisDialog(false);
+			setImportFiles([]); // clear original form
+			setImportedData(null);
 		} catch (error) {
 			console.error("Failed to import PPTX:", error);
-			toast.error("Failed to import PowerPoint file.", { id: "import-pptx" });
+			toast.error("Failed to create presentation.", { id: "confirm-import-pptx" });
 		}
 	};
 
@@ -621,15 +659,8 @@ export default function Home() {
 									</p>
 								</div>
 								<div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-									<input
-										type="file"
-										accept=".pptx"
-										className="hidden"
-										ref={fileInputRef}
-										onChange={handleImportPPTX}
-									/>
 									<Button
-										onClick={() => fileInputRef.current?.click()}
+										onClick={() => setShowImportDialog(true)}
 										variant="outline"
 										size="lg"
 										className="rounded-lg shadow-sm hover:shadow-md transition-all border-primary/20 hover:border-primary/50 text-primary"
@@ -966,6 +997,134 @@ export default function Home() {
 							className="rounded-lg"
 						>
 							Create Presentation
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			{/* Import PPTX Dialog */}
+			<Dialog open={showImportDialog} onOpenChange={(open) => {
+				setShowImportDialog(open);
+				if (!open) setImportFiles([]);
+			}}>
+				<DialogContent className="sm:max-w-md rounded-lg">
+					<DialogHeader>
+						<DialogTitle className="text-xl">Import PowerPoint</DialogTitle>
+						<DialogDescription>
+							Upload a .pptx file to convert it into a Presentation.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="py-4">
+						<FilePond
+							files={importFiles}
+							onupdatefiles={setImportFiles}
+							allowMultiple={false}
+							maxFiles={1}
+							acceptedFileTypes={[
+								"application/vnd.openxmlformats-officedocument.presentationml.presentation",
+								"application/vnd.ms-powerpoint",
+								"application/vnd.oasis.opendocument.presentation"
+							]}
+							labelIdle='Drag & Drop your .pptx or .odp file or <span class="filepond--label-action">Browse</span>'
+							fileValidateTypeDetectType={(source, type) =>
+								new Promise((resolve, reject) => {
+									if (source.name.toLowerCase().endsWith(".pptx")) {
+										resolve("application/vnd.openxmlformats-officedocument.presentationml.presentation");
+									} else if (source.name.toLowerCase().endsWith(".odp")) {
+										resolve("application/vnd.oasis.opendocument.presentation");
+									} else {
+										resolve(type);
+									}
+								})
+							}
+							onprocessfile={(error, file) => {
+								if (!error) {
+									handleFilePondImport(file);
+								}
+							}}
+							server={{
+								process: (_fieldName, file, _metadata, load) => {
+									setTimeout(() => {
+										load(file.name);
+									}, 1000);
+								},
+							}}
+						/>
+					</div>
+					<DialogFooter className="sm:justify-end gap-2">
+						<Button
+							variant="outline"
+							onClick={() => {
+								setShowImportDialog(false);
+								setImportFiles([]);
+							}}
+							className="rounded-lg"
+						>
+							Cancel
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			{/* Pre-Import Analysis Dialog */}
+			<Dialog open={showAnalysisDialog} onOpenChange={(open) => {
+				setShowAnalysisDialog(open);
+				if (!open) {
+					setImportedData(null);
+					setImportFiles([]); // reset pond
+				}
+			}}>
+				<DialogContent className="sm:max-w-md rounded-lg">
+					<DialogHeader>
+						<DialogTitle className="text-xl">Analysis Complete</DialogTitle>
+						<DialogDescription>
+							Review the extracted information before importing.
+						</DialogDescription>
+					</DialogHeader>
+					{importedData && (
+						<div className="py-4 space-y-4">
+							<div className="bg-muted p-4 rounded-lg space-y-2">
+								<div className="flex justify-between items-center">
+									<span className="text-sm text-muted-foreground">Title</span>
+									<span className="font-medium truncate max-w-[200px]" title={importedData.title || "Untitled"}>
+										{importedData.title || "Untitled"}
+									</span>
+								</div>
+								<div className="flex justify-between items-center">
+									<span className="text-sm text-muted-foreground">Total Slides</span>
+									<span className="font-medium">
+										{importedData.slides?.length || 0}
+									</span>
+								</div>
+								<div className="flex justify-between items-center">
+									<span className="text-sm text-muted-foreground">Total Elements</span>
+									<span className="font-medium">
+										{importedData.slides?.reduce((count: number, slide: any) => count + (slide.elements?.length || 0), 0) || 0}
+									</span>
+								</div>
+							</div>
+							<p className="text-sm text-muted-foreground">
+								Click Confirm below to convert this file into a fully editable presentation.
+							</p>
+						</div>
+					)}
+					<DialogFooter className="sm:justify-end gap-2">
+						<Button
+							variant="outline"
+							onClick={() => {
+								setShowAnalysisDialog(false);
+								setImportedData(null);
+								setImportFiles([]);
+							}}
+							className="rounded-lg"
+						>
+							Cancel
+						</Button>
+						<Button
+							onClick={handleConfirmImport}
+							className="rounded-lg"
+						>
+							Confirm & Import
 						</Button>
 					</DialogFooter>
 				</DialogContent>

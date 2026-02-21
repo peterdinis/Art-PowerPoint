@@ -2,6 +2,14 @@ import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import type { Presentation, Slide, SlideElement } from "@/types/presentation";
 import { getTemplateById } from "@/lib/templates/presentationTemplates";
+import { toast } from "sonner";
+import localforage from "localforage";
+
+// Initialize localforage
+localforage.config({
+	name: 'PresentationBuilder',
+	storeName: 'presentations_store'
+});
 
 interface PresentationStore {
 	presentations: Presentation[];
@@ -10,6 +18,7 @@ interface PresentationStore {
 	selectedElementId: string | null;
 	presentationOrder: string[];
 	isLoading: boolean;
+	hasLoadedFromStorage: boolean;
 	zoomLevel: number; // Added
 	showGrid: boolean; // Added
 
@@ -74,6 +83,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	selectedElementId: null,
 	presentationOrder: [],
 	isLoading: false,
+	hasLoadedFromStorage: false,
 	zoomLevel: 1,
 	showGrid: false,
 
@@ -209,12 +219,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		}
 	},
 
-	loadPresentations: () => {
+	loadPresentations: async () => {
 		if (typeof window === "undefined") return;
+
+		const state = get();
+		if (state.hasLoadedFromStorage) return;
 
 		try {
 			// Načítanie prezentácií
-			const stored = localStorage.getItem("presentations");
+			const stored = await localforage.getItem<string>("presentations");
 			let presentations: Presentation[] = [];
 
 			if (stored) {
@@ -226,7 +239,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			}
 
 			// Načítanie poradia
-			const orderStored = localStorage.getItem("presentationOrder");
+			const orderStored = await localforage.getItem<string>("presentationOrder");
 			let presentationOrder: string[] = [];
 
 			if (orderStored) {
@@ -261,28 +274,33 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				presentations,
 				presentationOrder,
 				isLoading: false,
+				hasLoadedFromStorage: true,
 			});
 		} catch (error) {
 			console.error("Error loading presentations:", error);
-			set({ isLoading: false });
+			set({ isLoading: false, hasLoadedFromStorage: true });
 		}
 	},
 
-	savePresentations: () => {
+	savePresentations: async () => {
 		if (typeof window === "undefined") return;
 
 		try {
 			const state = get();
-			localStorage.setItem(
+			await localforage.setItem(
 				"presentations",
 				JSON.stringify(state.presentations),
 			);
-			localStorage.setItem(
+			await localforage.setItem(
 				"presentationOrder",
 				JSON.stringify(state.presentationOrder),
 			);
-		} catch (error) {
-			console.error("Error saving presentations:", error);
+		} catch (error: any) {
+			console.error("Error saving presentations to IndexedDB:", error);
+			toast.error(
+				"Failed to save your presentation locally. If the issue persists, export it to avoid losing changes.",
+				{ id: "save-error", duration: 8000 }
+			);
 		}
 	},
 
@@ -373,12 +391,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
+			const newCurrent = {
+				...state.currentPresentation,
+				slides: [...state.currentPresentation.slides, newSlide],
+				updatedAt: new Date(),
+			};
+
 			return {
-				currentPresentation: {
-					...state.currentPresentation,
-					slides: [...state.currentPresentation.slides, newSlide],
-					updatedAt: new Date(),
-				},
+				currentPresentation: newCurrent,
+				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
 				currentSlideIndex: state.currentPresentation.slides.length,
 				selectedElementId: null,
 			};
@@ -408,12 +429,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 			const newIndex = Math.min(state.currentSlideIndex, newSlides.length - 1);
 
+			const newCurrent = {
+				...state.currentPresentation,
+				slides: newSlides,
+				updatedAt: new Date(),
+			};
+
 			return {
-				currentPresentation: {
-					...state.currentPresentation,
-					slides: newSlides,
-					updatedAt: new Date(),
-				},
+				currentPresentation: newCurrent,
+				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
 				currentSlideIndex: Math.max(0, newIndex),
 				selectedElementId: null,
 			};
@@ -450,12 +474,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			const newSlides = [...state.currentPresentation.slides];
 			newSlides.splice(slideIndex + 1, 0, duplicatedSlide);
 
+			const newCurrent = {
+				...state.currentPresentation,
+				slides: newSlides,
+				updatedAt: new Date(),
+			};
+
 			return {
-				currentPresentation: {
-					...state.currentPresentation,
-					slides: newSlides,
-					updatedAt: new Date(),
-				},
+				currentPresentation: newCurrent,
+				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
 				currentSlideIndex: slideIndex + 1,
 			};
 		});
@@ -483,12 +510,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
+			const newCurrent = {
+				...state.currentPresentation,
+				slides: newSlides,
+				updatedAt: new Date(),
+			};
+
 			return {
-				currentPresentation: {
-					...state.currentPresentation,
-					slides: newSlides,
-					updatedAt: new Date(),
-				},
+				currentPresentation: newCurrent,
+				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
 				currentSlideIndex: toIndex,
 			};
 		});
@@ -521,12 +551,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 						: slide,
 			);
 
+			const newCurrent = {
+				...state.currentPresentation,
+				slides,
+				updatedAt: new Date(),
+			};
+
 			return {
-				currentPresentation: {
-					...state.currentPresentation,
-					slides,
-					updatedAt: new Date(),
-				},
+				currentPresentation: newCurrent,
+				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
 				selectedElementId: newElement.id,
 			};
 		});
@@ -550,12 +583,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				),
 			}));
 
+			const newCurrent = {
+				...state.currentPresentation,
+				slides,
+				updatedAt: new Date(),
+			};
+
 			return {
-				currentPresentation: {
-					...state.currentPresentation,
-					slides,
-					updatedAt: new Date(),
-				},
+				currentPresentation: newCurrent,
+				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
 			};
 		});
 
@@ -578,12 +614,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				),
 			}));
 
+			const newCurrent = {
+				...state.currentPresentation,
+				slides,
+				updatedAt: new Date(),
+			};
+
 			return {
-				currentPresentation: {
-					...state.currentPresentation,
-					slides,
-					updatedAt: new Date(),
-				},
+				currentPresentation: newCurrent,
+				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
 				selectedElementId: null,
 			};
 		});
@@ -632,12 +671,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				return { ...slide, elements };
 			});
 
+			const newCurrent = {
+				...state.currentPresentation,
+				slides,
+				updatedAt: new Date(),
+			};
+
 			return {
-				currentPresentation: {
-					...state.currentPresentation,
-					slides,
-					updatedAt: new Date(),
-				},
+				currentPresentation: newCurrent,
+				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
 			};
 		});
 		setTimeout(() => get().savePresentations(), 0);
@@ -674,12 +716,15 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				}),
 			}));
 
+			const newCurrent = {
+				...state.currentPresentation,
+				slides,
+				updatedAt: new Date(),
+			};
+
 			return {
-				currentPresentation: {
-					...state.currentPresentation,
-					slides,
-					updatedAt: new Date(),
-				},
+				currentPresentation: newCurrent,
+				presentations: state.presentations.map(p => p.id === newCurrent.id ? newCurrent : p),
 			};
 		});
 		setTimeout(() => get().savePresentations(), 0);
