@@ -342,6 +342,10 @@ export default function Home() {
 	const [showImportDialog, setShowImportDialog] = useState(false);
 	const [importFiles, setImportFiles] = useState<any[]>([]);
 
+	// Analysis state
+	const [showAnalysisDialog, setShowAnalysisDialog] = useState(false);
+	const [importedData, setImportedData] = useState<any>(null);
+
 	// Dialog state
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [newTitle, setNewTitle] = useState("");
@@ -352,15 +356,31 @@ export default function Home() {
 		if (!file) return;
 
 		try {
-			toast.loading("Importing PowerPoint...", { id: "import-pptx" });
-			const importedData = await importPPTX(file);
+			toast.loading("Analyzing PowerPoint...", { id: "import-pptx" });
+			const parsedData = await importPPTX(file);
+
+			toast.dismiss("import-pptx");
+			setShowImportDialog(false);
+
+			// Open the analysis dialog instead of importing instantly
+			setImportedData(parsedData);
+			setShowAnalysisDialog(true);
+		} catch (error) {
+			console.error("Failed to parse PPTX:", error);
+			toast.error("Failed to parse PowerPoint file.", { id: "import-pptx" });
+		}
+	};
+
+	const handleConfirmImport = () => {
+		if (!importedData) return;
+		try {
+			toast.loading("Importing Presentation...", { id: "confirm-import-pptx" });
 
 			const newPresentationId = createPresentation(
 				importedData.title || "Imported Presentation",
 				"Imported from PowerPoint",
 			);
 
-			// We need to update the newly created presentation with the imported slides
 			const store = usePresentationStore.getState();
 			store.updatePresentation(newPresentationId, {
 				slides: (importedData.slides || []).map((slide: Slide) => ({
@@ -370,13 +390,14 @@ export default function Home() {
 			});
 
 			toast.success("Presentation imported successfully!", {
-				id: "import-pptx",
+				id: "confirm-import-pptx",
 			});
-			setShowImportDialog(false);
-			setImportFiles([]);
+			setShowAnalysisDialog(false);
+			setImportFiles([]); // clear original form
+			setImportedData(null);
 		} catch (error) {
 			console.error("Failed to import PPTX:", error);
-			toast.error("Failed to import PowerPoint file.", { id: "import-pptx" });
+			toast.error("Failed to create presentation.", { id: "confirm-import-pptx" });
 		}
 	};
 
@@ -1021,6 +1042,70 @@ export default function Home() {
 							className="rounded-lg"
 						>
 							Cancel
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			{/* Pre-Import Analysis Dialog */}
+			<Dialog open={showAnalysisDialog} onOpenChange={(open) => {
+				setShowAnalysisDialog(open);
+				if (!open) {
+					setImportedData(null);
+					setImportFiles([]); // reset pond
+				}
+			}}>
+				<DialogContent className="sm:max-w-md rounded-lg">
+					<DialogHeader>
+						<DialogTitle className="text-xl">Analysis Complete</DialogTitle>
+						<DialogDescription>
+							Review the extracted information before importing.
+						</DialogDescription>
+					</DialogHeader>
+					{importedData && (
+						<div className="py-4 space-y-4">
+							<div className="bg-muted p-4 rounded-lg space-y-2">
+								<div className="flex justify-between items-center">
+									<span className="text-sm text-muted-foreground">Title</span>
+									<span className="font-medium truncate max-w-[200px]" title={importedData.title || "Untitled"}>
+										{importedData.title || "Untitled"}
+									</span>
+								</div>
+								<div className="flex justify-between items-center">
+									<span className="text-sm text-muted-foreground">Total Slides</span>
+									<span className="font-medium">
+										{importedData.slides?.length || 0}
+									</span>
+								</div>
+								<div className="flex justify-between items-center">
+									<span className="text-sm text-muted-foreground">Total Elements</span>
+									<span className="font-medium">
+										{importedData.slides?.reduce((count: number, slide: any) => count + (slide.elements?.length || 0), 0) || 0}
+									</span>
+								</div>
+							</div>
+							<p className="text-sm text-muted-foreground">
+								Click Confirm below to convert this file into a fully editable presentation.
+							</p>
+						</div>
+					)}
+					<DialogFooter className="sm:justify-end gap-2">
+						<Button
+							variant="outline"
+							onClick={() => {
+								setShowAnalysisDialog(false);
+								setImportedData(null);
+								setImportFiles([]);
+							}}
+							className="rounded-lg"
+						>
+							Cancel
+						</Button>
+						<Button
+							onClick={handleConfirmImport}
+							className="rounded-lg"
+						>
+							Confirm & Import
 						</Button>
 					</DialogFooter>
 				</DialogContent>

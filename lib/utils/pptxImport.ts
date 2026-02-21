@@ -57,7 +57,61 @@ async function parseSlideXml(
 		if (!emu) return 0;
 		return (parseInt(emu) / 914400) * 96; // 96 DPI
 	};
+	// Parse Background
+	let background: { color?: string; image?: string } = { color: "#ffffff" };
+	const bg = xmlDoc.getElementsByTagName("p:bg")[0];
+	if (bg) {
+		const bgPr = bg.getElementsByTagName("p:bgPr")[0];
+		if (bgPr) {
+			// Solid fill (color)
+			const solidFill = bgPr.getElementsByTagName("a:solidFill")[0];
+			if (solidFill) {
+				const srgbClr = solidFill.getElementsByTagName("a:srgbClr")[0];
+				if (srgbClr) {
+					const val = srgbClr.getAttribute("val");
+					if (val) background.color = `#${val}`;
+				} else {
+					// Handle scheme colors (e.g. bg1, tx1, accent1..) as fallback
+					const schemeClr = solidFill.getElementsByTagName("a:schemeClr")[0];
+					if (schemeClr) {
+						const val = schemeClr.getAttribute("val");
+						if (val === "bg1" || val === "lt1") background.color = "#ffffff";
+						if (val === "bg2" || val === "lt2") background.color = "#f3f4f6";
+						if (val === "dk1" || val === "tx1") background.color = "#000000";
+						if (val === "dk2" || val === "tx2") background.color = "#1f2937";
+						// Could add more theme mappings if needed
+					}
+				}
+			}
 
+			// Picture fill (image)
+			const blipFill = bgPr.getElementsByTagName("a:blipFill")[0];
+			if (blipFill) {
+				const blip = blipFill.getElementsByTagName("a:blip")[0];
+				const rId = blip?.getAttribute("r:embed") || blip?.getAttribute("r:link");
+				if (rId) {
+					const rels = relsDoc.getElementsByTagName("Relationship");
+					let target = "";
+					for (let j = 0; j < rels.length; j++) {
+						if (rels[j].getAttribute("Id") === rId) {
+							target = rels[j].getAttribute("Target") || "";
+							break;
+						}
+					}
+					if (target) {
+						const cleanTarget = target.replace("../", "ppt/");
+						const imageFile = zip.file(cleanTarget);
+						if (imageFile) {
+							const base64 = await imageFile.async("base64");
+							const mimeType = getMimeType(cleanTarget);
+							background.image = `data:${mimeType};base64,${base64}`;
+							background.color = undefined; // Override white default
+						}
+					}
+				}
+			}
+		}
+	}
 	// Parse Text Shapes
 	const shapes = xmlDoc.getElementsByTagName("p:sp");
 	for (let i = 0; i < shapes.length; i++) {
@@ -153,7 +207,7 @@ async function parseSlideXml(
 	return {
 		id: uuidv4(),
 		elements,
-		background: { color: "#ffffff" },
+		background,
 	};
 }
 
