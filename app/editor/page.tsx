@@ -8,7 +8,6 @@ import { usePresentationStore } from "@/store/presentationStore";
 import EditorCanvas from "@/components/EditorCanvas";
 import SlidePanel from "@/components/SlidePanel";
 import Toolbar from "@/components/Toolbar";
-import PropertiesPanel from "@/components/PropertiesPanel";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import EditorMenu from "@/components/EditorMenu";
@@ -36,6 +35,7 @@ import { FilePond, registerPlugin } from "react-filepond";
 import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
 import FilePondPluginFileValidateSize from "filepond-plugin-file-validate-size";
 import "filepond/dist/filepond.min.css";
+import PropertiesPanel from "@/components/PropertiesPanel";
 
 // Register plugins
 registerPlugin(FilePondPluginFileValidateType, FilePondPluginFileValidateSize);

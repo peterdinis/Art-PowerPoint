@@ -1,452 +1,964 @@
 "use client";
 
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
-import Underline from "@tiptap/extension-underline";
-import TextAlign from "@tiptap/extension-text-align";
-import Color from "@tiptap/extension-color";
-import Highlight from "@tiptap/extension-highlight";
-import Typography from "@tiptap/extension-typography";
-import Link from "@tiptap/extension-link";
+import { usePresentationStore } from "@/store/presentationStore";
+import * as Icons from "lucide-react";
 import {
+	Trash2,
+	Type,
+	Image as ImageIcon,
+	Square,
+	Layers,
+	Video,
 	Bold,
 	Italic,
-	Underline as UnderlineIcon,
-	Strikethrough,
-	List,
-	ListOrdered,
+	Underline,
 	AlignLeft,
 	AlignCenter,
 	AlignRight,
-	Link as LinkIcon,
-	Unlink,
-	Highlighter,
-	Palette,
-	Type,
-	Heading1,
-	Heading2,
-	Heading3,
-	Quote,
+	Sparkles,
+	Table2,
 	Code,
+	Palette,
+	Plus,
 	Minus,
-	Undo,
-	Redo,
+	Settings2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import type {
+	SlideElement,
+	AnimationType,
+	SlideTransitionType,
+	FontWeight,
+	FontStyle,
+	TextDecoration,
+	TextAlign,
+	ObjectFit,
+	BorderStyle,
+	ShapeType,
+} from "@/types/presentation";
+import SlideBackgroundEditor from "./SlideBackgroundEditor";
+import { useTheme } from "@/components/ThemeProvider";
+import { motion } from "framer-motion";
+import { SlideNotesEditor } from "./SlideNotesEditor";
 
-interface SlideNotesEditorProps {
-	content: string;
-	onChange: (content: string) => void;
-	placeholder?: string;
-}
+type FontFamilyType =
+	| "Arial"
+	| "Helvetica"
+	| "Times New Roman"
+	| "Courier New"
+	| "Verdana"
+	| "Georgia"
+	| "Palatino"
+	| "Garamond"
+	| "Roboto"
+	| "Open Sans"
+	| "Montserrat"
+	| "Lato";
 
-export function SlideNotesEditor({
-	content,
-	onChange,
-	placeholder = "Add notes for this slide...",
-}: SlideNotesEditorProps) {
-	const [linkUrl, setLinkUrl] = useState("");
-	const [linkOpen, setLinkOpen] = useState(false);
+export default function PropertiesPanel() {
+	const {
+		currentPresentation,
+		currentSlideIndex,
+		selectedElementId,
+		updateElement,
+		deleteElement,
+		selectElement,
+		updatePresentation,
+	} = usePresentationStore();
+	const { theme } = useTheme();
 
-	const editor = useEditor({
-		extensions: [
-			StarterKit.configure({
-				heading: {
-					levels: [1, 2, 3],
-				},
-			}),
-			Underline,
-			TextAlign.configure({
-				types: ["heading", "paragraph"],
-			}),
-			Color,
-			Highlight.configure({
-				multicolor: true,
-			}),
-			Typography,
-			Link.configure({
-				openOnClick: false,
-				HTMLAttributes: {
-					class: "text-primary underline underline-offset-2",
-				},
-			}),
-			Placeholder.configure({
-				placeholder,
-			}),
-		],
-		content: content || "",
-		onUpdate: ({ editor }) => {
-			onChange(editor.getHTML());
-		},
-	});
+	const getDefaultTextColor = () => {
+		if (typeof window === "undefined") return "#212121";
+		const isDark = document.documentElement.classList.contains("dark");
+		return isDark ? "#e5e5e5" : "#212121";
+	};
 
-	if (!editor) {
-		return null;
-	}
+	if (!currentPresentation) return null;
 
-	const addLink = () => {
-		if (linkUrl) {
-			editor
-				.chain()
-				.focus()
-				.extendMarkRange("link")
-				.setLink({ href: linkUrl })
-				.run();
-			setLinkOpen(false);
-			setLinkUrl("");
+	const currentSlide = currentPresentation.slides[currentSlideIndex];
+	if (!currentSlide) return null;
+
+	const selectedElement = selectedElementId
+		? currentSlide.elements.find((el) => el.id === selectedElementId)
+		: undefined;
+
+	const handleUpdate = (updates: Partial<SlideElement>) => {
+		if (selectedElement) {
+			const updateData: Partial<SlideElement> = {};
+
+			Object.keys(updates).forEach((key) => {
+				if (key !== "style" && key !== "animation") {
+					(updateData as any)[key] = (updates as any)[key];
+				}
+			});
+
+			if (updates.style) {
+				updateData.style = {
+					...(selectedElement.style || {}),
+					...updates.style,
+				};
+			}
+
+			if (updates.animation) {
+				updateData.animation = {
+					...(selectedElement.animation || {
+						type: "none",
+						duration: 500,
+					}),
+					...updates.animation,
+				};
+			}
+
+			updateElement(selectedElement.id, updateData);
 		}
 	};
 
-	const removeLink = () => {
-		editor.chain().focus().unsetLink().run();
-		setLinkOpen(false);
+	const handleSlideBackgroundUpdate = (updates: {
+		color?: string;
+		image?: string;
+		gradient?: string;
+	}) => {
+		const updatedSlides = currentPresentation.slides.map((slide, index) =>
+			index === currentSlideIndex
+				? {
+						...slide,
+						background: {
+							...(slide.background || { type: "color", color: "#ffffff" }),
+							...updates,
+						},
+					}
+				: slide,
+		);
+		updatePresentation(currentPresentation.id, { slides: updatedSlides });
 	};
 
-	const setColor = (color: string) => {
-		editor.chain().focus().setColor(color).run();
-	};
+	if (!selectedElement) {
+		return (
+			<motion.div
+				initial={{ x: 320, opacity: 0 }}
+				animate={{ x: 0, opacity: 1 }}
+				transition={{ type: "spring", stiffness: 300, damping: 30 }}
+				className="w-80 bg-background border-l border-border flex flex-col h-full max-h-screen overflow-hidden"
+			>
+				<CardHeader className="flex-none">
+					<CardTitle className="flex items-center gap-2">
+						<Layers className="w-5 h-5" />
+						Properties
+					</CardTitle>
+				</CardHeader>
+				<CardContent className="flex-1 overflow-y-auto scrollbar-hidden">
+					<p className="text-sm text-muted-foreground mb-4">
+						Select an element or edit slide background
+					</p>
 
-	const setHighlight = (color: string) => {
-		editor.chain().focus().setHighlight({ color }).run();
-	};
+					<div className="space-y-4 pb-6">
+						<SlideBackgroundEditor
+							currentBackground={
+								currentSlide.background || { type: "color", color: "#ffffff" }
+							}
+							onUpdate={handleSlideBackgroundUpdate}
+						/>
 
-	const colors = [
-		"#000000",
-		"#ff0000",
-		"#00ff00",
-		"#0000ff",
-		"#ffff00",
-		"#ff00ff",
-		"#00ffff",
-		"#808080",
-		"#800000",
-		"#808000",
-		"#008000",
-		"#800080",
-		"#008080",
-		"#000080",
-	];
+						<Separator />
+
+						<div>
+							<Label htmlFor="slide-notes" className="flex items-center gap-2">
+								<Type className="w-4 h-4" />
+								Slide Notes
+							</Label>
+							<p className="text-xs text-muted-foreground mb-2">
+								Notes are only visible in the editor, not in the presentation
+							</p>
+							<SlideNotesEditor
+								content={currentSlide.notes || ""}
+								onChange={(html) => {
+									const updatedSlides = currentPresentation.slides.map(
+										(slide, index) =>
+											index === currentSlideIndex
+												? { ...slide, notes: html }
+												: slide,
+									);
+									updatePresentation(currentPresentation.id, {
+										slides: updatedSlides,
+									});
+								}}
+								placeholder="Add formatted notes for this slide..."
+							/>
+						</div>
+
+						<Separator />
+
+						<div className="pb-2">
+							<Label htmlFor="slide-transition">Slide Transition</Label>
+							<Select
+								value={currentSlide.transition?.type || "fade"}
+								onValueChange={(value: SlideTransitionType) => {
+									const updatedSlides = currentPresentation.slides.map(
+										(slide, index) =>
+											index === currentSlideIndex
+												? {
+														...slide,
+														transition: {
+															type: value,
+															duration: slide.transition?.duration || 500,
+															direction: slide.transition?.direction || "right",
+														},
+													}
+												: slide,
+									);
+									updatePresentation(currentPresentation.id, {
+										slides: updatedSlides,
+									});
+								}}
+							>
+								<SelectTrigger id="slide-transition" className="mt-2">
+									<SelectValue placeholder="Select transition" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="none">None</SelectItem>
+									<SelectItem value="fade">Fade</SelectItem>
+									<SelectItem value="slide">Slide</SelectItem>
+									<SelectItem value="zoom">Zoom</SelectItem>
+									<SelectItem value="blur">Blur</SelectItem>
+									<SelectItem value="cube">Cube</SelectItem>
+									<SelectItem value="flip">Flip</SelectItem>
+								</SelectContent>
+							</Select>
+							{currentSlide.transition &&
+								currentSlide.transition.type !== "none" && (
+									<div className="space-y-2 mt-2">
+										<div>
+											<Label htmlFor="transition-duration" className="text-xs">
+												Duration (ms)
+											</Label>
+											<Input
+												id="transition-duration"
+												type="number"
+												value={currentSlide.transition.duration || 500}
+												onChange={(e) => {
+													const updatedSlides = currentPresentation.slides.map(
+														(slide, index) =>
+															index === currentSlideIndex
+																? {
+																		...slide,
+																		transition: {
+																			...slide.transition!,
+																			duration: Number(e.target.value),
+																		},
+																	}
+																: slide,
+													);
+													updatePresentation(currentPresentation.id, {
+														slides: updatedSlides,
+													});
+												}}
+												min="100"
+												max="2000"
+												step="100"
+												className="mt-1"
+											/>
+										</div>
+										{(currentSlide.transition.type === "slide" ||
+											currentSlide.transition.type === "cube") && (
+											<div>
+												<Label
+													htmlFor="transition-direction"
+													className="text-xs"
+												>
+													Direction
+												</Label>
+												<Select
+													value={currentSlide.transition.direction || "right"}
+													onValueChange={(
+														value: "left" | "right" | "up" | "down",
+													) => {
+														const updatedSlides =
+															currentPresentation.slides.map((slide, index) =>
+																index === currentSlideIndex
+																	? {
+																			...slide,
+																			transition: {
+																				...slide.transition!,
+																				direction: value,
+																			},
+																		}
+																	: slide,
+															);
+														updatePresentation(currentPresentation.id, {
+															slides: updatedSlides,
+														});
+													}}
+												>
+													<SelectTrigger
+														id="transition-direction"
+														className="mt-1"
+													>
+														<SelectValue placeholder="Select direction" />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value="left">Left</SelectItem>
+														<SelectItem value="right">Right</SelectItem>
+														<SelectItem value="up">Up</SelectItem>
+														<SelectItem value="down">Down</SelectItem>
+													</SelectContent>
+												</Select>
+											</div>
+										)}
+									</div>
+								)}
+						</div>
+					</div>
+				</CardContent>
+			</motion.div>
+		);
+	}
+
+	const getElementIcon = () => {
+		switch (selectedElement.type) {
+			case "text":
+				return <Type className="w-5 h-5" />;
+			case "image":
+				return <ImageIcon className="w-5 h-5" />;
+			case "shape":
+				return <Square className="w-5 h-5" />;
+			case "video":
+				return <Video className="w-5 h-5" />;
+			case "icon":
+				return <Sparkles className="w-5 h-5" />;
+			case "table":
+				return <Table2 className="w-5 h-5" />;
+			case "code":
+				return <Code className="w-5 h-5" />;
+			default:
+				return <Layers className="w-5 h-5" />;
+		}
+	};
 
 	return (
-		<div className="border rounded-md overflow-hidden">
-			<div className="bg-muted/30 p-1 flex flex-wrap items-center gap-0.5 border-b">
-				<Button
-					variant="ghost"
-					size="icon"
-					className="h-8 w-8"
-					onClick={() => editor.chain().focus().undo().run()}
-					disabled={!editor.can().undo()}
-					title="Undo"
-				>
-					<Undo className="h-4 w-4" />
-				</Button>
-				<Button
-					variant="ghost"
-					size="icon"
-					className="h-8 w-8"
-					onClick={() => editor.chain().focus().redo().run()}
-					disabled={!editor.can().redo()}
-					title="Redo"
-				>
-					<Redo className="h-4 w-4" />
-				</Button>
+		<motion.div
+			key={selectedElement.id}
+			initial={{ x: 320, opacity: 0 }}
+			animate={{ x: 0, opacity: 1 }}
+			transition={{ type: "spring", stiffness: 300, damping: 30 }}
+			className="w-80 bg-background border-l border-border flex flex-col h-full max-h-screen overflow-hidden"
+		>
+			<CardHeader className="flex-none">
+				<div className="flex items-center justify-between">
+					<CardTitle className="flex items-center gap-2">
+						{getElementIcon()}
+						Properties
+					</CardTitle>
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={() => {
+							if (confirm("Are you sure you want to delete this element?")) {
+								deleteElement(selectedElement.id);
+								selectElement(null);
+							}
+						}}
+					>
+						<Trash2 className="w-4 h-4 text-destructive" />
+					</Button>
+				</div>
+				<p className="text-sm text-muted-foreground capitalize mt-1">
+					{selectedElement.type === "shape"
+						? `Shape: ${selectedElement.content || "square"}`
+						: selectedElement.type}
+				</p>
+			</CardHeader>
 
-				<Separator orientation="vertical" className="h-6 mx-1" />
-
-				<Button
-					variant="ghost"
-					size="icon"
-					className={cn("h-8 w-8", editor.isActive("bold") && "bg-accent")}
-					onClick={() => editor.chain().focus().toggleBold().run()}
-					title="Bold"
-				>
-					<Bold className="h-4 w-4" />
-				</Button>
-				<Button
-					variant="ghost"
-					size="icon"
-					className={cn("h-8 w-8", editor.isActive("italic") && "bg-accent")}
-					onClick={() => editor.chain().focus().toggleItalic().run()}
-					title="Italic"
-				>
-					<Italic className="h-4 w-4" />
-				</Button>
-				<Button
-					variant="ghost"
-					size="icon"
-					className={cn("h-8 w-8", editor.isActive("underline") && "bg-accent")}
-					onClick={() => editor.chain().focus().toggleUnderline().run()}
-					title="Underline"
-				>
-					<UnderlineIcon className="h-4 w-4" />
-				</Button>
-				<Button
-					variant="ghost"
-					size="icon"
-					className={cn(
-						"h-8 w-8",
-						editor.isActive("strike") && "bg-accent",
-					)}
-					onClick={() => editor.chain().focus().toggleStrike().run()}
-					title="Strikethrough"
-				>
-					<Strikethrough className="h-4 w-4" />
-				</Button>
-
-				<Separator orientation="vertical" className="h-6 mx-1" />
-
-				<Button
-					variant="ghost"
-					size="icon"
-					className={cn(
-						"h-8 w-8",
-						editor.isActive("heading", { level: 1 }) && "bg-accent",
-					)}
-					onClick={() =>
-						editor.chain().focus().toggleHeading({ level: 1 }).run()
-					}
-					title="Heading 1"
-				>
-					<Heading1 className="h-4 w-4" />
-				</Button>
-				<Button
-					variant="ghost"
-					size="icon"
-					className={cn(
-						"h-8 w-8",
-						editor.isActive("heading", { level: 2 }) && "bg-accent",
-					)}
-					onClick={() =>
-						editor.chain().focus().toggleHeading({ level: 2 }).run()
-					}
-					title="Heading 2"
-				>
-					<Heading2 className="h-4 w-4" />
-				</Button>
-				<Button
-					variant="ghost"
-					size="icon"
-					className={cn(
-						"h-8 w-8",
-						editor.isActive("heading", { level: 3 }) && "bg-accent",
-					)}
-					onClick={() =>
-						editor.chain().focus().toggleHeading({ level: 3 }).run()
-					}
-					title="Heading 3"
-				>
-					<Heading3 className="h-4 w-4" />
-				</Button>
-
-				<Separator orientation="vertical" className="h-6 mx-1" />
-
-				<Button
-					variant="ghost"
-					size="icon"
-					className={cn("h-8 w-8", editor.isActive("bulletList") && "bg-accent")}
-					onClick={() => editor.chain().focus().toggleBulletList().run()}
-					title="Bullet list"
-				>
-					<List className="h-4 w-4" />
-				</Button>
-				<Button
-					variant="ghost"
-					size="icon"
-					className={cn("h-8 w-8", editor.isActive("orderedList") && "bg-accent")}
-					onClick={() => editor.chain().focus().toggleOrderedList().run()}
-					title="Numbered list"
-				>
-					<ListOrdered className="h-4 w-4" />
-				</Button>
-
-				<Separator orientation="vertical" className="h-6 mx-1" />
-
-				<Button
-					variant="ghost"
-					size="icon"
-					className={cn(
-						"h-8 w-8",
-						editor.isActive({ textAlign: "left" }) && "bg-accent",
-					)}
-					onClick={() => editor.chain().focus().setTextAlign("left").run()}
-					title="Align left"
-				>
-					<AlignLeft className="h-4 w-4" />
-				</Button>
-				<Button
-					variant="ghost"
-					size="icon"
-					className={cn(
-						"h-8 w-8",
-						editor.isActive({ textAlign: "center" }) && "bg-accent",
-					)}
-					onClick={() => editor.chain().focus().setTextAlign("center").run()}
-					title="Align center"
-				>
-					<AlignCenter className="h-4 w-4" />
-				</Button>
-				<Button
-					variant="ghost"
-					size="icon"
-					className={cn(
-						"h-8 w-8",
-						editor.isActive({ textAlign: "right" }) && "bg-accent",
-					)}
-					onClick={() => editor.chain().focus().setTextAlign("right").run()}
-					title="Align right"
-				>
-					<AlignRight className="h-4 w-4" />
-				</Button>
-
-				<Separator orientation="vertical" className="h-6 mx-1" />
-
-				<Popover>
-					<PopoverTrigger asChild>
-						<Button variant="ghost" size="icon" className="h-8 w-8">
-							<Palette className="h-4 w-4" />
-						</Button>
-					</PopoverTrigger>
-					<PopoverContent className="w-64">
-						<div className="space-y-3">
+			<CardContent className="flex-1 overflow-y-auto scrollbar-hidden pb-8">
+				<div className="space-y-6">
+					<div>
+						<Label className="mb-3">Position</Label>
+						<div className="grid grid-cols-2 gap-3 mt-2">
 							<div>
-								<Label className="text-xs">Text Color</Label>
-								<div className="grid grid-cols-7 gap-1 mt-1">
-									{colors.map((color) => (
-										<button
-											key={color}
-											className="w-6 h-6 rounded-md border border-border hover:scale-110 transition-transform"
-											style={{ backgroundColor: color }}
-											onClick={() => setColor(color)}
-											title={color}
-										/>
-									))}
-								</div>
-							</div>
-							<div>
-								<Label className="text-xs">Highlight</Label>
-								<div className="grid grid-cols-7 gap-1 mt-1">
-									{colors.map((color) => (
-										<button
-											key={color}
-											className="w-6 h-6 rounded-md border border-border hover:scale-110 transition-transform"
-											style={{ backgroundColor: color }}
-											onClick={() => setHighlight(color)}
-											title={color}
-										/>
-									))}
-								</div>
-							</div>
-						</div>
-					</PopoverContent>
-				</Popover>
-
-				<Button
-					variant="ghost"
-					size="icon"
-					className={cn("h-8 w-8", editor.isActive("highlight") && "bg-accent")}
-					onClick={() => editor.chain().focus().unsetHighlight().run()}
-					title="Remove highlight"
-				>
-					<Highlighter className="h-4 w-4" />
-				</Button>
-
-				<Separator orientation="vertical" className="h-6 mx-1" />
-
-				<Popover open={linkOpen} onOpenChange={setLinkOpen}>
-					<PopoverTrigger asChild>
-						<Button
-							variant="ghost"
-							size="icon"
-							className={cn("h-8 w-8", editor.isActive("link") && "bg-accent")}
-							title="Add link"
-						>
-							<LinkIcon className="h-4 w-4" />
-						</Button>
-					</PopoverTrigger>
-					<PopoverContent className="w-80">
-						<div className="space-y-3">
-							<div className="space-y-1">
-								<Label htmlFor="link-url">URL</Label>
+								<Label
+									htmlFor="pos-x"
+									className="text-xs text-muted-foreground"
+								>
+									X
+								</Label>
 								<Input
-									id="link-url"
-									value={linkUrl}
-									onChange={(e) => setLinkUrl(e.target.value)}
-									placeholder="https://example.com"
-									onKeyDown={(e) => {
-										if (e.key === "Enter") {
-											addLink();
-										}
-									}}
+									id="pos-x"
+									type="number"
+									value={selectedElement.position?.x || 0}
+									onChange={(e) =>
+										handleUpdate({
+											position: {
+												x: Number(e.target.value),
+												y: selectedElement.position?.y || 0,
+											},
+										})
+									}
+									className="mt-1"
 								/>
 							</div>
-							<div className="flex justify-between">
-								<Button size="sm" onClick={addLink}>
-									Add Link
-								</Button>
-								{editor.isActive("link") && (
-									<Button size="sm" variant="outline" onClick={removeLink}>
-										<Unlink className="h-4 w-4 mr-2" />
-										Remove
-									</Button>
-								)}
+							<div>
+								<Label
+									htmlFor="pos-y"
+									className="text-xs text-muted-foreground"
+								>
+									Y
+								</Label>
+								<Input
+									id="pos-y"
+									type="number"
+									value={selectedElement.position?.y || 0}
+									onChange={(e) =>
+										handleUpdate({
+											position: {
+												x: selectedElement.position?.x || 0,
+												y: Number(e.target.value),
+											},
+										})
+									}
+									className="mt-1"
+								/>
 							</div>
 						</div>
-					</PopoverContent>
-				</Popover>
+					</div>
 
-				<Separator orientation="vertical" className="h-6 mx-1" />
+					<Separator />
 
-				<Button
-					variant="ghost"
-					size="icon"
-					className={cn("h-8 w-8", editor.isActive("blockquote") && "bg-accent")}
-					onClick={() => editor.chain().focus().toggleBlockquote().run()}
-					title="Quote"
-				>
-					<Quote className="h-4 w-4" />
-				</Button>
-				<Button
-					variant="ghost"
-					size="icon"
-					className={cn("h-8 w-8", editor.isActive("codeBlock") && "bg-accent")}
-					onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-					title="Code block"
-				>
-					<Code className="h-4 w-4" />
-				</Button>
-				<Button
-					variant="ghost"
-					size="icon"
-					className="h-8 w-8"
-					onClick={() => editor.chain().focus().setHorizontalRule().run()}
-					title="Horizontal rule"
-				>
-					<Minus className="h-4 w-4" />
-				</Button>
-			</div>
+					<div>
+						<Label className="mb-3">Size</Label>
+						<div className="grid grid-cols-2 gap-3 mt-2">
+							<div>
+								<Label
+									htmlFor="size-w"
+									className="text-xs text-muted-foreground"
+								>
+									Width
+								</Label>
+								<Input
+									id="size-w"
+									type="number"
+									value={selectedElement.size?.width || 100}
+									onChange={(e) =>
+										handleUpdate({
+											size: {
+												width: Math.max(10, Number(e.target.value)),
+												height: selectedElement.size?.height || 100,
+											},
+										})
+									}
+									min="10"
+									className="mt-1"
+								/>
+							</div>
+							<div>
+								<Label
+									htmlFor="size-h"
+									className="text-xs text-muted-foreground"
+								>
+									Height
+								</Label>
+								<Input
+									id="size-h"
+									type="number"
+									value={selectedElement.size?.height || 100}
+									onChange={(e) =>
+										handleUpdate({
+											size: {
+												width: selectedElement.size?.width || 100,
+												height: Math.max(10, Number(e.target.value)),
+											},
+										})
+									}
+									min="10"
+									className="mt-1"
+								/>
+							</div>
+						</div>
+					</div>
 
-			<EditorContent
-				editor={editor}
-				className="prose prose-sm max-w-none p-3 min-h-50 focus:outline-none [&_.tiptap]:outline-none"
-			/>
+					<div>
+						<Label htmlFor="rotation">Rotation</Label>
+						<div className="flex items-center gap-2 mt-2">
+							<Input
+								id="rotation"
+								type="range"
+								min="0"
+								max="360"
+								value={selectedElement.rotation || 0}
+								onChange={(e) =>
+									handleUpdate({
+										rotation: Number(e.target.value),
+									})
+								}
+								className="flex-1"
+							/>
+							<span className="text-sm w-12 text-right">
+								{selectedElement.rotation || 0}°
+							</span>
+						</div>
+					</div>
 
-			<div className="bg-muted/30 px-3 py-1 text-xs text-muted-foreground border-t flex justify-between items-center">
-				<span>Rich text editor</span>
-				<span className="font-mono">
-					{editor.storage.characterCount?.words() || 0} words
-				</span>
-			</div>
-		</div>
+					<div>
+						<Label htmlFor="opacity">Opacity</Label>
+						<div className="flex items-center gap-2 mt-2">
+							<Input
+								id="opacity"
+								type="range"
+								min="0"
+								max="100"
+								value={(selectedElement.style?.opacity || 1) * 100}
+								onChange={(e) =>
+									handleUpdate({
+										style: {
+											...(selectedElement.style || {}),
+											opacity: Number(e.target.value) / 100,
+										},
+									})
+								}
+								className="flex-1"
+							/>
+							<span className="text-sm w-12 text-right">
+								{Math.round((selectedElement.style?.opacity || 1) * 100)}%
+							</span>
+						</div>
+					</div>
+
+					{selectedElement.type === "text" && (
+						<>
+							<Separator />
+							<div>
+								<Label htmlFor="text-content">Text</Label>
+								<Textarea
+									id="text-content"
+									value={selectedElement.content || ""}
+									onChange={(e) => handleUpdate({ content: e.target.value })}
+									className="mt-2 resize-none"
+									rows={4}
+								/>
+							</div>
+
+							<div>
+								<Label htmlFor="font-size">Font Size</Label>
+								<div className="flex items-center gap-2 mt-2">
+									<Input
+										id="font-size"
+										type="number"
+										value={selectedElement.style?.fontSize || 16}
+										onChange={(e) =>
+											handleUpdate({
+												style: {
+													...(selectedElement.style || {}),
+													fontSize: Math.max(8, Number(e.target.value)),
+												},
+											})
+										}
+										min="8"
+										className="flex-1"
+									/>
+									<span className="text-sm text-muted-foreground">px</span>
+								</div>
+							</div>
+
+							<div className="grid grid-cols-2 gap-4">
+								<div>
+									<Label htmlFor="text-color">Text Color</Label>
+									<Input
+										id="text-color"
+										type="color"
+										value={
+											selectedElement.style?.color || getDefaultTextColor()
+										}
+										onChange={(e) =>
+											handleUpdate({
+												style: {
+													...(selectedElement.style || {}),
+													color: e.target.value,
+												},
+											})
+										}
+										className="w-full h-10 mt-2 cursor-pointer"
+									/>
+								</div>
+
+								<div>
+									<Label htmlFor="background-color">Background Color</Label>
+									<Input
+										id="background-color"
+										type="color"
+										value={selectedElement.style?.backgroundColor || "#ffffff"}
+										onChange={(e) =>
+											handleUpdate({
+												style: {
+													...(selectedElement.style || {}),
+													backgroundColor: e.target.value,
+												},
+											})
+										}
+										className="w-full h-10 mt-2 cursor-pointer"
+									/>
+								</div>
+							</div>
+
+							<div>
+								<Label htmlFor="font-family">Font Family</Label>
+								<Select
+									value={selectedElement.style?.fontFamily || "Arial"}
+									onValueChange={(value: FontFamilyType) =>
+										handleUpdate({
+											style: {
+												...(selectedElement.style || {}),
+												fontFamily: value,
+											},
+										})
+									}
+								>
+									<SelectTrigger id="font-family" className="mt-2">
+										<SelectValue placeholder="Select font" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="Arial">Arial</SelectItem>
+										<SelectItem value="Helvetica">Helvetica</SelectItem>
+										<SelectItem value="Times New Roman">
+											Times New Roman
+										</SelectItem>
+										<SelectItem value="Courier New">Courier New</SelectItem>
+										<SelectItem value="Verdana">Verdana</SelectItem>
+										<SelectItem value="Georgia">Georgia</SelectItem>
+										<SelectItem value="Palatino">Palatino</SelectItem>
+										<SelectItem value="Garamond">Garamond</SelectItem>
+										<SelectItem value="Roboto">Roboto</SelectItem>
+										<SelectItem value="Open Sans">Open Sans</SelectItem>
+										<SelectItem value="Montserrat">Montserrat</SelectItem>
+										<SelectItem value="Lato">Lato</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+
+							<div className="grid grid-cols-2 gap-2 mt-4">
+								<div className="flex border rounded-md overflow-hidden">
+									<Button
+										variant="ghost"
+										size="icon"
+										className={cn(
+											"h-8 w-full rounded-none",
+											selectedElement.style?.fontWeight === "bold" &&
+												"bg-accent",
+										)}
+										onClick={() =>
+											handleUpdate({
+												style: {
+													...(selectedElement.style || {}),
+													fontWeight:
+														selectedElement.style?.fontWeight === "bold"
+															? "normal"
+															: "bold",
+												},
+											})
+										}
+										title="Bold"
+									>
+										<Bold className="w-4 h-4" />
+									</Button>
+									<Button
+										variant="ghost"
+										size="icon"
+										className={cn(
+											"h-8 w-full rounded-none border-l",
+											selectedElement.style?.fontStyle === "italic" &&
+												"bg-accent",
+										)}
+										onClick={() =>
+											handleUpdate({
+												style: {
+													...(selectedElement.style || {}),
+													fontStyle:
+														selectedElement.style?.fontStyle === "italic"
+															? "normal"
+															: "italic",
+												},
+											})
+										}
+										title="Italic"
+									>
+										<Italic className="w-4 h-4" />
+									</Button>
+									<Button
+										variant="ghost"
+										size="icon"
+										className={cn(
+											"h-8 w-full rounded-none border-l",
+											selectedElement.style?.textDecoration === "underline" &&
+												"bg-accent",
+										)}
+										onClick={() =>
+											handleUpdate({
+												style: {
+													...(selectedElement.style || {}),
+													textDecoration:
+														selectedElement.style?.textDecoration ===
+														"underline"
+															? "none"
+															: "underline",
+												},
+											})
+										}
+										title="Underline"
+									>
+										<Underline className="w-4 h-4" />
+									</Button>
+								</div>
+
+								<div className="flex border rounded-md overflow-hidden">
+									<Button
+										variant="ghost"
+										size="icon"
+										className={cn(
+											"h-8 w-full rounded-none",
+											(!selectedElement.style?.textAlign ||
+												selectedElement.style?.textAlign === "left") &&
+												"bg-accent",
+										)}
+										onClick={() =>
+											handleUpdate({
+												style: {
+													...(selectedElement.style || {}),
+													textAlign: "left",
+												},
+											})
+										}
+										title="Align left"
+									>
+										<AlignLeft className="w-4 h-4" />
+									</Button>
+									<Button
+										variant="ghost"
+										size="icon"
+										className={cn(
+											"h-8 w-full rounded-none border-l",
+											selectedElement.style?.textAlign === "center" &&
+												"bg-accent",
+										)}
+										onClick={() =>
+											handleUpdate({
+												style: {
+													...(selectedElement.style || {}),
+													textAlign: "center",
+												},
+											})
+										}
+										title="Align center"
+									>
+										<AlignCenter className="w-4 h-4" />
+									</Button>
+									<Button
+										variant="ghost"
+										size="icon"
+										className={cn(
+											"h-8 w-full rounded-none border-l",
+											selectedElement.style?.textAlign === "right" &&
+												"bg-accent",
+										)}
+										onClick={() =>
+											handleUpdate({
+												style: {
+													...(selectedElement.style || {}),
+													textAlign: "right",
+												},
+											})
+										}
+										title="Align right"
+									>
+										<AlignRight className="w-4 h-4" />
+									</Button>
+								</div>
+							</div>
+
+							<div className="grid grid-cols-2 gap-4">
+								<div>
+									<Label htmlFor="line-height">Line Height</Label>
+									<Input
+										id="line-height"
+										type="number"
+										step="0.1"
+										value={selectedElement.style?.lineHeight || 1.5}
+										onChange={(e) =>
+											handleUpdate({
+												style: {
+													...(selectedElement.style || {}),
+													lineHeight: Number(e.target.value),
+												},
+											})
+										}
+										min="0.5"
+										max="3"
+										className="mt-2"
+									/>
+								</div>
+								<div>
+									<Label htmlFor="letter-spacing">Letter Spacing (px)</Label>
+									<Input
+										id="letter-spacing"
+										type="number"
+										value={selectedElement.style?.letterSpacing || 0}
+										onChange={(e) =>
+											handleUpdate({
+												style: {
+													...(selectedElement.style || {}),
+													letterSpacing: Number(e.target.value),
+												},
+											})
+										}
+										min="-5"
+										max="20"
+										className="mt-2"
+									/>
+								</div>
+							</div>
+						</>
+					)}
+
+					{selectedElement.type === "image" && (
+						<>
+							<Separator />
+							<div>
+								<Label htmlFor="image-url">Image URL</Label>
+								<Input
+									id="image-url"
+									type="text"
+									value={selectedElement.content || ""}
+									onChange={(e) => handleUpdate({ content: e.target.value })}
+									className="mt-2"
+									placeholder="https://..."
+								/>
+								{selectedElement.content && (
+									<div className="mt-3 rounded-lg overflow-hidden border">
+										<img
+											src={selectedElement.content}
+											alt="Preview"
+											className="w-full h-32 object-cover"
+											onError={(e) => {
+												(e.target as HTMLImageElement).style.display = "none";
+											}}
+										/>
+									</div>
+								)}
+							</div>
+
+							<div>
+								<Label htmlFor="image-fit">Image Fit</Label>
+								<Select
+									value={selectedElement.style?.objectFit || "cover"}
+									onValueChange={(value: ObjectFit) =>
+										handleUpdate({
+											style: {
+												...(selectedElement.style || {}),
+												objectFit: value,
+											},
+										})
+									}
+								>
+									<SelectTrigger id="object-fit" className="mt-2">
+										<SelectValue placeholder="Select fit" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="cover">Cover</SelectItem>
+										<SelectItem value="contain">Contain</SelectItem>
+										<SelectItem value="fill">Fill</SelectItem>
+										<SelectItem value="none">None</SelectItem>
+										<SelectItem value="scale-down">Scale Down</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+						</>
+					)}
+
+					{selectedElement.type === "video" && (
+						<>
+							<Separator />
+							<div>
+								<Label htmlFor="video-url">Video URL</Label>
+								<Input
+									id="video-url"
+									type="text"
+									value={selectedElement.content || ""}
+									onChange={(e) => handleUpdate({ content: e.target.value })}
+									className="mt-2"
+									placeholder="https://youtube.com/watch?v=..."
+								/>
+							</div>
+
+							<div className="grid grid-cols-2 gap-4">
+								<div>
+									<Label htmlFor="video-autoplay">Autoplay</Label>
+									<Select
+										value={selectedElement.autoplay ? "true" : "false"}
+										onValueChange={(value) =>
+											handleUpdate({ autoplay: value === "true" })
+										}
+									>
+										<SelectTrigger id="video-autoplay" className="mt-2">
+											<SelectValue placeholder="Autoplay" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="true">Yes</SelectItem>
+											<SelectItem value="false">No</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+
+								<div>
+									<Label htmlFor="video-controls">Show Controls</Label>
+									<Select
+										value={
+											selectedElement.controls !== false ? "true" : "false"
+										}
+										onValueChange={(value) =>
+											handleUpdate({ controls: value === "true" })
+										}
+									>
+										<SelectTrigger id="video-controls" className="mt-2">
+											<SelectValue placeholder="Controls" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="true">Yes</SelectItem>
+											<SelectItem value="false">No</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+							</div>
+
+							<div>
+								<Label htmlFor="video-loop">Loop</Label>
+								<Select
+									value={selectedElement.loop ? "true" : "false"}
+									onValueChange={(value) =>
+										handleUpdate({ loop: value === "true" })
+									}
+								>
+									<SelectTrigger id="video-loop" className="mt-2">
+										<SelectValue placeholder="Loop" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="true">Yes</SelectItem>
+										<SelectItem value="false">No</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+						</>
+					)}
+				</div>
+			</CardContent>
+		</motion.div>
 	);
 }
