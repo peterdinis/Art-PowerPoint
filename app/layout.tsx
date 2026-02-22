@@ -4,7 +4,6 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Suspense } from "react";
 import Loading from "./loading";
-import { ScrollToTop } from "@/components/ScrollToTop";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
