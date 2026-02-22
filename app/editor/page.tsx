@@ -487,7 +487,7 @@ function EditorContent() {
 
 				{/* Dialog pre upload chartu */}
 				<Dialog open={showChartDialog} onOpenChange={setShowChartDialog}>
-					<DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
+					<DialogContent className="sm:max-w-175 max-h-[85vh] overflow-y-auto">
 						<DialogHeader>
 							<DialogTitle>Add Custom Chart</DialogTitle>
 							<DialogDescription>
@@ -592,7 +592,7 @@ function EditorContent() {
 									</div>
 									<textarea
 										id="chart-data"
-										className="min-h-[250px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono text-xs"
+										className="min-h-62.5 w-full rounded-md border border-input bg-background px-3 py-2 ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono text-xs"
 										value={chartDataInput}
 										onChange={(e) => setChartDataInput(e.target.value)}
 										placeholder={`Enter your chart data in JSON format...
