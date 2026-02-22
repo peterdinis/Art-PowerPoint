@@ -165,115 +165,67 @@
   --shadow-2xl: var(--shadow-2xl);
 }
 
-/* Scrollbar hiding options */
+/* Scrollbar hiding options - Rozšírené možnosti */
 :root {
   --scrollbar-hidden: false;
+  --scrollbar-width: 8px;
+  --scrollbar-height: 8px;
+  --scrollbar-thumb-color: var(--primary);
+  --scrollbar-track-color: var(--muted);
+  --scrollbar-radius: var(--radius-sm);
 }
 
-/* Hide scrollbars globally */
-.scrollbar-hidden {
-  scrollbar-width: none;
-  /* Firefox */
-  -ms-overflow-style: none;
-  /* IE and Edge */
-}
+/* ===== ZÁKLADNÉ MOŽNOSTI SKRÝVANIA SCROLLBAROV ===== */
 
-.scrollbar-hidden::-webkit-scrollbar {
-  display: none;
-  /* Chrome, Safari, Opera */
-}
-
-/* Hide scrollbars for specific elements */
-.no-scrollbar {
+/* 1. Úplne skryť scrollbar (bez možnosti scrollovania) */
+.scrollbar-hidden,
+.hide-scrollbar-completely {
   scrollbar-width: none;
   -ms-overflow-style: none;
+  overflow: hidden !important;
 }
 
-.no-scrollbar::-webkit-scrollbar {
+.scrollbar-hidden::-webkit-scrollbar,
+.hide-scrollbar-completely::-webkit-scrollbar {
   display: none;
 }
 
-/* Hide scrollbars but keep functionality */
-.hide-scrollbar {
+/* 2. Skryť scrollbar ale zachovať funkcionalitu scrollovania */
+.hide-scrollbar-keep-functionality {
   scrollbar-width: none;
   -ms-overflow-style: none;
   overflow: auto;
 }
 
-.hide-scrollbar::-webkit-scrollbar {
+.hide-scrollbar-keep-functionality::-webkit-scrollbar {
   display: none;
 }
 
-/* Custom scrollbar styling (optional) */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: var(--muted);
-  border-radius: var(--radius-sm);
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: var(--radius-sm);
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
-  opacity: 0.8;
-}
-
-/* Firefox custom scrollbar */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: var(--primary) var(--muted);
-}
-
-/* Auto-hide scrollbar (only shows when scrolling) */
+/* 3. Automaticky skrývať scrollbar (zobrazí sa len pri scrollovaní) */
 .auto-hide-scrollbar {
   scrollbar-width: thin;
   -ms-overflow-style: -ms-autohiding-scrollbar;
 }
 
 .auto-hide-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-height);
   background: transparent;
 }
 
 .auto-hide-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: var(--radius-sm);
+  background: var(--scrollbar-thumb-color);
+  border-radius: var(--scrollbar-radius);
   visibility: hidden;
 }
 
-.auto-hide-scrollbar:hover::-webkit-scrollbar-thumb {
+.auto-hide-scrollbar:hover::-webkit-scrollbar-thumb,
+.auto-hide-scrollbar:focus::-webkit-scrollbar-thumb,
+.auto-hide-scrollbar:active::-webkit-scrollbar-thumb {
   visibility: visible;
 }
 
-.auto-hide-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
-  opacity: 0.8;
-}
-
-/* Thin scrollbar */
-.thin-scrollbar::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-
-.thin-scrollbar::-webkit-scrollbar-track {
-  background: var(--muted);
-}
-
-.thin-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: var(--radius-sm);
-}
-
-/* Hide scrollbar for the entire page */
+/* 4. Skryť scrollbar pre celú stránku */
 html.hide-page-scrollbar,
 body.hide-page-scrollbar {
   scrollbar-width: none;
@@ -284,6 +236,285 @@ body.hide-page-scrollbar {
 html.hide-page-scrollbar::-webkit-scrollbar,
 body.hide-page-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* 5. Skryť scrollbar pre špecifické elementy */
+.element-hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.element-hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===== POKROČILÉ MOŽNOSTI ===== */
+
+/* 6. Tenký scrollbar (minimalistický) */
+.thin-scrollbar {
+  scrollbar-width: thin;
+}
+
+.thin-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: var(--scrollbar-track-color);
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-color);
+  border-radius: var(--scrollbar-radius);
+}
+
+/* 7. Scrollbar s hover efektom (zobrazí sa pri najetí myšou) */
+.hover-scrollbar {
+  scrollbar-width: thin;
+}
+
+.hover-scrollbar::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-height);
+  background: transparent;
+}
+
+.hover-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-color);
+  border-radius: var(--scrollbar-radius);
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.hover-scrollbar:hover::-webkit-scrollbar-thumb {
+  opacity: 1;
+}
+
+/* 8. Scrollbar s priehľadnosťou */
+.transparent-scrollbar::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-height);
+}
+
+.transparent-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.transparent-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-color);
+  border-radius: var(--scrollbar-radius);
+  opacity: 0.3;
+}
+
+.transparent-scrollbar::-webkit-scrollbar-thumb:hover {
+  opacity: 0.8;
+}
+
+/* 9. Scrollbar s gradientom */
+.gradient-scrollbar::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-height);
+}
+
+.gradient-scrollbar::-webkit-scrollbar-track {
+  background: var(--scrollbar-track-color);
+}
+
+.gradient-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--primary), var(--accent));
+  border-radius: var(--scrollbar-radius);
+}
+
+/* 10. Neviditeľný scrollbar (úplne priehľadný) */
+.invisible-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.invisible-scrollbar::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-height);
+}
+
+.invisible-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.invisible-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+/* ===== ŠPECIFICKÉ PRE PREZENTÁCIE ===== */
+
+/* 11. Skryť scrollbar pre editor prezentácií */
+.presentation-editor-hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overflow: auto;
+}
+
+.presentation-editor-hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* 12. Skryť scrollbar pre slides */
+.slide-container-hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overflow: hidden;
+}
+
+.slide-container-hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* 13. Scrollbar pre sidebar (špecifický) */
+.sidebar-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sidebar-primary) var(--sidebar-border);
+}
+
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-track {
+  background: var(--sidebar-border);
+  border-radius: var(--radius-sm);
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--sidebar-primary);
+  border-radius: var(--radius-sm);
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--sidebar-accent);
+}
+
+/* ===== UTILITY TRIEDY PRE DYNAMICKÉ OVLÁDANIE ===== */
+
+/* 14. Prepínanie viditeľnosti scrollbarov */
+.scrollbar-visible {
+  scrollbar-width: auto;
+  -ms-overflow-style: auto;
+}
+
+.scrollbar-visible::-webkit-scrollbar {
+  display: block;
+}
+
+.scrollbar-invisible {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-invisible::-webkit-scrollbar {
+  display: none;
+}
+
+/* 15. Scrollbar s oneskoreným zobrazením */
+.delayed-scrollbar::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-height);
+}
+
+.delayed-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-color);
+  border-radius: var(--scrollbar-radius);
+  transition: opacity 0.5s ease-in-out;
+  opacity: 0;
+}
+
+.delayed-scrollbar:hover::-webkit-scrollbar-thumb {
+  opacity: 1;
+  transition-delay: 0.3s;
+}
+
+/* 16. Scrollbar pre mobilné zariadenia (tenší) */
+.mobile-scrollbar::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+.mobile-scrollbar::-webkit-scrollbar-track {
+  background: var(--scrollbar-track-color);
+}
+
+.mobile-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-color);
+  border-radius: var(--scrollbar-radius);
+}
+
+/* ===== KOMBINOVANÉ TRIEDY ===== */
+
+/* Skryť horizontálny scrollbar */
+.hide-horizontal-scrollbar {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.hide-horizontal-scrollbar::-webkit-scrollbar:horizontal {
+  display: none;
+}
+
+/* Skryť vertikálny scrollbar */
+.hide-vertical-scrollbar {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.hide-vertical-scrollbar::-webkit-scrollbar:vertical {
+  display: none;
+}
+
+/* Skryť oba scrollbary */
+.hide-both-scrollbars {
+  overflow: hidden !important;
+}
+
+.hide-both-scrollbars::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===== RESPONZÍVNE TRIEDY ===== */
+
+/* Pre malé obrazovky (mobil) */
+@media (max-width: 640px) {
+  .sm\:hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .sm\:hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Pre stredné obrazovky (tablet) */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .md\:hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .md\:hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Pre veľké obrazovky (desktop) */
+@media (min-width: 1025px) {
+  .lg\:hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .lg\:hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @layer base {
@@ -443,33 +674,323 @@ body.hide-page-scrollbar::-webkit-scrollbar {
     animation: spin 1s linear infinite;
   }
 
-  /* Scrollbar utility classes */
+  /* Scrollbar utility classes - Všetky možnosti na jednom mieste */
+  
+  /* Základné */
   .scrollbar-hidden {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
-
+  
   .scrollbar-hidden::-webkit-scrollbar {
     display: none;
   }
-
+  
   .no-scrollbar {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
-
+  
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
-
+  
   .hide-scrollbar {
     scrollbar-width: none;
     -ms-overflow-style: none;
     overflow: auto;
   }
-
+  
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
+  }
+  
+  /* Pokročilé */
+  .hide-scrollbar-completely {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overflow: hidden !important;
+  }
+  
+  .hide-scrollbar-completely::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .hide-scrollbar-keep-functionality {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overflow: auto;
+  }
+  
+  .hide-scrollbar-keep-functionality::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .auto-hide-scrollbar {
+    scrollbar-width: thin;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+  }
+  
+  .auto-hide-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background: transparent;
+  }
+  
+  .auto-hide-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: var(--radius-sm);
+    visibility: hidden;
+  }
+  
+  .auto-hide-scrollbar:hover::-webkit-scrollbar-thumb {
+    visibility: visible;
+  }
+  
+  .thin-scrollbar {
+    scrollbar-width: thin;
+  }
+  
+  .thin-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  
+  .thin-scrollbar::-webkit-scrollbar-track {
+    background: var(--muted);
+  }
+  
+  .thin-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: var(--radius-sm);
+  }
+  
+  .hover-scrollbar {
+    scrollbar-width: thin;
+  }
+  
+  .hover-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background: transparent;
+  }
+  
+  .hover-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: var(--radius-sm);
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+  }
+  
+  .hover-scrollbar:hover::-webkit-scrollbar-thumb {
+    opacity: 1;
+  }
+  
+  .transparent-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .transparent-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .transparent-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: var(--radius-sm);
+    opacity: 0.3;
+  }
+  
+  .transparent-scrollbar::-webkit-scrollbar-thumb:hover {
+    opacity: 0.8;
+  }
+  
+  .gradient-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .gradient-scrollbar::-webkit-scrollbar-track {
+    background: var(--muted);
+  }
+  
+  .gradient-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--primary), var(--accent));
+    border-radius: var(--radius-sm);
+  }
+  
+  .invisible-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+  
+  .invisible-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .invisible-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .invisible-scrollbar::-webkit-scrollbar-thumb {
+    background: transparent;
+  }
+  
+  .delayed-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .delayed-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: var(--radius-sm);
+    transition: opacity 0.5s ease-in-out;
+    opacity: 0;
+  }
+  
+  .delayed-scrollbar:hover::-webkit-scrollbar-thumb {
+    opacity: 1;
+    transition-delay: 0.3s;
+  }
+  
+  .mobile-scrollbar::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+  }
+  
+  .mobile-scrollbar::-webkit-scrollbar-track {
+    background: var(--muted);
+  }
+  
+  .mobile-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: var(--radius-sm);
+  }
+  
+  /* Špecifické pre prezentácie */
+  .presentation-editor-hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overflow: auto;
+  }
+  
+  .presentation-editor-hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .slide-container-hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overflow: hidden;
+  }
+  
+  .slide-container-hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .sidebar-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--sidebar-primary) var(--sidebar-border);
+  }
+  
+  .sidebar-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .sidebar-scrollbar::-webkit-scrollbar-track {
+    background: var(--sidebar-border);
+    border-radius: var(--radius-sm);
+  }
+  
+  .sidebar-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--sidebar-primary);
+    border-radius: var(--radius-sm);
+  }
+  
+  .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--sidebar-accent);
+  }
+  
+  /* Kombinované */
+  .hide-horizontal-scrollbar {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  
+  .hide-horizontal-scrollbar::-webkit-scrollbar:horizontal {
+    display: none;
+  }
+  
+  .hide-vertical-scrollbar {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  
+  .hide-vertical-scrollbar::-webkit-scrollbar:vertical {
+    display: none;
+  }
+  
+  .hide-both-scrollbars {
+    overflow: hidden !important;
+  }
+  
+  .hide-both-scrollbars::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Prepínacie triedy */
+  .scrollbar-visible {
+    scrollbar-width: auto;
+    -ms-overflow-style: auto;
+  }
+  
+  .scrollbar-visible::-webkit-scrollbar {
+    display: block;
+  }
+  
+  .scrollbar-invisible {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .scrollbar-invisible::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Responzívne */
+  @media (max-width: 640px) {
+    .sm\:hide-scrollbar {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    
+    .sm\:hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+  }
+  
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .md\:hide-scrollbar {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    
+    .md\:hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+  }
+  
+  @media (min-width: 1025px) {
+    .lg\:hide-scrollbar {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    
+    .lg\:hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   .custom-scrollbar::-webkit-scrollbar {
@@ -495,41 +1016,6 @@ body.hide-page-scrollbar::-webkit-scrollbar {
   .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: var(--primary) var(--muted);
-  }
-
-  .auto-hide-scrollbar {
-    scrollbar-width: thin;
-    -ms-overflow-style: -ms-autohiding-scrollbar;
-  }
-
-  .auto-hide-scrollbar::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-    background: transparent;
-  }
-
-  .auto-hide-scrollbar::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: var(--radius-sm);
-    visibility: hidden;
-  }
-
-  .auto-hide-scrollbar:hover::-webkit-scrollbar-thumb {
-    visibility: visible;
-  }
-
-  .thin-scrollbar::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
-  }
-
-  .thin-scrollbar::-webkit-scrollbar-track {
-    background: var(--muted);
-  }
-
-  .thin-scrollbar::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: var(--radius-sm);
   }
 
   .perspective-1000 {
