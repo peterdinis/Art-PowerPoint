@@ -141,6 +141,7 @@ export function SlideNotesEditor({
 	return (
 		<div className="border rounded-md overflow-hidden">
 			<div className="bg-muted/30 p-1 flex flex-wrap items-center gap-0.5 border-b">
+				{/* History */}
 				<Button
 					variant="ghost"
 					size="icon"
@@ -164,6 +165,7 @@ export function SlideNotesEditor({
 
 				<Separator orientation="vertical" className="h-6 mx-1" />
 
+				{/* Text formatting */}
 				<Button
 					variant="ghost"
 					size="icon"
@@ -206,6 +208,7 @@ export function SlideNotesEditor({
 
 				<Separator orientation="vertical" className="h-6 mx-1" />
 
+				{/* Headings */}
 				<Button
 					variant="ghost"
 					size="icon"
@@ -251,6 +254,7 @@ export function SlideNotesEditor({
 
 				<Separator orientation="vertical" className="h-6 mx-1" />
 
+				{/* Lists */}
 				<Button
 					variant="ghost"
 					size="icon"
@@ -272,6 +276,7 @@ export function SlideNotesEditor({
 
 				<Separator orientation="vertical" className="h-6 mx-1" />
 
+				{/* Alignment */}
 				<Button
 					variant="ghost"
 					size="icon"
@@ -311,6 +316,7 @@ export function SlideNotesEditor({
 
 				<Separator orientation="vertical" className="h-6 mx-1" />
 
+				{/* Colors */}
 				<Popover>
 					<PopoverTrigger asChild>
 						<Button variant="ghost" size="icon" className="h-8 w-8">
@@ -363,6 +369,7 @@ export function SlideNotesEditor({
 
 				<Separator orientation="vertical" className="h-6 mx-1" />
 
+				{/* Link */}
 				<Popover open={linkOpen} onOpenChange={setLinkOpen}>
 					<PopoverTrigger asChild>
 						<Button
@@ -407,6 +414,7 @@ export function SlideNotesEditor({
 
 				<Separator orientation="vertical" className="h-6 mx-1" />
 
+				{/* Block elements */}
 				<Button
 					variant="ghost"
 					size="icon"
