@@ -85,7 +85,6 @@ export default function RootLayout({
 						storageKey="presentation-builder-theme"
 					>
 						{children}
-						<ScrollToTop />
 					</ThemeProvider>
 				</Suspense>
 			</body>

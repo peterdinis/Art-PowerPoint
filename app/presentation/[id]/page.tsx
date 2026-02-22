@@ -1,9 +1,18 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { usePresentationStore } from "@/store/presentationStore";
-import { X, ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
+import {
+	X,
+	ChevronLeft,
+	ChevronRight,
+	Play,
+	Pause,
+	RotateCcw,
+	EyeOff,
+	Edit
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoadingPresentation } from "@/components/ui/LoadingPresentation";
 import { cn } from "@/lib/utils";
@@ -12,8 +21,10 @@ import IconElement from "@/components/elements/IconElement";
 import TableElement from "@/components/elements/TableElement";
 import CodeElement from "@/components/elements/CodeElement";
 import ChartElement from "@/components/elements/ChartElement";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function PresentationPage() {
+	const [isMounted, setIsMounted] = useState(false);
 	const params = useParams();
 	const router = useRouter();
 	const { presentations, loadPresentations } = usePresentationStore();
@@ -22,6 +33,15 @@ export default function PresentationPage() {
 	const [showControls, setShowControls] = useState(true);
 	const [isFullscreen, setIsFullscreen] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
+	const [autoPlayInterval, setAutoPlayInterval] = useState(5000);
+	const [remainingTime, setRemainingTime] = useState(autoPlayInterval / 1000);
+	const intervalRef = useRef<NodeJS.Timeout>(null);
+	const timerRef = useRef<NodeJS.Timeout>(null);
+	const slideRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		setIsMounted(true);
+	}, []);
 
 	const presentationId =
 		typeof params.id === "string" ? params.id : params.id?.[0];
@@ -35,7 +55,6 @@ export default function PresentationPage() {
 		if (presentations.length > 0) {
 			setIsLoading(false);
 			if (!presentation && presentationId) {
-				// Wait a bit for presentations to load
 				const timer = setTimeout(() => {
 					const found = presentations.find((p) => p.id === presentationId);
 					if (!found) {
@@ -47,23 +66,53 @@ export default function PresentationPage() {
 		}
 	}, [presentations, presentation, presentationId, router]);
 
+	const stopPlaying = useCallback(() => {
+		setIsPlaying(false);
+		setRemainingTime(autoPlayInterval / 1000);
+		if (intervalRef.current) {
+			clearInterval(intervalRef.current);
+		}
+		if (timerRef.current) {
+			clearInterval(timerRef.current);
+		}
+	}, [autoPlayInterval]);
+
 	const nextSlide = useCallback(() => {
 		if (presentation && currentSlideIndex < presentation.slides.length - 1) {
 			setCurrentSlideIndex((prev) => prev + 1);
+			setRemainingTime(autoPlayInterval / 1000);
 		}
-	}, [presentation, currentSlideIndex]);
+	}, [presentation, currentSlideIndex, autoPlayInterval]);
 
 	const prevSlide = useCallback(() => {
 		if (currentSlideIndex > 0) {
 			setCurrentSlideIndex((prev) => prev - 1);
+			setRemainingTime(autoPlayInterval / 1000);
 		}
-	}, [currentSlideIndex]);
+	}, [currentSlideIndex, autoPlayInterval]);
+
+	const restartPlayFromBeginning = useCallback(() => {
+		stopPlaying();
+		setCurrentSlideIndex(0);
+		setIsPlaying(true);
+	}, [stopPlaying]);
+
+	const togglePlayMode = useCallback(() => {
+		if (isPlaying) {
+			stopPlaying();
+		} else {
+			setIsPlaying(true);
+		}
+	}, [isPlaying, stopPlaying]);
+
+	const changeInterval = useCallback((newInterval: number) => {
+		setAutoPlayInterval(newInterval);
+		setRemainingTime(newInterval / 1000);
+	}, []);
 
 	const toggleFullscreen = useCallback(() => {
 		if (!document.fullscreenElement) {
-			document.documentElement.requestFullscreen().catch(() => {
-				// Ignore errors
-			});
+			document.documentElement.requestFullscreen().catch(() => { });
 			setIsFullscreen(true);
 		} else {
 			document.exitFullscreen();
@@ -71,15 +120,16 @@ export default function PresentationPage() {
 		}
 	}, []);
 
-	const exitFullscreen = useCallback(() => {
+	const returnToEditor = useCallback(() => {
+		stopPlaying();
 		if (document.fullscreenElement) {
 			document.exitFullscreen();
-			setIsFullscreen(false);
 		}
-	}, []);
+		router.push(`/editor?id=${presentation?.id}`);
+	}, [presentation?.id, router, stopPlaying]);
 
 	useEffect(() => {
-		if (!presentation) return;
+		if (!presentation || !isMounted) return;
 
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === "ArrowRight" || e.key === " ") {
@@ -89,35 +139,66 @@ export default function PresentationPage() {
 				e.preventDefault();
 				prevSlide();
 			} else if (e.key === "Escape") {
-				exitFullscreen();
+				stopPlaying();
+				if (document.fullscreenElement) {
+					document.exitFullscreen();
+					setIsFullscreen(false);
+				}
 			} else if (e.key === "f" || e.key === "F") {
 				toggleFullscreen();
+			} else if (e.key === "p" || e.key === "P") {
+				togglePlayMode();
+			} else if (e.key === "r" || e.key === "R") {
+				restartPlayFromBeginning();
+			} else if (e.key === "e" || e.key === "E") {
+				e.preventDefault();
+				returnToEditor();
 			}
 		};
 
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [presentation, nextSlide, prevSlide, exitFullscreen, toggleFullscreen]);
+	}, [presentation, nextSlide, prevSlide, toggleFullscreen, togglePlayMode, restartPlayFromBeginning, stopPlaying, returnToEditor, isMounted]);
 
 	useEffect(() => {
-		if (isPlaying && presentation) {
-			const interval = setInterval(() => {
+		if (isPlaying && presentation && isMounted) {
+			if (intervalRef.current) {
+				clearInterval(intervalRef.current);
+			}
+			if (timerRef.current) {
+				clearInterval(timerRef.current);
+			}
+
+			setRemainingTime(autoPlayInterval / 1000);
+			timerRef.current = setInterval(() => {
+				setRemainingTime((prev) => {
+					if (prev <= 0.1) {
+						return autoPlayInterval / 1000;
+					}
+					return prev - 0.1;
+				});
+			}, 100);
+
+			intervalRef.current = setInterval(() => {
 				setCurrentSlideIndex((prev) => {
 					if (prev < presentation.slides.length - 1) {
 						return prev + 1;
 					} else {
-						setIsPlaying(false);
+						stopPlaying();
 						return prev;
 					}
 				});
-			}, 5000);
+			}, autoPlayInterval);
 
-			return () => clearInterval(interval);
+			return () => {
+				if (intervalRef.current) clearInterval(intervalRef.current);
+				if (timerRef.current) clearInterval(timerRef.current);
+			};
 		}
-	}, [isPlaying, presentation]);
+	}, [isPlaying, presentation, autoPlayInterval, stopPlaying, isMounted]);
 
 	useEffect(() => {
-		if (!isFullscreen) return;
+		if (!isFullscreen || !isMounted) return;
 
 		const handleMouseMove = () => {
 			setShowControls(true);
@@ -127,9 +208,9 @@ export default function PresentationPage() {
 
 		window.addEventListener("mousemove", handleMouseMove);
 		return () => window.removeEventListener("mousemove", handleMouseMove);
-	}, [isFullscreen]);
+	}, [isFullscreen, isMounted]);
 
-	if (isLoading) {
+	if (!isMounted || isLoading) {
 		return <LoadingPresentation message="Loading presentation..." />;
 	}
 
@@ -171,130 +252,333 @@ export default function PresentationPage() {
 	const transitionClass = currentSlide.transition?.type || "fade";
 	const transitionDuration = currentSlide.transition?.duration || 500;
 
+	// Zoradenie elementov podľa z-index pre správne prekrývanie
+	const sortedElements = [...currentSlide.elements].sort((a, b) => {
+		const zIndexA = a.style?.zIndex || 0;
+		const zIndexB = b.style?.zIndex || 0;
+		return zIndexA - zIndexB;
+	});
+
 	return (
 		<div className="fixed inset-0 bg-black z-50 overflow-hidden">
-			{/* Slide */}
+			{/* Slide container */}
 			<div
-				className={cn(
-					"w-full h-full flex items-center justify-center transition-all",
-					transitionClass === "fade" && "opacity-100",
-					transitionClass === "slide" && "transform translate-x-0",
-					transitionClass === "zoom" && "scale-100",
-					transitionClass === "blur" && "blur-0",
-				)}
-				style={{
-					transitionDuration: `${transitionDuration}ms`,
-					backgroundColor:
-						currentSlide.background?.color || "var(--background)",
-					backgroundImage: (() => {
-						const stops =
-							currentSlide.background?.gradientStops &&
-							currentSlide.background.gradientStops.length > 0
-								? currentSlide.background.gradientStops
+				ref={slideRef}
+				className="absolute inset-0"
+			>
+				{/* Slide background */}
+				<div
+					className="absolute inset-0 transition-all"
+					style={{
+						transitionDuration: `${transitionDuration}ms`,
+						backgroundColor:
+							currentSlide.background?.color || "var(--background)",
+						backgroundImage: (() => {
+							const stops =
+								currentSlide.background?.gradientStops &&
+									currentSlide.background.gradientStops.length > 0
+									? currentSlide.background.gradientStops
 										.map((s) => `${s.color} ${s.offset}%`)
 										.join(", ")
-								: currentSlide.background?.gradient;
+									: currentSlide.background?.gradient;
 
-						const image = currentSlide.background?.image
-							? `url(${currentSlide.background.image})`
-							: undefined;
+							const image = currentSlide.background?.image
+								? `url(${currentSlide.background.image})`
+								: undefined;
 
-						if (stops) {
-							const type = currentSlide.background?.gradientType || "linear";
-							const angle = currentSlide.background?.gradientAngle || 135;
-							const gradient =
-								type === "linear"
-									? `linear-gradient(${angle}deg, ${stops})`
-									: `radial-gradient(circle, ${stops})`;
+							if (stops) {
+								const type = currentSlide.background?.gradientType || "linear";
+								const angle = currentSlide.background?.gradientAngle || 135;
+								const gradient =
+									type === "linear"
+										? `linear-gradient(${angle}deg, ${stops})`
+										: `radial-gradient(circle, ${stops})`;
 
-							return image ? `${gradient}, ${image}` : gradient;
-						}
+								return image ? `${gradient}, ${image}` : gradient;
+							}
 
-						return image;
-					})(),
-					backgroundSize: "cover",
-					backgroundPosition: "center",
-				}}
-			>
-				{currentSlide.elements.map((element) => (
+							return image;
+						})(),
+						backgroundSize: "cover",
+						backgroundPosition: "center",
+					}}
+				/>
+
+				{/* Slide elements - každý element má vlastný z-index */}
+				{sortedElements.map((element) => (
 					<PresentationElement
 						key={element.id}
 						element={element}
 						slideIndex={currentSlideIndex}
 						slideBackground={currentSlide.background}
+						containerRef={slideRef}
 					/>
 				))}
 			</div>
 
-			{/* Controls */}
-			<div
-				className={cn(
-					"absolute bottom-0 left-0 right-0 bg-black/50 backdrop-blur-sm text-white transition-opacity duration-300",
-					showControls ? "opacity-100" : "opacity-0 pointer-events-none",
-				)}
-			>
-				<div className="flex items-center justify-between p-4">
-					<div className="flex items-center gap-2">
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={prevSlide}
-							disabled={currentSlideIndex === 0}
-							className="text-white hover:bg-white/20 disabled:opacity-50"
+			{/* Overlay UI elements - vyšší z-index aby boli nad obsahom */}
+			<div className="absolute inset-0 pointer-events-none z-[100]">
+				{/* Auto-play progress indicator */}
+				<AnimatePresence>
+					{isPlaying && (
+						<motion.div
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}
+							className="absolute top-0 left-0 right-0 h-1 bg-white/20 pointer-events-auto"
 						>
-							<ChevronLeft className="w-5 h-5" />
-						</Button>
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={() => setIsPlaying(!isPlaying)}
-							className="text-white hover:bg-white/20"
+							<motion.div
+								className="h-full bg-primary"
+								initial={{ width: "0%" }}
+								animate={{ width: "100%" }}
+								transition={{
+									duration: autoPlayInterval / 1000,
+									ease: "linear",
+								}}
+								key={currentSlideIndex}
+							/>
+						</motion.div>
+					)}
+				</AnimatePresence>
+
+				{/* Play mode indicator with timer */}
+				<AnimatePresence>
+					{isPlaying && (
+						<motion.div
+							initial={{ opacity: 0, y: -20 }}
+							animate={{ opacity: 1, y: 0 }}
+							exit={{ opacity: 0, y: -20 }}
+							className="absolute top-4 left-4 bg-primary/90 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2 pointer-events-auto"
 						>
-							{isPlaying ? (
-								<Pause className="w-5 h-5" />
-							) : (
-								<Play className="w-5 h-5" />
-							)}
-						</Button>
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={nextSlide}
-							disabled={currentSlideIndex === presentation.slides.length - 1}
-							className="text-white hover:bg-white/20 disabled:opacity-50"
-						>
-							<ChevronRight className="w-5 h-5" />
-						</Button>
-						<span className="text-sm ml-4">
-							{currentSlideIndex + 1} / {presentation.slides.length}
-						</span>
-					</div>
-					<div className="flex items-center gap-2">
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={toggleFullscreen}
-							className="text-white hover:bg-white/20"
-							title="Fullscreen (F)"
-						>
-							<span className="text-xs">⛶</span>
-						</Button>
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={() => router.push(`/editor?id=${presentation.id}`)}
-							className="text-white hover:bg-white/20"
-							title="Close"
-						>
-							<X className="w-5 h-5" />
-						</Button>
+							<Play className="w-3 h-3 fill-white" />
+							<span>Auto-play</span>
+							<span className="font-mono">{remainingTime.toFixed(1)}s</span>
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={stopPlaying}
+								className="h-5 w-5 text-white hover:bg-white/20 ml-1"
+								title="Stop auto-play (Esc)"
+							>
+								<X className="w-3 h-3" />
+							</Button>
+						</motion.div>
+					)}
+				</AnimatePresence>
+
+				{/* Controls */}
+				<div
+					className={cn(
+						"absolute bottom-0 left-0 right-0 bg-black/50 backdrop-blur-sm text-white transition-opacity duration-300 pointer-events-auto",
+						showControls ? "opacity-100" : "opacity-0 pointer-events-none",
+					)}
+				>
+					<div className="flex items-center justify-between p-4">
+						<div className="flex items-center gap-2">
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={prevSlide}
+								disabled={currentSlideIndex === 0}
+								className="text-white hover:bg-white/20 disabled:opacity-50"
+								title="Previous slide (←)"
+							>
+								<ChevronLeft className="w-5 h-5" />
+							</Button>
+
+							{/* Play/Pause controls */}
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={togglePlayMode}
+								className={cn(
+									"text-white hover:bg-white/20",
+									isPlaying && "bg-primary/50 hover:bg-primary/70"
+								)}
+								title={isPlaying ? "Pause (P)" : "Play (P)"}
+							>
+								{isPlaying ? (
+									<Pause className="w-5 h-5" />
+								) : (
+									<Play className="w-5 h-5" />
+								)}
+							</Button>
+
+							{/* Restart button */}
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={restartPlayFromBeginning}
+								className="text-white hover:bg-white/20"
+								title="Restart from beginning (R)"
+								disabled={currentSlideIndex === 0 && !isPlaying}
+							>
+								<RotateCcw className="w-4 h-4" />
+							</Button>
+
+							{/* Stop button (visible only in play mode) */}
+							<AnimatePresence>
+								{isPlaying && (
+									<motion.div
+										initial={{ scale: 0, opacity: 0 }}
+										animate={{ scale: 1, opacity: 1 }}
+										exit={{ scale: 0, opacity: 0 }}
+									>
+										<Button
+											variant="ghost"
+											size="icon"
+											onClick={stopPlaying}
+											className="text-white hover:bg-white/20 bg-red-500/50 hover:bg-red-500/70"
+											title="Stop auto-play (Esc)"
+										>
+											<EyeOff className="w-4 h-4" />
+										</Button>
+									</motion.div>
+								)}
+							</AnimatePresence>
+
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={nextSlide}
+								disabled={currentSlideIndex === presentation.slides.length - 1}
+								className="text-white hover:bg-white/20 disabled:opacity-50"
+								title="Next slide (→ or Space)"
+							>
+								<ChevronRight className="w-5 h-5" />
+							</Button>
+
+							{/* Speed controls for auto-play */}
+							<AnimatePresence>
+								{isPlaying && (
+									<motion.div
+										initial={{ opacity: 0, x: -20 }}
+										animate={{ opacity: 1, x: 0 }}
+										exit={{ opacity: 0, x: -20 }}
+										className="flex items-center gap-1 ml-4"
+									>
+										<span className="text-xs text-white/70 mr-2">Speed:</span>
+										<Button
+											variant="ghost"
+											size="icon"
+											onClick={() => changeInterval(3000)}
+											className={cn(
+												"h-7 w-7 text-xs text-white hover:bg-white/20",
+												autoPlayInterval === 3000 && "bg-white/30"
+											)}
+											title="3 seconds"
+										>
+											3s
+										</Button>
+										<Button
+											variant="ghost"
+											size="icon"
+											onClick={() => changeInterval(5000)}
+											className={cn(
+												"h-7 w-7 text-xs text-white hover:bg-white/20",
+												autoPlayInterval === 5000 && "bg-white/30"
+											)}
+											title="5 seconds"
+										>
+											5s
+										</Button>
+										<Button
+											variant="ghost"
+											size="icon"
+											onClick={() => changeInterval(8000)}
+											className={cn(
+												"h-7 w-7 text-xs text-white hover:bg-white/20",
+												autoPlayInterval === 8000 && "bg-white/30"
+											)}
+											title="8 seconds"
+										>
+											8s
+										</Button>
+									</motion.div>
+								)}
+							</AnimatePresence>
+
+							<span className="text-sm ml-4">
+								{currentSlideIndex + 1} / {presentation.slides.length}
+							</span>
+						</div>
+
+						<div className="flex items-center gap-2">
+							{/* Return to Editor Button */}
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={returnToEditor}
+								className="text-white hover:bg-white/20 bg-blue-500/30 hover:bg-blue-500/50"
+								title="Return to editor (E)"
+							>
+								<Edit className="w-4 h-4" />
+							</Button>
+
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={toggleFullscreen}
+								className="text-white hover:bg-white/20"
+								title="Fullscreen (F)"
+							>
+								<span className="text-xs">⛶</span>
+							</Button>
+
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={() => {
+									stopPlaying();
+									router.push(`/editor?id=${presentation.id}`);
+								}}
+								className="text-white hover:bg-white/20"
+								title="Close"
+							>
+								<X className="w-5 h-5" />
+							</Button>
+						</div>
 					</div>
 				</div>
-			</div>
 
-			{/* Slide indicator */}
-			<div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm">
-				{currentSlideIndex + 1} / {presentation.slides.length}
+				{/* Slide indicator */}
+				<div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm pointer-events-auto">
+					{currentSlideIndex + 1} / {presentation.slides.length}
+				</div>
+
+				{/* Keyboard shortcuts hint */}
+				<motion.div
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: showControls ? 0.5 : 0, y: showControls ? 0 : 20 }}
+					className="absolute bottom-24 left-4 text-white/50 text-xs hidden md:block"
+				>
+					Press <kbd className="px-1 bg-white/20 rounded">P</kbd> play/pause •{' '}
+					<kbd className="px-1 bg-white/20 rounded">R</kbd> restart •{' '}
+					<kbd className="px-1 bg-white/20 rounded">Esc</kbd> stop •{' '}
+					<kbd className="px-1 bg-white/20 rounded">F</kbd> fullscreen •{' '}
+					<kbd className="px-1 bg-white/20 rounded">E</kbd> edit
+				</motion.div>
+
+				{/* Return to Editor Button - Large version for easy access */}
+				<AnimatePresence>
+					{!showControls && !isPlaying && (
+						<motion.div
+							initial={{ opacity: 0, scale: 0.8 }}
+							animate={{ opacity: 1, scale: 1 }}
+							exit={{ opacity: 0, scale: 0.8 }}
+							className="absolute top-4 left-4 pointer-events-auto"
+						>
+							<Button
+								onClick={returnToEditor}
+								className="bg-blue-500/80 hover:bg-blue-600 text-white shadow-lg"
+								size="sm"
+							>
+								<Edit className="w-4 h-4 mr-2" />
+								Edit Presentation
+							</Button>
+						</motion.div>
+					)}
+				</AnimatePresence>
 			</div>
 		</div>
 	);
@@ -304,14 +588,40 @@ function PresentationElement({
 	element,
 	slideIndex,
 	slideBackground,
+	containerRef,
 }: {
 	element: SlideElement;
 	slideIndex: number;
 	slideBackground?: { color?: string; gradient?: string; image?: string };
+	containerRef: React.RefObject<HTMLDivElement | null>;
 }) {
 	const [isVisible, setIsVisible] = useState(false);
+	const [isMounted, setIsMounted] = useState(false);
+	const [dimensions, setDimensions] = useState({ width: 1920, height: 1080 });
+	const elementRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
+		setIsMounted(true);
+	}, []);
+
+	useEffect(() => {
+		if (!isMounted) return;
+
+		const updateDimensions = () => {
+			if (containerRef.current) {
+				const { width, height } = containerRef.current.getBoundingClientRect();
+				setDimensions({ width, height });
+			}
+		};
+
+		updateDimensions();
+		window.addEventListener('resize', updateDimensions);
+		return () => window.removeEventListener('resize', updateDimensions);
+	}, [containerRef, isMounted]);
+
+	useEffect(() => {
+		if (!isMounted) return;
+
 		setIsVisible(false);
 		const delay = element.animation?.delay || 0;
 		const timer = setTimeout(() => {
@@ -319,7 +629,7 @@ function PresentationElement({
 		}, delay);
 
 		return () => clearTimeout(timer);
-	}, [element.animation?.delay, slideIndex, element.id]);
+	}, [element.animation?.delay, slideIndex, element.id, isMounted]);
 
 	const animationType = element.animation?.type || "none";
 	const duration = element.animation?.duration || 500;
@@ -343,23 +653,32 @@ function PresentationElement({
 		}
 	};
 
-	// Calculate responsive position and size based on viewport
-	const viewportWidth =
-		typeof window !== "undefined" ? window.innerWidth : 1920;
-	const viewportHeight =
-		typeof window !== "undefined" ? window.innerHeight : 1080;
-	const scaleX = viewportWidth / 1920;
-	const scaleY = viewportHeight / 1080;
-	const scale = Math.min(scaleX, scaleY);
+	// Výpočet pozície a veľkosti vzhľadom na aktuálny kontajner
+	const calculateStyle = (): React.CSSProperties => {
+		const baseWidth = 1920;
+		const baseHeight = 1080;
+		
+		const scaleX = dimensions.width / baseWidth;
+		const scaleY = dimensions.height / baseHeight;
+		const scale = Math.min(scaleX, scaleY);
 
-	const style: React.CSSProperties = {
-		position: "absolute",
-		left: `${(element.position.x / 960) * 100}%`,
-		top: `${(element.position.y / 540) * 100}%`,
-		width: `${(element.size.width / 960) * 100}%`,
-		height: `${(element.size.height / 540) * 100}%`,
-		animationDuration: `${duration}ms`,
-		...element.style,
+		// Centrovanie obsahu
+		const offsetX = (dimensions.width - baseWidth * scale) / 2;
+		const offsetY = (dimensions.height - baseHeight * scale) / 2;
+
+		const left = offsetX + (element.position.x * scale);
+		const top = offsetY + (element.position.y * scale);
+
+		return {
+			position: "absolute",
+			left: `${left}px`,
+			top: `${top}px`,
+			width: `${element.size.width * scale}px`,
+			height: `${element.size.height * scale}px`,
+			animationDuration: `${duration}ms`,
+			zIndex: element.style?.zIndex || 1,
+			...element.style,
+		};
 	};
 
 	const renderContent = () => {
@@ -372,36 +691,36 @@ function PresentationElement({
 				return <TableElement element={element} isSelected={false} />;
 			case "code":
 				return <CodeElement element={element} isSelected={false} />;
-			case "text":
+			case "text": {
 				const filterStyles = element.style?.filters
 					? {
-							filter: [
-								element.style.filters.blur
-									? `blur(${element.style.filters.blur}px)`
-									: "",
-								element.style.filters.brightness
-									? `brightness(${element.style.filters.brightness})`
-									: "",
-								element.style.filters.contrast
-									? `contrast(${element.style.filters.contrast})`
-									: "",
-								element.style.filters.grayscale
-									? `grayscale(${element.style.filters.grayscale})`
-									: "",
-								element.style.filters.sepia
-									? `sepia(${element.style.filters.sepia})`
-									: "",
-								element.style.filters.hueRotate
-									? `hue-rotate(${element.style.filters.hueRotate}deg)`
-									: "",
-								element.style.filters.saturate
-									? `saturate(${element.style.filters.saturate})`
-									: "",
-								element.style.filters.invert
-									? `invert(${element.style.filters.invert})`
-									: "",
-							].join(" "),
-						}
+						filter: [
+							element.style.filters.blur
+								? `blur(${element.style.filters.blur}px)`
+								: "",
+							element.style.filters.brightness
+								? `brightness(${element.style.filters.brightness})`
+								: "",
+							element.style.filters.contrast
+								? `contrast(${element.style.filters.contrast})`
+								: "",
+							element.style.filters.grayscale
+								? `grayscale(${element.style.filters.grayscale})`
+								: "",
+							element.style.filters.sepia
+								? `sepia(${element.style.filters.sepia})`
+								: "",
+							element.style.filters.hueRotate
+								? `hue-rotate(${element.style.filters.hueRotate}deg)`
+								: "",
+							element.style.filters.saturate
+								? `saturate(${element.style.filters.saturate})`
+								: "",
+							element.style.filters.invert
+								? `invert(${element.style.filters.invert})`
+								: "",
+						].join(" "),
+					}
 					: {};
 
 				const getBackgroundStyle = () => {
@@ -434,7 +753,7 @@ function PresentationElement({
 							width: "100%",
 							height: "100%",
 							padding: element.style?.padding || "8px",
-							fontSize: `${(element.style?.fontSize || 24) * scale}px`,
+							fontSize: element.style?.fontSize || 24,
 							color: element.style?.color || "var(--foreground)",
 							fontFamily: element.style?.fontFamily || "Arial",
 							fontWeight: element.style?.fontWeight || "normal",
@@ -460,36 +779,37 @@ function PresentationElement({
 						{element.content}
 					</div>
 				);
-			case "image":
+			}
+			case "image": {
 				const imageFilters = element.style?.filters
 					? {
-							filter: [
-								element.style.filters.blur
-									? `blur(${element.style.filters.blur}px)`
-									: "",
-								element.style.filters.brightness
-									? `brightness(${element.style.filters.brightness})`
-									: "",
-								element.style.filters.contrast
-									? `contrast(${element.style.filters.contrast})`
-									: "",
-								element.style.filters.grayscale
-									? `grayscale(${element.style.filters.grayscale})`
-									: "",
-								element.style.filters.sepia
-									? `sepia(${element.style.filters.sepia})`
-									: "",
-								element.style.filters.hueRotate
-									? `hue-rotate(${element.style.filters.hueRotate}deg)`
-									: "",
-								element.style.filters.saturate
-									? `saturate(${element.style.filters.saturate})`
-									: "",
-								element.style.filters.invert
-									? `invert(${element.style.filters.invert})`
-									: "",
-							].join(" "),
-						}
+						filter: [
+							element.style.filters.blur
+								? `blur(${element.style.filters.blur}px)`
+								: "",
+							element.style.filters.brightness
+								? `brightness(${element.style.filters.brightness})`
+								: "",
+							element.style.filters.contrast
+								? `contrast(${element.style.filters.contrast})`
+								: "",
+							element.style.filters.grayscale
+								? `grayscale(${element.style.filters.grayscale})`
+								: "",
+							element.style.filters.sepia
+								? `sepia(${element.style.filters.sepia})`
+								: "",
+							element.style.filters.hueRotate
+								? `hue-rotate(${element.style.filters.hueRotate}deg)`
+								: "",
+							element.style.filters.saturate
+								? `saturate(${element.style.filters.saturate})`
+								: "",
+							element.style.filters.invert
+								? `invert(${element.style.filters.invert})`
+								: "",
+						].join(" "),
+					}
 					: {};
 
 				return (
@@ -508,37 +828,38 @@ function PresentationElement({
 						}}
 					/>
 				);
-			case "shape":
+			}
+			case "shape": {
 				const shapeType = element.content || "square";
 				const shapeFilters = element.style?.filters
 					? {
-							filter: [
-								element.style.filters.blur
-									? `blur(${element.style.filters.blur}px)`
-									: "",
-								element.style.filters.brightness
-									? `brightness(${element.style.filters.brightness})`
-									: "",
-								element.style.filters.contrast
-									? `contrast(${element.style.filters.contrast})`
-									: "",
-								element.style.filters.grayscale
-									? `grayscale(${element.style.filters.grayscale})`
-									: "",
-								element.style.filters.sepia
-									? `sepia(${element.style.filters.sepia})`
-									: "",
-								element.style.filters.hueRotate
-									? `hue-rotate(${element.style.filters.hueRotate}deg)`
-									: "",
-								element.style.filters.saturate
-									? `saturate(${element.style.filters.saturate})`
-									: "",
-								element.style.filters.invert
-									? `invert(${element.style.filters.invert})`
-									: "",
-							].join(" "),
-						}
+						filter: [
+							element.style.filters.blur
+								? `blur(${element.style.filters.blur}px)`
+								: "",
+							element.style.filters.brightness
+								? `brightness(${element.style.filters.brightness})`
+								: "",
+							element.style.filters.contrast
+								? `contrast(${element.style.filters.contrast})`
+								: "",
+							element.style.filters.grayscale
+								? `grayscale(${element.style.filters.grayscale})`
+								: "",
+							element.style.filters.sepia
+								? `sepia(${element.style.filters.sepia})`
+								: "",
+							element.style.filters.hueRotate
+								? `hue-rotate(${element.style.filters.hueRotate}deg)`
+								: "",
+							element.style.filters.saturate
+								? `saturate(${element.style.filters.saturate})`
+								: "",
+							element.style.filters.invert
+								? `invert(${element.style.filters.invert})`
+								: "",
+						].join(" "),
+					}
 					: {};
 
 				const shapeStyle: React.CSSProperties = {
@@ -573,14 +894,15 @@ function PresentationElement({
 				if (shapeType === "circle") {
 					shapeStyle.borderRadius = "50%";
 				} else if (shapeType === "triangle") {
+					const scale = dimensions.width / 1920;
 					return (
 						<div
 							style={{
 								width: 0,
 								height: 0,
-								borderLeft: `${((element.size.width / 1920) * viewportWidth) / 2}px solid transparent`,
-								borderRight: `${((element.size.width / 1920) * viewportWidth) / 2}px solid transparent`,
-								borderBottom: `${(element.size.height / 1080) * viewportHeight}px solid ${element.style?.backgroundColor || "#3b82f6"}`,
+								borderLeft: `${element.size.width * scale / 2}px solid transparent`,
+								borderRight: `${element.size.width * scale / 2}px solid transparent`,
+								borderBottom: `${element.size.height * scale}px solid ${element.style?.backgroundColor || "#3b82f6"}`,
 								...shapeFilters,
 							}}
 						/>
@@ -591,11 +913,7 @@ function PresentationElement({
 							<div
 								style={{
 									color: element.style?.backgroundColor || "#ec4899",
-									fontSize:
-										Math.min(
-											element.size.width * scaleX,
-											element.size.height * scaleY,
-										) * 0.8,
+									fontSize: Math.min(element.size.width, element.size.height) * 0.8,
 									...shapeFilters,
 								}}
 							>
@@ -606,6 +924,7 @@ function PresentationElement({
 				}
 
 				return <div style={shapeStyle} />;
+			}
 			case "video":
 				return (
 					<div
@@ -627,8 +946,20 @@ function PresentationElement({
 		}
 	};
 
+	if (!isMounted) {
+		return null;
+	}
+
 	return (
-		<div style={style} className={cn("select-none", getAnimationClass())}>
+		<div
+			ref={elementRef}
+			style={calculateStyle()}
+			className={cn(
+				"select-none",
+				getAnimationClass(),
+				element.type === "text" && "overflow-hidden"
+			)}
+		>
 			{renderContent()}
 		</div>
 	);
