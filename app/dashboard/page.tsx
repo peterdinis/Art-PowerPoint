@@ -360,7 +360,10 @@ export default function Home() {
 			toast.loading("Analyzing presentation...", { id: "import-file" });
 			let parsedData;
 
-			if (file.name.toLowerCase().endsWith(".odp") || file.type === "application/vnd.oasis.opendocument.presentation") {
+			if (
+				file.name.toLowerCase().endsWith(".odp") ||
+				file.type === "application/vnd.oasis.opendocument.presentation"
+			) {
 				parsedData = await importODP(file);
 			} else {
 				parsedData = await importPPTX(file);
@@ -404,7 +407,9 @@ export default function Home() {
 			setImportedData(null);
 		} catch (error) {
 			console.error("Failed to import PPTX:", error);
-			toast.error("Failed to create presentation.", { id: "confirm-import-pptx" });
+			toast.error("Failed to create presentation.", {
+				id: "confirm-import-pptx",
+			});
 		}
 	};
 
@@ -1003,10 +1008,13 @@ export default function Home() {
 			</Dialog>
 
 			{/* Import PPTX Dialog */}
-			<Dialog open={showImportDialog} onOpenChange={(open) => {
-				setShowImportDialog(open);
-				if (!open) setImportFiles([]);
-			}}>
+			<Dialog
+				open={showImportDialog}
+				onOpenChange={(open) => {
+					setShowImportDialog(open);
+					if (!open) setImportFiles([]);
+				}}
+			>
 				<DialogContent className="sm:max-w-md rounded-lg">
 					<DialogHeader>
 						<DialogTitle className="text-xl">Import PowerPoint</DialogTitle>
@@ -1023,13 +1031,15 @@ export default function Home() {
 							acceptedFileTypes={[
 								"application/vnd.openxmlformats-officedocument.presentationml.presentation",
 								"application/vnd.ms-powerpoint",
-								"application/vnd.oasis.opendocument.presentation"
+								"application/vnd.oasis.opendocument.presentation",
 							]}
 							labelIdle='Drag & Drop your .pptx or .odp file or <span class="filepond--label-action">Browse</span>'
 							fileValidateTypeDetectType={(source, type) =>
 								new Promise((resolve, reject) => {
 									if (source.name.toLowerCase().endsWith(".pptx")) {
-										resolve("application/vnd.openxmlformats-officedocument.presentationml.presentation");
+										resolve(
+											"application/vnd.openxmlformats-officedocument.presentationml.presentation",
+										);
 									} else if (source.name.toLowerCase().endsWith(".odp")) {
 										resolve("application/vnd.oasis.opendocument.presentation");
 									} else {
@@ -1067,13 +1077,16 @@ export default function Home() {
 			</Dialog>
 
 			{/* Pre-Import Analysis Dialog */}
-			<Dialog open={showAnalysisDialog} onOpenChange={(open) => {
-				setShowAnalysisDialog(open);
-				if (!open) {
-					setImportedData(null);
-					setImportFiles([]); // reset pond
-				}
-			}}>
+			<Dialog
+				open={showAnalysisDialog}
+				onOpenChange={(open) => {
+					setShowAnalysisDialog(open);
+					if (!open) {
+						setImportedData(null);
+						setImportFiles([]); // reset pond
+					}
+				}}
+			>
 				<DialogContent className="sm:max-w-md rounded-lg">
 					<DialogHeader>
 						<DialogTitle className="text-xl">Analysis Complete</DialogTitle>
@@ -1086,25 +1099,37 @@ export default function Home() {
 							<div className="bg-muted p-4 rounded-lg space-y-2">
 								<div className="flex justify-between items-center">
 									<span className="text-sm text-muted-foreground">Title</span>
-									<span className="font-medium truncate max-w-[200px]" title={importedData.title || "Untitled"}>
+									<span
+										className="font-medium truncate max-w-[200px]"
+										title={importedData.title || "Untitled"}
+									>
 										{importedData.title || "Untitled"}
 									</span>
 								</div>
 								<div className="flex justify-between items-center">
-									<span className="text-sm text-muted-foreground">Total Slides</span>
+									<span className="text-sm text-muted-foreground">
+										Total Slides
+									</span>
 									<span className="font-medium">
 										{importedData.slides?.length || 0}
 									</span>
 								</div>
 								<div className="flex justify-between items-center">
-									<span className="text-sm text-muted-foreground">Total Elements</span>
+									<span className="text-sm text-muted-foreground">
+										Total Elements
+									</span>
 									<span className="font-medium">
-										{importedData.slides?.reduce((count: number, slide: any) => count + (slide.elements?.length || 0), 0) || 0}
+										{importedData.slides?.reduce(
+											(count: number, slide: any) =>
+												count + (slide.elements?.length || 0),
+											0,
+										) || 0}
 									</span>
 								</div>
 							</div>
 							<p className="text-sm text-muted-foreground">
-								Click Confirm below to convert this file into a fully editable presentation.
+								Click Confirm below to convert this file into a fully editable
+								presentation.
 							</p>
 						</div>
 					)}
@@ -1120,10 +1145,7 @@ export default function Home() {
 						>
 							Cancel
 						</Button>
-						<Button
-							onClick={handleConfirmImport}
-							className="rounded-lg"
-						>
+						<Button onClick={handleConfirmImport} className="rounded-lg">
 							Confirm & Import
 						</Button>
 					</DialogFooter>

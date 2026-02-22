@@ -52,6 +52,7 @@ import type {
 import SlideBackgroundEditor from "./SlideBackgroundEditor";
 import { useTheme } from "@/components/ThemeProvider";
 import { motion } from "framer-motion";
+import { SlideNotesEditor } from "./SlideNotesEditor";
 
 type FontFamilyType =
 	| "Arial"
@@ -96,17 +97,14 @@ export default function PropertiesPanel() {
 
 	const handleUpdate = (updates: Partial<SlideElement>) => {
 		if (selectedElement) {
-			// Create a clean update object
 			const updateData: Partial<SlideElement> = {};
 
-			// Handle direct property updates
 			Object.keys(updates).forEach((key) => {
-				if (key !== 'style' && key !== 'animation') {
+				if (key !== "style" && key !== "animation") {
 					(updateData as any)[key] = (updates as any)[key];
 				}
 			});
 
-			// Handle style updates properly
 			if (updates.style) {
 				updateData.style = {
 					...(selectedElement.style || {}),
@@ -114,12 +112,11 @@ export default function PropertiesPanel() {
 				};
 			}
 
-			// Handle animation updates properly
 			if (updates.animation) {
 				updateData.animation = {
-					...(selectedElement.animation || { 
-						type: "none", 
-						duration: 500 
+					...(selectedElement.animation || {
+						type: "none",
+						duration: 500,
 					}),
 					...updates.animation,
 				};
@@ -177,35 +174,33 @@ export default function PropertiesPanel() {
 
 						<Separator />
 
-						{/* Slide Notes */}
 						<div>
-							<Label htmlFor="slide-notes">Slide Notes</Label>
+							<Label htmlFor="slide-notes" className="flex items-center gap-2">
+								<Type className="w-4 h-4" />
+								Slide Notes
+							</Label>
 							<p className="text-xs text-muted-foreground mb-2">
 								Notes are only visible in the editor, not in the presentation
 							</p>
-							<Textarea
-								id="slide-notes"
-								value={currentSlide.notes || ""}
-								onChange={(e) => {
+							<SlideNotesEditor
+								content={currentSlide.notes || ""}
+								onChange={(html) => {
 									const updatedSlides = currentPresentation.slides.map(
 										(slide, index) =>
 											index === currentSlideIndex
-												? { ...slide, notes: e.target.value }
+												? { ...slide, notes: html }
 												: slide,
 									);
 									updatePresentation(currentPresentation.id, {
 										slides: updatedSlides,
 									});
 								}}
-								className="mt-2 resize-none"
-								rows={6}
-								placeholder="Add notes for this slide..."
+								placeholder="Add formatted notes for this slide..."
 							/>
 						</div>
 
 						<Separator />
 
-						{/* Slide Transition */}
 						<div className="pb-2">
 							<Label htmlFor="slide-transition">Slide Transition</Label>
 							<Select
@@ -388,7 +383,6 @@ export default function PropertiesPanel() {
 
 			<CardContent className="flex-1 overflow-y-auto scrollbar-hidden pb-8">
 				<div className="space-y-6">
-					{/* Position */}
 					<div>
 						<Label className="mb-3">Position</Label>
 						<div className="grid grid-cols-2 gap-3 mt-2">
@@ -441,7 +435,6 @@ export default function PropertiesPanel() {
 
 					<Separator />
 
-					{/* Size */}
 					<div>
 						<Label className="mb-3">Size</Label>
 						<div className="grid grid-cols-2 gap-3 mt-2">
@@ -494,7 +487,6 @@ export default function PropertiesPanel() {
 						</div>
 					</div>
 
-					{/* Rotation */}
 					<div>
 						<Label htmlFor="rotation">Rotation</Label>
 						<div className="flex items-center gap-2 mt-2">
@@ -517,7 +509,6 @@ export default function PropertiesPanel() {
 						</div>
 					</div>
 
-					{/* Opacity */}
 					<div>
 						<Label htmlFor="opacity">Opacity</Label>
 						<div className="flex items-center gap-2 mt-2">
@@ -543,7 +534,6 @@ export default function PropertiesPanel() {
 						</div>
 					</div>
 
-					{/* Text-specific properties */}
 					{selectedElement.type === "text" && (
 						<>
 							<Separator />
@@ -606,9 +596,7 @@ export default function PropertiesPanel() {
 									<Input
 										id="background-color"
 										type="color"
-										value={
-											selectedElement.style?.backgroundColor || "#ffffff"
-										}
+										value={selectedElement.style?.backgroundColor || "#ffffff"}
 										onChange={(e) =>
 											handleUpdate({
 												style: {
@@ -628,9 +616,9 @@ export default function PropertiesPanel() {
 									value={selectedElement.style?.fontFamily || "Arial"}
 									onValueChange={(value: FontFamilyType) =>
 										handleUpdate({
-											style: { 
-												...(selectedElement.style || {}), 
-												fontFamily: value 
+											style: {
+												...(selectedElement.style || {}),
+												fontFamily: value,
 											},
 										})
 									}
@@ -743,9 +731,9 @@ export default function PropertiesPanel() {
 										)}
 										onClick={() =>
 											handleUpdate({
-												style: { 
-													...(selectedElement.style || {}), 
-													textAlign: "left" 
+												style: {
+													...(selectedElement.style || {}),
+													textAlign: "left",
 												},
 											})
 										}
@@ -783,9 +771,9 @@ export default function PropertiesPanel() {
 										)}
 										onClick={() =>
 											handleUpdate({
-												style: { 
-													...(selectedElement.style || {}), 
-													textAlign: "right" 
+												style: {
+													...(selectedElement.style || {}),
+													textAlign: "right",
 												},
 											})
 										}
@@ -796,7 +784,6 @@ export default function PropertiesPanel() {
 								</div>
 							</div>
 
-							{/* Advanced text styling */}
 							<div className="grid grid-cols-2 gap-4">
 								<div>
 									<Label htmlFor="line-height">Line Height</Label>
@@ -841,7 +828,6 @@ export default function PropertiesPanel() {
 						</>
 					)}
 
-					{/* Image-specific properties */}
 					{selectedElement.type === "image" && (
 						<>
 							<Separator />
@@ -897,7 +883,6 @@ export default function PropertiesPanel() {
 						</>
 					)}
 
-					{/* Video-specific properties */}
 					{selectedElement.type === "video" && (
 						<>
 							<Separator />
@@ -972,9 +957,6 @@ export default function PropertiesPanel() {
 							</div>
 						</>
 					)}
-
-					{/* Rest of the component remains the same but update all handleUpdate calls to use the new pattern */}
-					{/* ... */}
 				</div>
 			</CardContent>
 		</motion.div>

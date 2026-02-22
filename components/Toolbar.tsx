@@ -232,7 +232,13 @@ export default function Toolbar() {
 				setToolbarImportedData(null);
 			}, 300);
 		}
-	}, [imageDialogOpen, chartDialogOpen, showImportDialog, showImportODPDialog, showAnalysisDialog]);
+	}, [
+		imageDialogOpen,
+		chartDialogOpen,
+		showImportDialog,
+		showImportODPDialog,
+		showAnalysisDialog,
+	]);
 
 	if (!currentPresentation) return null;
 
@@ -240,10 +246,15 @@ export default function Toolbar() {
 		const file = fileItem.file;
 		if (!file || !currentPresentation) return;
 		try {
-			toast.loading("Analyzing presentation...", { id: "toolbar-handle-parse" });
+			toast.loading("Analyzing presentation...", {
+				id: "toolbar-handle-parse",
+			});
 			let importedData;
 
-			if (file.name.toLowerCase().endsWith(".odp") || file.type === "application/vnd.oasis.opendocument.presentation") {
+			if (
+				file.name.toLowerCase().endsWith(".odp") ||
+				file.type === "application/vnd.oasis.opendocument.presentation"
+			) {
 				importedData = await importODP(file);
 			} else {
 				importedData = await importPPTX(file);
@@ -278,7 +289,9 @@ export default function Toolbar() {
 				slides: [...currentPresentation.slides, ...newSlides],
 			});
 
-			toast.success(`Successfully added ${newSlides.length} slides!`, { id: "toolbar-confirm-import" });
+			toast.success(`Successfully added ${newSlides.length} slides!`, {
+				id: "toolbar-confirm-import",
+			});
 			setShowAnalysisDialog(false);
 			setToolbarImportedData(null);
 		} catch (error) {
@@ -1352,10 +1365,11 @@ export default function Toolbar() {
 											{CHART_TEMPLATES.map((template) => (
 												<div
 													key={template.name}
-													className={`border rounded-lg p-4 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${selectedChartTemplate.name === template.name
-														? "border-primary ring-2 ring-primary/20 bg-primary/5"
-														: "border-border"
-														}`}
+													className={`border rounded-lg p-4 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${
+														selectedChartTemplate.name === template.name
+															? "border-primary ring-2 ring-primary/20 bg-primary/5"
+															: "border-border"
+													}`}
 													onClick={() => handleChartTemplateSelect(template)}
 												>
 													<div className="flex items-center gap-3 mb-2">
@@ -1954,15 +1968,21 @@ Q4,61000,40000,21000`}
 				</div>
 			</div>
 			{/* Import PPTX Dialog */}
-			<Dialog open={showImportDialog} onOpenChange={(open) => {
-				setShowImportDialog(open);
-				if (!open) setImportFiles([]);
-			}}>
+			<Dialog
+				open={showImportDialog}
+				onOpenChange={(open) => {
+					setShowImportDialog(open);
+					if (!open) setImportFiles([]);
+				}}
+			>
 				<DialogContent className="sm:max-w-md rounded-lg">
 					<DialogHeader>
-						<DialogTitle className="text-xl">Import PowerPoint Slides</DialogTitle>
+						<DialogTitle className="text-xl">
+							Import PowerPoint Slides
+						</DialogTitle>
 						<DialogDescription>
-							Upload a .pptx file to append its slides to the current presentation.
+							Upload a .pptx file to append its slides to the current
+							presentation.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="py-4">
@@ -1973,12 +1993,14 @@ Q4,61000,40000,21000`}
 							maxFiles={1}
 							acceptedFileTypes={[
 								"application/vnd.openxmlformats-officedocument.presentationml.presentation",
-								"application/vnd.ms-powerpoint"
+								"application/vnd.ms-powerpoint",
 							]}
 							fileValidateTypeDetectType={(source, type) =>
 								new Promise((resolve, reject) => {
 									if (source.name.toLowerCase().endsWith(".pptx")) {
-										resolve("application/vnd.openxmlformats-officedocument.presentationml.presentation");
+										resolve(
+											"application/vnd.openxmlformats-officedocument.presentationml.presentation",
+										);
 									} else if (source.name.toLowerCase().endsWith(".odp")) {
 										resolve("application/vnd.oasis.opendocument.presentation");
 									} else {
@@ -2016,15 +2038,21 @@ Q4,61000,40000,21000`}
 				</DialogContent>
 			</Dialog>
 			{/* Import ODP Dialog */}
-			<Dialog open={showImportODPDialog} onOpenChange={(open) => {
-				setShowImportODPDialog(open);
-				if (!open) setImportODPFiles([]);
-			}}>
+			<Dialog
+				open={showImportODPDialog}
+				onOpenChange={(open) => {
+					setShowImportODPDialog(open);
+					if (!open) setImportODPFiles([]);
+				}}
+			>
 				<DialogContent className="sm:max-w-md rounded-lg">
 					<DialogHeader>
-						<DialogTitle className="text-xl">Import LibreOffice Slides</DialogTitle>
+						<DialogTitle className="text-xl">
+							Import LibreOffice Slides
+						</DialogTitle>
 						<DialogDescription>
-							Upload an .odp file to append its slides to the current presentation.
+							Upload an .odp file to append its slides to the current
+							presentation.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="py-4">
@@ -2034,7 +2062,7 @@ Q4,61000,40000,21000`}
 							allowMultiple={false}
 							maxFiles={1}
 							acceptedFileTypes={[
-								"application/vnd.oasis.opendocument.presentation"
+								"application/vnd.oasis.opendocument.presentation",
 							]}
 							fileValidateTypeDetectType={(source, type) =>
 								new Promise((resolve, reject) => {
@@ -2075,14 +2103,17 @@ Q4,61000,40000,21000`}
 				</DialogContent>
 			</Dialog>
 			{/* Pre-Import Analysis Dialog */}
-			<Dialog open={showAnalysisDialog} onOpenChange={(open) => {
-				setShowAnalysisDialog(open);
-				if (!open) {
-					setToolbarImportedData(null);
-					setImportFiles([]);
-					setImportODPFiles([]);
-				}
-			}}>
+			<Dialog
+				open={showAnalysisDialog}
+				onOpenChange={(open) => {
+					setShowAnalysisDialog(open);
+					if (!open) {
+						setToolbarImportedData(null);
+						setImportFiles([]);
+						setImportODPFiles([]);
+					}
+				}}
+			>
 				<DialogContent className="sm:max-w-md rounded-lg">
 					<DialogHeader>
 						<DialogTitle className="text-xl">Analysis Complete</DialogTitle>
@@ -2095,20 +2126,31 @@ Q4,61000,40000,21000`}
 							<div className="bg-muted p-4 rounded-lg space-y-2">
 								<div className="flex justify-between items-center">
 									<span className="text-sm text-muted-foreground">Title</span>
-									<span className="font-medium truncate max-w-[200px]" title={toolbarImportedData.title || "Untitled"}>
+									<span
+										className="font-medium truncate max-w-[200px]"
+										title={toolbarImportedData.title || "Untitled"}
+									>
 										{toolbarImportedData.title || "Untitled"}
 									</span>
 								</div>
 								<div className="flex justify-between items-center">
-									<span className="text-sm text-muted-foreground">Total Slides</span>
+									<span className="text-sm text-muted-foreground">
+										Total Slides
+									</span>
 									<span className="font-medium">
 										{toolbarImportedData.slides?.length || 0}
 									</span>
 								</div>
 								<div className="flex justify-between items-center">
-									<span className="text-sm text-muted-foreground">Total Elements</span>
+									<span className="text-sm text-muted-foreground">
+										Total Elements
+									</span>
 									<span className="font-medium">
-										{toolbarImportedData.slides?.reduce((count: number, slide: any) => count + (slide.elements?.length || 0), 0) || 0}
+										{toolbarImportedData.slides?.reduce(
+											(count: number, slide: any) =>
+												count + (slide.elements?.length || 0),
+											0,
+										) || 0}
 									</span>
 								</div>
 							</div>

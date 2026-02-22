@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { AlertCircle, RefreshCw, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,11 +12,6 @@ export default function Error({
 	error: Error & { digest?: string };
 	reset: () => void;
 }) {
-	useEffect(() => {
-		// Log the error to an error reporting service
-		console.error("Application error:", error);
-	}, [error]);
-
 	return (
 		<div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-background to-muted/20 p-4">
 			<motion.div

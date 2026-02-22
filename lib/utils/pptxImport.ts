@@ -88,7 +88,8 @@ async function parseSlideXml(
 			const blipFill = bgPr.getElementsByTagName("a:blipFill")[0];
 			if (blipFill) {
 				const blip = blipFill.getElementsByTagName("a:blip")[0];
-				const rId = blip?.getAttribute("r:embed") || blip?.getAttribute("r:link");
+				const rId =
+					blip?.getAttribute("r:embed") || blip?.getAttribute("r:link");
 				if (rId) {
 					const rels = relsDoc.getElementsByTagName("Relationship");
 					let target = "";

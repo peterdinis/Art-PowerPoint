@@ -4,7 +4,6 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Suspense } from "react";
 import Loading from "./loading";
-import { ScrollToTop } from "@/components/ScrollToTop";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -85,7 +84,6 @@ export default function RootLayout({
 						storageKey="presentation-builder-theme"
 					>
 						{children}
-						<ScrollToTop />
 					</ThemeProvider>
 				</Suspense>
 			</body>
