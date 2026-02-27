@@ -10,7 +10,17 @@ const nextConfig: NextConfig = {
 	typedRoutes: true,
 	experimental: {
 		optimizeCss: true,
-		optimizePackageImports: ["lucide-react", "framer-motion", "zustand"],
+		optimizePackageImports: [
+			"lucide-react",
+			"framer-motion",
+			"zustand",
+			"react-dnd",
+			"react-dnd-html5-backend",
+			"@radix-ui/react-dialog",
+			"@radix-ui/react-dropdown-menu",
+			"@radix-ui/react-select",
+			"@radix-ui/react-tabs",
+		],
 		browserDebugInfoInTerminal: true,
 	},
 	images: {

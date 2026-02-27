@@ -302,7 +302,7 @@ export default function SlideElement({
 			minConstraints={[50, 50]}
 			maxConstraints={[800, 600]}
 			onResize={handleResize}
-			resizeHandles={isSelected ? ["se"] : []}
+			resizeHandles={isSelected ? ["s", "w", "e", "n", "sw", "nw", "se", "ne"] : []}
 			handleSize={[8, 8]}
 		>
 			<motion.div
@@ -341,7 +341,7 @@ export default function SlideElement({
 					<button
 						onClick={(e) => {
 							e.stopPropagation();
-							if (confirm("Delete this element?")) {
+							if (confirm("Naozaj odstrániť tento prvok?")) {
 								deleteElement(element.id);
 								selectElement(null);
 							}

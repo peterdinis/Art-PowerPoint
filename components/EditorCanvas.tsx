@@ -43,36 +43,38 @@ export default function EditorCanvas() {
 		drop: (item: { id: string }, monitor) => {
 			if (!monitor.didDrop() && currentPresentation && dropRef.current) {
 				const delta = monitor.getDifferenceFromInitialOffset();
-				if (delta) {
-					const element = currentPresentation.slides[
-						currentSlideIndex
-					]?.elements.find((el: { id: string }) => el.id === item.id);
-					if (element) {
-						const slideElement = dropRef.current;
-						const rect = slideElement.getBoundingClientRect();
-						// Adjust scaling calculation to include zoom level
-						const scaleX = rect.width / zoomLevel / 960;
-						const scaleY = rect.height / zoomLevel / 540;
+				// Click without drag (or tiny move): select element so user can edit in Properties
+				if (!delta || (Math.abs(delta.x) < 4 && Math.abs(delta.y) < 4)) {
+					selectElement(item.id);
+					return;
+				}
+				const element = currentPresentation.slides[
+					currentSlideIndex
+				]?.elements.find((el: { id: string }) => el.id === item.id);
+				if (element) {
+					const slideElement = dropRef.current;
+					const rect = slideElement.getBoundingClientRect();
+					const scaleX = rect.width / zoomLevel / 960;
+					const scaleY = rect.height / zoomLevel / 540;
 
-						const newX = Math.max(
-							0,
-							Math.min(
-								960 - element.size.width,
-								element.position.x + delta.x / scaleX,
-							),
-						);
-						const newY = Math.max(
-							0,
-							Math.min(
-								540 - element.size.height,
-								element.position.y + delta.y / scaleY,
-							),
-						);
+					const newX = Math.max(
+						0,
+						Math.min(
+							960 - element.size.width,
+							element.position.x + delta.x / scaleX,
+						),
+					);
+					const newY = Math.max(
+						0,
+						Math.min(
+							540 - element.size.height,
+							element.position.y + delta.y / scaleY,
+						),
+					);
 
-						updateElement(item.id, {
-							position: { x: newX, y: newY },
-						});
-					}
+					updateElement(item.id, {
+						position: { x: newX, y: newY },
+					});
 				}
 			}
 		},
