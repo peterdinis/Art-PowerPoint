@@ -100,7 +100,7 @@ export default function RecentPage() {
 											href={`/editor?id=${presentation.id}`}
 											className="block"
 										>
-											<div className="h-40 bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center relative overflow-hidden">
+											<div className="h-40 bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center relative overflow-hidden">
 												<div className="text-5xl font-bold opacity-20 text-primary">
 													{presentation.slides.length}
 												</div>

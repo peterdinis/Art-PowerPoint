@@ -317,7 +317,7 @@ export default function PresentationPage() {
 			</div>
 
 			{/* Overlay UI elements - vyšší z-index aby boli nad obsahom */}
-			<div className="absolute inset-0 pointer-events-none z-[100]">
+			<div className="absolute inset-0 pointer-events-none z-100">
 				{/* Auto-play progress indicator */}
 				<AnimatePresence>
 					{isPlaying && (
@@ -428,7 +428,7 @@ export default function PresentationPage() {
 											variant="ghost"
 											size="icon"
 											onClick={stopPlaying}
-											className="text-white hover:bg-white/20 bg-red-500/50 hover:bg-red-500/70"
+											className="text-white hover:bg-white/20 bg-red-500/50"
 											title="Stop auto-play (Esc)"
 										>
 											<EyeOff className="w-4 h-4" />
@@ -509,7 +509,7 @@ export default function PresentationPage() {
 								variant="ghost"
 								size="icon"
 								onClick={returnToEditor}
-								className="text-white hover:bg-white/20 bg-blue-500/30 hover:bg-blue-500/50"
+								className="text-white bg-blue-500/30 hover:bg-blue-500/50"
 								title="Return to editor (E)"
 							>
 								<Edit className="w-4 h-4" />

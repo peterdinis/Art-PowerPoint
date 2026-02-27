@@ -1100,7 +1100,7 @@ export default function Home() {
 								<div className="flex justify-between items-center">
 									<span className="text-sm text-muted-foreground">Title</span>
 									<span
-										className="font-medium truncate max-w-[200px]"
+										className="font-medium truncate max-w-50"
 										title={importedData.title || "Untitled"}
 									>
 										{importedData.title || "Untitled"}

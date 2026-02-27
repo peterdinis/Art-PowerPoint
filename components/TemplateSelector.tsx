@@ -16,10 +16,8 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import {
 	Card,
-	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
@@ -126,7 +124,7 @@ export default function TemplateSelector({
 									className="cursor-pointer hover:shadow-lg transition-all group"
 									onClick={handleBlank}
 								>
-									<div className="aspect-video bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center relative overflow-hidden">
+									<div className="aspect-video bg-linear-to-br from-muted to-muted/50 flex items-center justify-center relative overflow-hidden">
 										<div className="absolute inset-0 flex items-center justify-center">
 											<Sparkles className="w-16 h-16 text-muted-foreground/50" />
 										</div>
