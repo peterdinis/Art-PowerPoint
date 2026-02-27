@@ -53,6 +53,7 @@ import SlideBackgroundEditor from "./SlideBackgroundEditor";
 import { useTheme } from "@/components/ThemeProvider";
 import { motion } from "framer-motion";
 import { SlideNotesEditor } from "./SlideNotesEditor";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type FontFamilyType =
 	| "Arial"
@@ -151,15 +152,16 @@ export default function PropertiesPanel() {
 				initial={{ x: 320, opacity: 0 }}
 				animate={{ x: 0, opacity: 1 }}
 				transition={{ type: "spring", stiffness: 300, damping: 30 }}
-				className="w-80 bg-background border-l border-border flex flex-col h-full max-h-screen overflow-hidden"
+				className="w-80 bg-background border-l border-border flex flex-col h-full min-h-0 max-h-screen overflow-hidden"
 			>
-				<CardHeader className="flex-none">
+				<CardHeader className="flex-none shrink-0">
 					<CardTitle className="flex items-center gap-2">
 						<Layers className="w-5 h-5" />
 						Properties
 					</CardTitle>
 				</CardHeader>
-				<CardContent className="flex-1 overflow-y-auto scrollbar-hidden">
+				<ScrollArea className="flex-1 min-h-0">
+					<CardContent className="pt-0 pb-6">
 					<p className="text-sm text-muted-foreground mb-4">
 						Select an element or edit slide background
 					</p>
@@ -321,7 +323,8 @@ export default function PropertiesPanel() {
 								)}
 						</div>
 					</div>
-				</CardContent>
+					</CardContent>
+				</ScrollArea>
 			</motion.div>
 		);
 	}
@@ -353,9 +356,9 @@ export default function PropertiesPanel() {
 			initial={{ x: 320, opacity: 0 }}
 			animate={{ x: 0, opacity: 1 }}
 			transition={{ type: "spring", stiffness: 300, damping: 30 }}
-			className="w-80 bg-background border-l border-border flex flex-col h-full max-h-screen overflow-hidden"
+			className="w-80 bg-background border-l border-border flex flex-col h-full min-h-0 max-h-screen overflow-hidden"
 		>
-			<CardHeader className="flex-none">
+			<CardHeader className="flex-none shrink-0">
 				<div className="flex items-center justify-between">
 					<CardTitle className="flex items-center gap-2">
 						{getElementIcon()}
@@ -365,7 +368,7 @@ export default function PropertiesPanel() {
 						variant="ghost"
 						size="icon"
 						onClick={() => {
-							if (confirm("Are you sure you want to delete this element?")) {
+							if (confirm("Naozaj chcete odstrániť tento prvok?")) {
 								deleteElement(selectedElement.id);
 								selectElement(null);
 							}
@@ -376,12 +379,13 @@ export default function PropertiesPanel() {
 				</div>
 				<p className="text-sm text-muted-foreground capitalize mt-1">
 					{selectedElement.type === "shape"
-						? `Shape: ${selectedElement.content || "square"}`
+						? `Tvar: ${selectedElement.content || "square"}`
 						: selectedElement.type}
 				</p>
 			</CardHeader>
 
-			<CardContent className="flex-1 overflow-y-auto scrollbar-hidden pb-8">
+			<ScrollArea className="flex-1 min-h-0">
+				<CardContent className="pt-0 pb-8">
 				<div className="space-y-6">
 					<div>
 						<Label className="mb-3">Position</Label>
@@ -958,7 +962,8 @@ export default function PropertiesPanel() {
 						</>
 					)}
 				</div>
-			</CardContent>
+				</CardContent>
+			</ScrollArea>
 		</motion.div>
 	);
 }

@@ -769,7 +769,7 @@ Example:
 					</div>
 
 					{/* Properties Panel - Desktop */}
-					<div className="hidden lg:block">
+					<div className="hidden lg:flex lg:flex-col lg:h-full lg:min-h-0 lg:shrink-0">
 						<PropertiesPanel />
 					</div>
 

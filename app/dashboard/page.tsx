@@ -22,8 +22,6 @@ import { usePresentationStore } from "@/store/presentationStore";
 import { Slide, Presentation } from "@/types/presentation";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { importPPTX } from "@/lib/utils/pptxImport";
-import { importODP } from "@/lib/utils/odpImport";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import { Input } from "@/components/ui/input";
@@ -357,15 +355,17 @@ export default function Home() {
 		if (!file) return;
 
 		try {
-			toast.loading("Analyzing presentation...", { id: "import-file" });
+			toast.loading("Načítavam prezentáciu...", { id: "import-file" });
 			let parsedData;
 
 			if (
 				file.name.toLowerCase().endsWith(".odp") ||
 				file.type === "application/vnd.oasis.opendocument.presentation"
 			) {
+				const { importODP } = await import("@/lib/utils/odpImport");
 				parsedData = await importODP(file);
 			} else {
+				const { importPPTX } = await import("@/lib/utils/pptxImport");
 				parsedData = await importPPTX(file);
 			}
 
