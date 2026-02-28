@@ -51,7 +51,7 @@ interface PresentationStore {
 
 	// Element actions
 	addElement: (element: Omit<SlideElement, "id">) => void;
-	addElementToSlide: (slideId: string, element: any) => void;
+	addElementToSlide: (slideId: string, element: SlideElement) => void;
 	updateElement: (elementId: string, updates: Partial<SlideElement>) => void;
 	deleteElement: (elementId: string) => void;
 	selectElement: (elementId: string | null) => void;
@@ -100,7 +100,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				slides = template.slides.map((slide) => ({
 					...slide,
 					id: uuidv4(),
-					elements: slide.elements.map((el: any) => ({
+					elements: slide.elements.map((el: SlideElement) => ({
 						...el,
 						id: uuidv4(),
 					})),
@@ -231,7 +231,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			let presentations: Presentation[] = [];
 
 			if (stored) {
-				presentations = JSON.parse(stored).map((p: any) => ({
+				presentations = (JSON.parse(stored) as Presentation[]).map((p) => ({
 					...p,
 					createdAt: new Date(p.createdAt),
 					updatedAt: new Date(p.updatedAt),
@@ -296,7 +296,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				"presentationOrder",
 				JSON.stringify(state.presentationOrder),
 			);
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("Error saving presentations to IndexedDB:", error);
 			toast.error(
 				"Failed to save your presentation locally. If the issue persists, export it to avoid losing changes.",
@@ -749,7 +749,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		setTimeout(() => get().savePresentations(), 0);
 	},
 
-	addElementToSlide: (slideId: string, element: any) => {
+	addElementToSlide: (slideId: string, element: SlideElement) => {
 		const state = get();
 		if (!state.currentPresentation) return;
 

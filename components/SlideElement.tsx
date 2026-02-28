@@ -8,13 +8,17 @@ import { useDrag } from "react-dnd";
 import React from "react";
 import { cn } from "@/lib/utils";
 import { ResizableBox } from "react-resizable";
-import { motion } from "framer-motion";
+import { Easing, motion } from "framer-motion";
 import "react-resizable/css/styles.css";
 import type {
 	SlideElement as SlideElementType,
 	GradientStop,
 	AnimationType,
+	TextAlign,
+	ObjectFit,
+	BorderStyle,
 } from "@/types/presentation";
+import type { Variants } from "framer-motion";
 import ChartElement from "./elements/ChartElement";
 import IconElement from "./elements/IconElement";
 import TableElement from "./elements/TableElement";
@@ -27,7 +31,7 @@ interface SlideElementProps {
 	onResize?: (width: number, height: number) => void;
 }
 
-const getAnimationVariants = (type?: AnimationType): any => {
+const getAnimationVariants = (type?: AnimationType): Variants => {
 	switch (type) {
 		case "fadeIn":
 			return { initial: { opacity: 0 }, animate: { opacity: 1 } };
@@ -47,7 +51,7 @@ const getAnimationVariants = (type?: AnimationType): any => {
 				animate: {
 					scale: 1,
 					opacity: 1,
-					transition: { type: "spring", stiffness: 260, damping: 20 } as any,
+					transition: { type: "spring", stiffness: 260, damping: 20 } as unknown as Easing,
 				},
 			};
 		case "rotate":
@@ -68,7 +72,7 @@ const getAnimationVariants = (type?: AnimationType): any => {
 						duration: 3,
 						repeat: Infinity,
 						ease: "easeInOut",
-					} as any,
+					},
 				},
 			};
 		case "glitch":
@@ -79,14 +83,14 @@ const getAnimationVariants = (type?: AnimationType): any => {
 						duration: 0.2,
 						repeat: Infinity,
 						repeatDelay: 3,
-					} as any,
+					} as unknown as Easing,
 				},
 			};
 		case "pulse":
 			return {
 				animate: {
 					scale: [1, 1.05, 1],
-					transition: { duration: 2, repeat: Infinity } as any,
+					transition: { duration: 2, repeat: Infinity } as unknown as Easing,
 				},
 			};
 		default:
@@ -120,7 +124,7 @@ export default function SlideElement({
 	);
 
 	const handleResize = (
-		_e: any,
+		_e: unknown,
 		{ size }: { size: { width: number; height: number } },
 	) => {
 		if (onResize) {
@@ -214,7 +218,7 @@ export default function SlideElement({
 						fontWeight: element.style?.fontWeight,
 						fontStyle: element.style?.fontStyle,
 						textDecoration: element.style?.textDecoration,
-						textAlign: element.style?.textAlign as any,
+						textAlign: element.style?.textAlign as unknown as TextAlign,
 						...getBackgroundStyle(),
 						lineHeight: element.style?.lineHeight,
 						letterSpacing: element.style?.letterSpacing,
@@ -242,7 +246,7 @@ export default function SlideElement({
 					className="w-full h-full"
 					style={{
 						borderRadius: element.style?.borderRadius,
-						objectFit: element.style?.objectFit as any,
+						objectFit: element.style?.objectFit as unknown as ObjectFit,
 					}}
 				/>
 			);
@@ -254,7 +258,7 @@ export default function SlideElement({
 					backgroundColor: element.style?.backgroundColor || "#3b82f6",
 					borderColor: element.style?.borderColor,
 					borderWidth: element.style?.borderWidth || 0,
-					borderStyle: (element.style?.borderStyle as any) || "solid",
+					borderStyle: (element.style?.borderStyle as unknown as BorderStyle) || "solid",
 					borderRadius: element.style?.borderRadius || 0,
 					boxShadow: element.style?.boxShadow,
 				};
@@ -311,7 +315,7 @@ export default function SlideElement({
 				}}
 				className={cn(
 					"absolute cursor-move overflow-visible",
-					isSelected && "ring-2 ring-primary ring-offset-2 z-[1000]",
+					isSelected && "ring-2 ring-primary ring-offset-2 z-1000",
 					isDragging && "opacity-50",
 				)}
 				style={elementStyles}
@@ -331,7 +335,7 @@ export default function SlideElement({
 				transition={{
 					duration: (element.animation?.duration || 500) / 1000,
 					delay: (element.animation?.delay || 0) / 1000,
-					ease: (element.animation?.easing || "easeOut") as any,
+					ease: (element.animation?.easing || "easeOut") as unknown as Easing,
 				}}
 				onClick={onSelect}
 			>

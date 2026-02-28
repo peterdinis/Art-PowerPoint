@@ -165,7 +165,7 @@ export default function TemplateSelector({
 															const type = slideBg.gradientType || "linear";
 															const angle = slideBg.gradientAngle || 135;
 															const stops = slideBg.gradientStops
-																.map((s: any) => `${s.color} ${s.offset}%`)
+																.map((s) => `${s.color} ${s.offset}%`)
 																.join(", ");
 
 															const grad =
