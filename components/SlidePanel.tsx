@@ -1,6 +1,7 @@
 "use client";
 
 import { usePresentationStore } from "@/store/presentationStore";
+import type { Slide } from "@/types/presentation";
 import { Plus, Trash2, Copy, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -26,7 +27,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 interface SortableSlideProps {
-	slide: any;
+	slide: Slide;
 	index: number;
 	isSelected: boolean;
 	onSelect: () => void;

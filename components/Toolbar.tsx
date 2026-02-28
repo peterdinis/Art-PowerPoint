@@ -76,12 +76,14 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
+	SlideElement,
 	SlideElementType,
 	FontWeight,
 	FontStyle,
 	ShapeType,
 } from "@/types/presentation";
 import { FilePond, registerPlugin } from "react-filepond";
+import type { FilePondFile } from "filepond";
 import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
 import FilePondPluginFileValidateSize from "filepond-plugin-file-validate-size";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
@@ -183,9 +185,9 @@ export default function Toolbar() {
 	const [layoutType, setLayoutType] = useState("two-columns");
 
 	// FilePond states
-	const [imageFiles, setImageFiles] = useState<any[]>([]);
-	const [csvFiles, setCsvFiles] = useState<any[]>([]);
-	const [documentFiles, setDocumentFiles] = useState<any[]>([]);
+	const [imageFiles, setImageFiles] = useState<FilePondFile[]>([]);
+	const [csvFiles, setCsvFiles] = useState<FilePondFile[]>([]);
+	const [documentFiles, setDocumentFiles] = useState<FilePondFile[]>([]);
 	const [isFileProcessing, setIsFileProcessing] = useState(false);
 
 
@@ -329,7 +331,7 @@ export default function Toolbar() {
 	};
 
 	// Process uploaded image file from FilePond
-	const handleImageUploadComplete = (file: any) => {
+	const handleImageUploadComplete = (file: FilePondFile) => {
 		setIsFileProcessing(true);
 		try {
 			// FilePond already gives us the base64 encoded file
@@ -702,7 +704,7 @@ export default function Toolbar() {
 	};
 
 	// Process CSV file from FilePond
-	const handleCSVUploadComplete = (file: any) => {
+	const handleCSVUploadComplete = (file: FilePondFile) => {
 		setIsFileProcessing(true);
 		try {
 			// FilePond gives us the file object
@@ -824,7 +826,7 @@ export default function Toolbar() {
 		});
 	};
 
-	const handleTextStyle = (property: string, value: any) => {
+	const handleTextStyle = (property: string, value: string | number | undefined) => {
 		if (selectedElement && selectedElement.type === "text") {
 			updateElement(selectedElement.id, {
 				style: {
@@ -835,8 +837,10 @@ export default function Toolbar() {
 		}
 	};
 
+	// type for predefined media element templates (without id)
+	interface MediaElementTemplate extends Omit<SlideElement, "id"> {}
 	const handleAddMedia = (mediaType: string) => {
-		const mediaElements = {
+		const mediaElements: Record<string, MediaElementTemplate> = {
 			audio: {
 				type: "text",
 				content: "🎵 Audio Player\n\nClick to play audio",
@@ -888,7 +892,7 @@ export default function Toolbar() {
 				position: { x: 100, y: 100 },
 				size: media.size,
 				content: media.content,
-				style: media.style as any,
+				style: media.style,
 			});
 		}
 	};
@@ -1180,7 +1184,7 @@ export default function Toolbar() {
 										"PanelTop",
 										"PanelBottom",
 									].map((name) => {
-										const IconComp = (Icons as any)[name] || Icons.HelpCircle;
+										const IconComp = ((Icons as unknown) as Record<string, React.ComponentType<any>>)[name] || Icons.HelpCircle;
 										return (
 											<Button
 												key={name}

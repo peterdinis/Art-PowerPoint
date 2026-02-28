@@ -71,6 +71,7 @@ import {
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { FilePond, registerPlugin } from "react-filepond";
+import type { FilePondFile } from "filepond";
 import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
 import FilePondPluginFileValidateSize from "filepond-plugin-file-validate-size";
 import "filepond/dist/filepond.min.css";
@@ -88,7 +89,7 @@ function SortableGridItem({
 	formatDate,
 	isOverlay = false,
 }: {
-	presentation: any;
+	presentation: Presentation;
 	handleDelete: (id: string, title?: string) => void;
 	formatDate: (date: Date) => string;
 	isOverlay?: boolean;
@@ -209,7 +210,7 @@ function SortableListItem({
 	formatDate,
 	isOverlay = false,
 }: {
-	presentation: any;
+	presentation: Presentation;
 	handleDelete: (id: string, title?: string) => void;
 	formatDate: (date: Date) => string;
 	isOverlay?: boolean;
@@ -339,18 +340,18 @@ export default function Home() {
 	const [isSearching, setIsSearching] = useState(false);
 
 	const [showImportDialog, setShowImportDialog] = useState(false);
-	const [importFiles, setImportFiles] = useState<any[]>([]);
+	const [importFiles, setImportFiles] = useState<FilePondFile[]>([]);
 
 	// Analysis state
 	const [showAnalysisDialog, setShowAnalysisDialog] = useState(false);
-	const [importedData, setImportedData] = useState<any>(null);
+	const [importedData, setImportedData] = useState<unknown>(null);
 
 	// Dialog state
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [newTitle, setNewTitle] = useState("");
 	const [newDescription, setNewDescription] = useState("");
 
-	const handleFilePondImport = async (fileItem: any) => {
+	const handleFilePondImport = async (fileItem: FilePondFile) => {
 		const file = fileItem.file;
 		if (!file) return;
 

@@ -97,34 +97,26 @@ export default function PropertiesPanel() {
 		: undefined;
 
 	const handleUpdate = (updates: Partial<SlideElement>) => {
-		if (selectedElement) {
-			const updateData: Partial<SlideElement> = {};
+		if (!selectedElement) return;
 
-			Object.keys(updates).forEach((key) => {
-				if (key !== "style" && key !== "animation") {
-					(updateData as any)[key] = (updates as any)[key];
-				}
-			});
+		// start with a shallow copy; we'll merge style/animation separately
+		const updateData: Partial<SlideElement> = { ...updates };
 
-			if (updates.style) {
-				updateData.style = {
-					...(selectedElement.style || {}),
-					...updates.style,
-				};
-			}
-
-			if (updates.animation) {
-				updateData.animation = {
-					...(selectedElement.animation || {
-						type: "none",
-						duration: 500,
-					}),
-					...updates.animation,
-				};
-			}
-
-			updateElement(selectedElement.id, updateData);
+		if (updates.style) {
+			updateData.style = {
+				...(selectedElement.style || {}),
+				...updates.style,
+			};
 		}
+
+		if (updates.animation) {
+			updateData.animation = {
+				...(selectedElement.animation || { type: "none", duration: 500 }),
+				...updates.animation,
+			};
+		}
+
+		updateElement(selectedElement.id, updateData);
 	};
 
 	const handleSlideBackgroundUpdate = (updates: {

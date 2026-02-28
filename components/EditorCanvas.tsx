@@ -4,18 +4,8 @@ import { useRef } from "react";
 import { usePresentationStore } from "@/store/presentationStore";
 import { useDrop } from "react-dnd";
 import { cn } from "@/lib/utils";
-import { Sparkles, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
-import SlideElement from "./SlideElement";
-import { Button } from "./ui/button";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Wand2 } from "lucide-react";
+import { Wand2, ChevronLeft, ChevronRight, Trash2, Sparkles } from "lucide-react";
+import type { AnimationType } from "@/types/presentation";
 
 export default function EditorCanvas() {
 	const {
@@ -43,32 +33,39 @@ export default function EditorCanvas() {
 		drop: (item: { id: string }, monitor) => {
 			if (!monitor.didDrop() && currentPresentation && dropRef.current) {
 				const delta = monitor.getDifferenceFromInitialOffset();
+				if (!delta) return;
+
 				// Click without drag (or tiny move): select element so user can edit in Properties
-				if (!delta || (Math.abs(delta.x) < 4 && Math.abs(delta.y) < 4)) {
+				if (Math.abs(delta.x) < 4 && Math.abs(delta.y) < 4) {
 					selectElement(item.id);
 					return;
 				}
-				const element = currentPresentation.slides[
-					currentSlideIndex
-				]?.elements.find((el: { id: string }) => el.id === item.id);
+
+				const currentSlide = currentPresentation.slides[currentSlideIndex];
+				const element = currentSlide?.elements.find((el) => el.id === item.id);
+
 				if (element) {
-					const slideElement = dropRef.current;
-					const rect = slideElement.getBoundingClientRect();
+					const rect = dropRef.current.getBoundingClientRect();
+					// Scale factor: how many screen pixels represent one canvas pixel
 					const scaleX = rect.width / zoomLevel / 960;
 					const scaleY = rect.height / zoomLevel / 540;
 
-					const newX = Math.max(
-						0,
-						Math.min(
-							960 - element.size.width,
-							element.position.x + delta.x / scaleX,
+					const newX = Math.round(
+						Math.max(
+							0,
+							Math.min(
+								960 - element.size.width,
+								element.position.x + delta.x / scaleX,
+							),
 						),
 					);
-					const newY = Math.max(
-						0,
-						Math.min(
-							540 - element.size.height,
-							element.position.y + delta.y / scaleY,
+					const newY = Math.round(
+						Math.max(
+							0,
+							Math.min(
+								540 - element.size.height,
+								element.position.y + delta.y / scaleY,
+							),
 						),
 					);
 
@@ -128,6 +125,44 @@ export default function EditorCanvas() {
 	};
 
 	return (
+	const backgroundStyle = useMemo(() => {
+		if (!currentSlide?.background) return {};
+
+		const stops =
+			currentSlide.background.gradientStops &&
+				currentSlide.background.gradientStops.length > 0
+				? currentSlide.background.gradientStops
+					.map((s) => `${s.color} ${s.offset}%`)
+					.join(", ")
+				: currentSlide.background.gradient;
+
+		const image = currentSlide.background.image
+			? `url(${currentSlide.background.image})`
+			: undefined;
+
+		let backgroundImage = image;
+
+		if (stops) {
+			const type = currentSlide.background.gradientType || "linear";
+			const angle = currentSlide.background.gradientAngle || 135;
+			const gradient =
+				type === "linear"
+					? `linear-gradient(${angle}deg, ${stops})`
+					: `radial-gradient(circle, ${stops})`;
+
+			backgroundImage = image ? `${gradient}, ${image}` : gradient;
+		}
+
+		return {
+			backgroundImage,
+			backgroundSize: "cover",
+			backgroundPosition: "center",
+			transform: `scale(${zoomLevel})`,
+			transformOrigin: "center center",
+		};
+	}, [currentSlide?.background, zoomLevel]);
+
+	return (
 		<div
 			className="flex items-center justify-center h-full p-4 lg:p-8 overflow-auto bg-muted/20"
 			tabIndex={0}
@@ -167,36 +202,7 @@ export default function EditorCanvas() {
 						width: "100%",
 						maxWidth: "960px",
 						aspectRatio: "16/9",
-						backgroundImage: (() => {
-							const stops =
-								currentSlide.background?.gradientStops &&
-								currentSlide.background.gradientStops.length > 0
-									? currentSlide.background.gradientStops
-											.map((s) => `${s.color} ${s.offset}%`)
-											.join(", ")
-									: currentSlide.background?.gradient;
-
-							const image = currentSlide.background?.image
-								? `url(${currentSlide.background.image})`
-								: undefined;
-
-							if (stops) {
-								const type = currentSlide.background?.gradientType || "linear";
-								const angle = currentSlide.background?.gradientAngle || 135;
-								const gradient =
-									type === "linear"
-										? `linear-gradient(${angle}deg, ${stops})`
-										: `radial-gradient(circle, ${stops})`;
-
-								return image ? `${gradient}, ${image}` : gradient;
-							}
-
-							return image;
-						})(),
-						backgroundSize: "cover",
-						backgroundPosition: "center",
-						transform: `scale(${zoomLevel})`,
-						transformOrigin: "center center",
+						...backgroundStyle,
 					}}
 					onClick={(e) => {
 						if (
@@ -375,7 +381,7 @@ export default function EditorCanvas() {
 										updateElement(selectedElementId, {
 											animation: {
 												...(selectedElement?.animation || { duration: 500 }),
-												type: val as any,
+												type: val as AnimationType,
 											},
 										})
 									}
