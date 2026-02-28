@@ -62,7 +62,7 @@ export default function Toolbar() {
 					</div>
 					<Input
 						value={currentPresentation.title}
-						onChange={(e) => updatePresentation({ title: e.target.value })}
+						onChange={(e) => updatePresentation(currentPresentation.id, { title: e.target.value })}
 						className="h-8 w-48 bg-transparent border-none focus-visible:ring-1 focus-visible:ring-primary font-semibold"
 					/>
 				</div>
