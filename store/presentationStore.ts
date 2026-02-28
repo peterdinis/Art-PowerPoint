@@ -11,6 +11,10 @@ localforage.config({
 	storeName: "presentations_store",
 });
 
+type DeepPartial<T> = {
+	[P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
+
 interface PresentationStore {
 	presentations: Presentation[];
 	currentPresentation: Presentation | null;
@@ -52,7 +56,7 @@ interface PresentationStore {
 	// Element actions
 	addElement: (element: Omit<SlideElement, "id">) => void;
 	addElementToSlide: (slideId: string, element: SlideElement) => void;
-	updateElement: (elementId: string, updates: Partial<SlideElement>) => void;
+	updateElement: (elementId: string, updates: DeepPartial<SlideElement>) => void;
 	deleteElement: (elementId: string) => void;
 	selectElement: (elementId: string | null) => void;
 	moveElementLayer: (
@@ -580,9 +584,32 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		}, 0);
 	},
 
-	updateElement: (elementId: string, updates: Partial<SlideElement>) => {
+	// Helper to deep merge nested properties so callers can pass partial nested updates
+	updateElement: (elementId: string, updates: DeepPartial<SlideElement>) => {
+		const deepMerge = (target: any, source: any): any => {
+			if (!source || typeof source !== "object") return source;
+			const output = Array.isArray(target) ? [...target] : { ...(target || {}) };
+			Object.keys(source).forEach((key) => {
+				const srcVal = source[key];
+				const tgtVal = (target || {})[key];
+				if (
+					srcVal &&
+					typeof srcVal === "object" &&
+					!Array.isArray(srcVal) &&
+					tgtVal &&
+					typeof tgtVal === "object" &&
+					!Array.isArray(tgtVal)
+				) {
+					output[key] = deepMerge(tgtVal, srcVal);
+				} else {
+					output[key] = srcVal;
+				}
+			});
+			return output;
+		};
 		const state = get();
 		if (!state.currentPresentation) return;
+
 
 		set((state) => {
 			if (!state.currentPresentation) return state;
@@ -590,7 +617,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			const slides = state.currentPresentation.slides.map((slide: Slide) => ({
 				...slide,
 				elements: slide.elements.map((el: SlideElement) =>
-					el.id === elementId ? { ...el, ...updates } : el,
+					el.id === elementId ? deepMerge(el, updates) : el,
 				),
 			}));
 
