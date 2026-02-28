@@ -3,6 +3,7 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { useState, useEffect } from "react";
 import type { SlideElement } from "@/types/presentation";
 
 interface LayoutPropertiesProps {
@@ -11,6 +12,23 @@ interface LayoutPropertiesProps {
 }
 
 export function LayoutProperties({ element, onUpdate }: LayoutPropertiesProps) {
+    const [localX, setLocalX] = useState(element.position?.x || 0);
+    const [localY, setLocalY] = useState(element.position?.y || 0);
+    const [localW, setLocalW] = useState(element.size?.width || 100);
+    const [localH, setLocalH] = useState(element.size?.height || 100);
+    const [localRotation, setLocalRotation] = useState(element.rotation || 0);
+    const [localOpacity, setLocalOpacity] = useState((element.style?.opacity || 1) * 100);
+
+    // Sync with store when element changes or externally updated
+    useEffect(() => {
+        setLocalX(element.position?.x || 0);
+        setLocalY(element.position?.y || 0);
+        setLocalW(element.size?.width || 100);
+        setLocalH(element.size?.height || 100);
+        setLocalRotation(element.rotation || 0);
+        setLocalOpacity((element.style?.opacity || 1) * 100);
+    }, [element.id, element.position?.x, element.position?.y, element.size?.width, element.size?.height, element.rotation, element.style?.opacity]);
+
     return (
         <div className="space-y-6">
             <div>
@@ -21,9 +39,10 @@ export function LayoutProperties({ element, onUpdate }: LayoutPropertiesProps) {
                         <Input
                             id="pos-x"
                             type="number"
-                            value={element.position?.x || 0}
-                            onChange={(e) => onUpdate({
-                                position: { x: Number(e.target.value), y: element.position?.y || 0 }
+                            value={localX}
+                            onChange={(e) => setLocalX(Number(e.target.value))}
+                            onBlur={() => onUpdate({
+                                position: { x: localX, y: element.position?.y || 0 }
                             })}
                             className="mt-1"
                         />
@@ -33,9 +52,10 @@ export function LayoutProperties({ element, onUpdate }: LayoutPropertiesProps) {
                         <Input
                             id="pos-y"
                             type="number"
-                            value={element.position?.y || 0}
-                            onChange={(e) => onUpdate({
-                                position: { x: element.position?.x || 0, y: Number(e.target.value) }
+                            value={localY}
+                            onChange={(e) => setLocalY(Number(e.target.value))}
+                            onBlur={() => onUpdate({
+                                position: { x: element.position?.x || 0, y: localY }
                             })}
                             className="mt-1"
                         />
@@ -53,9 +73,10 @@ export function LayoutProperties({ element, onUpdate }: LayoutPropertiesProps) {
                         <Input
                             id="size-w"
                             type="number"
-                            value={element.size?.width || 100}
-                            onChange={(e) => onUpdate({
-                                size: { width: Math.max(10, Number(e.target.value)), height: element.size?.height || 100 }
+                            value={localW}
+                            onChange={(e) => setLocalW(Number(e.target.value))}
+                            onBlur={() => onUpdate({
+                                size: { width: Math.max(10, localW), height: element.size?.height || 100 }
                             })}
                             min="10"
                             className="mt-1"
@@ -66,9 +87,10 @@ export function LayoutProperties({ element, onUpdate }: LayoutPropertiesProps) {
                         <Input
                             id="size-h"
                             type="number"
-                            value={element.size?.height || 100}
-                            onChange={(e) => onUpdate({
-                                size: { width: element.size?.width || 100, height: Math.max(10, Number(e.target.value)) }
+                            value={localH}
+                            onChange={(e) => setLocalH(Number(e.target.value))}
+                            onBlur={() => onUpdate({
+                                size: { width: element.size?.width || 100, height: Math.max(10, localH) }
                             })}
                             min="10"
                             className="mt-1"
@@ -85,11 +107,15 @@ export function LayoutProperties({ element, onUpdate }: LayoutPropertiesProps) {
                         type="range"
                         min="0"
                         max="360"
-                        value={element.rotation || 0}
-                        onChange={(e) => onUpdate({ rotation: Number(e.target.value) })}
+                        value={localRotation}
+                        onChange={(e) => {
+                            const val = Number(e.target.value);
+                            setLocalRotation(val);
+                            onUpdate({ rotation: val });
+                        }}
                         className="flex-1"
                     />
-                    <span className="text-sm w-12 text-right">{element.rotation || 0}°</span>
+                    <span className="text-sm w-12 text-right">{localRotation}°</span>
                 </div>
             </div>
 
@@ -101,14 +127,18 @@ export function LayoutProperties({ element, onUpdate }: LayoutPropertiesProps) {
                         type="range"
                         min="0"
                         max="100"
-                        value={(element.style?.opacity || 1) * 100}
-                        onChange={(e) => onUpdate({
-                            style: { ...element.style, opacity: Number(e.target.value) / 100 }
-                        })}
+                        value={localOpacity}
+                        onChange={(e) => {
+                            const val = Number(e.target.value);
+                            setLocalOpacity(val);
+                            onUpdate({
+                                style: { ...element.style, opacity: val / 100 }
+                            });
+                        }}
                         className="flex-1"
                     />
                     <span className="text-sm w-12 text-right">
-                        {Math.round((element.style?.opacity || 1) * 100)}%
+                        {Math.round(localOpacity)}%
                     </span>
                 </div>
             </div>

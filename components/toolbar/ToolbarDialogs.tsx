@@ -48,37 +48,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-
-// Register plugins
-if (typeof window !== "undefined") {
-    registerPlugin(
-        FilePondPluginFileValidateType,
-        FilePondPluginFileValidateSize,
-        FilePondPluginImagePreview,
-        FilePondPluginFileEncode,
-    );
-}
+import { Switch } from "@/components/ui/switch";
 
 interface ToolbarDialogsProps {
     activeDialog: string | null;
     onClose: () => void;
 }
 
-const CHART_TEMPLATES = [
-    {
-        name: "Sales Q1-Q4",
-        type: "bar",
-        data: {
-            labels: ["Q1", "Q2", "Q3", "Q4"],
-            values: [45000, 52000, 48000, 61000],
-            colors: ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6"],
-        },
-    },
-    // ... add others if needed or pass as props
-];
-
 export function ToolbarDialogs({ activeDialog, onClose }: ToolbarDialogsProps) {
     const { addElement } = usePresentationStore();
+    const [keepOpen, setKeepOpen] = useState(false);
 
     // Image Dialog State
     const [imageUrl, setImageUrl] = useState("");
@@ -96,12 +75,16 @@ export function ToolbarDialogs({ activeDialog, onClose }: ToolbarDialogsProps) {
     const [chartLabels, setChartLabels] = useState("Q1, Q2, Q3, Q4");
     const [chartValues, setChartValues] = useState("30, 45, 25, 60");
 
+    const maybeClose = () => {
+        if (!keepOpen) onClose();
+    };
+
     const handleAddImage = (url?: string) => {
         const finalUrl = url || imageUrl;
         if (finalUrl) {
             addElement(createImageElement(finalUrl));
             setImageUrl("");
-            onClose();
+            maybeClose();
         }
     };
 
@@ -118,13 +101,13 @@ export function ToolbarDialogs({ activeDialog, onClose }: ToolbarDialogsProps) {
         if (videoUrl) {
             addElement(createVideoElement(videoUrl));
             setVideoUrl("");
-            onClose();
+            maybeClose();
         }
     };
 
     const handleAddTable = () => {
         addElement(createTableElement(tableRows, tableColumns));
-        onClose();
+        maybeClose();
     };
 
     const handleAddChart = () => {
@@ -133,7 +116,7 @@ export function ToolbarDialogs({ activeDialog, onClose }: ToolbarDialogsProps) {
         const colors = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6"]; // Default colors
 
         addElement(createChartElement(chartType as any, chartTitle, labels, values, colors));
-        onClose();
+        maybeClose();
     };
 
     const [linkUrl, setLinkUrl] = useState("");
@@ -153,14 +136,27 @@ export function ToolbarDialogs({ activeDialog, onClose }: ToolbarDialogsProps) {
             });
             setLinkUrl("");
             setLinkText("");
-            onClose();
+            maybeClose();
         }
     };
 
     const handleAddIcon = (iconName: string) => {
         addElement(createIconElement(iconName));
-        onClose();
+        maybeClose();
     };
+
+    const KeepOpenToggle = () => (
+        <div className="flex items-center justify-between mt-4 pt-4 border-t">
+            <Label htmlFor="keep-open" className="text-xs text-muted-foreground cursor-pointer">
+                Keep dialog open after adding
+            </Label>
+            <Switch
+                id="keep-open"
+                checked={keepOpen}
+                onCheckedChange={setKeepOpen}
+            />
+        </div>
+    );
 
     return (
         <>

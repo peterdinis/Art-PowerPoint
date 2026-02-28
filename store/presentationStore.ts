@@ -294,23 +294,33 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	savePresentations: async () => {
 		if (typeof window === "undefined") return;
 
-		try {
-			const state = get();
-			await localforage.setItem(
-				"presentations",
-				JSON.stringify(state.presentations),
-			);
-			await localforage.setItem(
-				"presentationOrder",
-				JSON.stringify(state.presentationOrder),
-			);
-		} catch (error: unknown) {
-			console.error("Error saving presentations to IndexedDB:", error);
-			toast.error(
-				"Failed to save your presentation locally. If the issue persists, export it to avoid losing changes.",
-				{ id: "save-error", duration: 8000 },
-			);
+		// Simple debounce implementation
+		const state = get() as any;
+		if (state._saveTimeout) {
+			clearTimeout(state._saveTimeout);
 		}
+
+		const timeout = setTimeout(async () => {
+			try {
+				const currentState = get();
+				await localforage.setItem(
+					"presentations",
+					JSON.stringify(currentState.presentations),
+				);
+				await localforage.setItem(
+					"presentationOrder",
+					JSON.stringify(currentState.presentationOrder),
+				);
+			} catch (error: unknown) {
+				console.error("Error saving presentations to IndexedDB:", error);
+				toast.error(
+					"Failed to save your presentation locally. If the issue persists, export it to avoid losing changes.",
+					{ id: "save-error", duration: 8000 },
+				);
+			}
+		}, 1000); // 1 second debounce
+
+		set({ _saveTimeout: timeout } as any);
 	},
 
 	reorderPresentations: (fromIndex: number, toIndex: number) => {

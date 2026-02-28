@@ -10,6 +10,7 @@ import {
     SelectValue
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { useState, useEffect } from "react";
 import type { SlideElement, ObjectFit } from "@/types/presentation";
 
 interface MediaPropertiesProps {
@@ -18,6 +19,12 @@ interface MediaPropertiesProps {
 }
 
 export function MediaProperties({ element, onUpdate }: MediaPropertiesProps) {
+    const [localUrl, setLocalUrl] = useState(element.content || "");
+
+    useEffect(() => {
+        setLocalUrl(element.content || "");
+    }, [element.id, element.content]);
+
     if (element.type === "image") {
         return (
             <div className="space-y-6">
@@ -25,8 +32,9 @@ export function MediaProperties({ element, onUpdate }: MediaPropertiesProps) {
                     <Label htmlFor="image-url">Image URL</Label>
                     <Input
                         id="image-url"
-                        value={element.content || ""}
-                        onChange={(e) => onUpdate({ content: e.target.value })}
+                        value={localUrl}
+                        onChange={(e) => setLocalUrl(e.target.value)}
+                        onBlur={() => onUpdate({ content: localUrl })}
                         className="mt-2"
                         placeholder="https://..."
                     />
@@ -72,8 +80,9 @@ export function MediaProperties({ element, onUpdate }: MediaPropertiesProps) {
                     <Label htmlFor="video-url">Video URL</Label>
                     <Input
                         id="video-url"
-                        value={element.content || ""}
-                        onChange={(e) => onUpdate({ content: e.target.value })}
+                        value={localUrl}
+                        onChange={(e) => setLocalUrl(e.target.value)}
+                        onBlur={() => onUpdate({ content: localUrl })}
                         className="mt-2"
                         placeholder="https://..."
                     />

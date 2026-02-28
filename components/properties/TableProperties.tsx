@@ -3,6 +3,7 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { useState, useEffect } from "react";
 import type { SlideElement } from "@/types/presentation";
 
 interface TablePropertiesProps {
@@ -12,6 +13,13 @@ interface TablePropertiesProps {
 
 export function TableProperties({ element, onUpdate }: TablePropertiesProps) {
     const style = element.style || {};
+    const [localRows, setLocalRows] = useState(style.rows || 1);
+    const [localCols, setLocalCols] = useState(style.cols || 1);
+
+    useEffect(() => {
+        setLocalRows(style.rows || 1);
+        setLocalCols(style.cols || 1);
+    }, [element.id, style.rows, style.cols]);
 
     const handleStyleUpdate = (prop: string, value: any) => {
         onUpdate({
@@ -29,8 +37,9 @@ export function TableProperties({ element, onUpdate }: TablePropertiesProps) {
                         type="number"
                         min="1"
                         max="20"
-                        value={style.rows || 1}
-                        onChange={(e) => handleStyleUpdate("rows", Number(e.target.value))}
+                        value={localRows}
+                        onChange={(e) => setLocalRows(Number(e.target.value))}
+                        onBlur={() => handleStyleUpdate("rows", localRows)}
                         className="mt-2"
                     />
                 </div>
@@ -41,8 +50,9 @@ export function TableProperties({ element, onUpdate }: TablePropertiesProps) {
                         type="number"
                         min="1"
                         max="10"
-                        value={style.cols || 1}
-                        onChange={(e) => handleStyleUpdate("cols", Number(e.target.value))}
+                        value={localCols}
+                        onChange={(e) => setLocalCols(Number(e.target.value))}
+                        onBlur={() => handleStyleUpdate("cols", localCols)}
                         className="mt-2"
                     />
                 </div>
