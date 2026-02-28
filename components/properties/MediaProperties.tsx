@@ -19,12 +19,6 @@ interface MediaPropertiesProps {
 }
 
 export function MediaProperties({ element, onUpdate }: MediaPropertiesProps) {
-    const [localUrl, setLocalUrl] = useState(element.content || "");
-
-    useEffect(() => {
-        setLocalUrl(element.content || "");
-    }, [element.id, element.content]);
-
     if (element.type === "image") {
         return (
             <div className="space-y-6">
@@ -32,9 +26,8 @@ export function MediaProperties({ element, onUpdate }: MediaPropertiesProps) {
                     <Label htmlFor="image-url">Image URL</Label>
                     <Input
                         id="image-url"
-                        value={localUrl}
-                        onChange={(e) => setLocalUrl(e.target.value)}
-                        onBlur={() => onUpdate({ content: localUrl })}
+                        value={element.content || ""}
+                        onChange={(e) => onUpdate({ content: e.target.value })}
                         className="mt-2"
                         placeholder="https://..."
                     />
@@ -80,9 +73,8 @@ export function MediaProperties({ element, onUpdate }: MediaPropertiesProps) {
                     <Label htmlFor="video-url">Video URL</Label>
                     <Input
                         id="video-url"
-                        value={localUrl}
-                        onChange={(e) => setLocalUrl(e.target.value)}
-                        onBlur={() => onUpdate({ content: localUrl })}
+                        value={element.content || ""}
+                        onChange={(e) => onUpdate({ content: e.target.value })}
                         className="mt-2"
                         placeholder="https://..."
                     />

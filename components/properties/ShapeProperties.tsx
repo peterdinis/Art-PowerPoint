@@ -12,13 +12,6 @@ interface ShapePropertiesProps {
 
 export function ShapeProperties({ element, onUpdate }: ShapePropertiesProps) {
     const style = element.style || {};
-    const [localBorderWidth, setLocalBorderWidth] = useState(style.borderWidth || 0);
-    const [localBorderRadius, setLocalBorderRadius] = useState(style.borderRadius || 0);
-
-    useEffect(() => {
-        setLocalBorderWidth(style.borderWidth || 0);
-        setLocalBorderRadius(style.borderRadius || 0);
-    }, [element.id, style.borderWidth, style.borderRadius]);
 
     const handleStyleUpdate = (prop: string, value: any) => {
         onUpdate({
@@ -59,9 +52,8 @@ export function ShapeProperties({ element, onUpdate }: ShapePropertiesProps) {
                         type="number"
                         min="0"
                         max="20"
-                        value={localBorderWidth}
-                        onChange={(e) => setLocalBorderWidth(Number(e.target.value))}
-                        onBlur={() => handleStyleUpdate("borderWidth", localBorderWidth)}
+                        value={style.borderWidth || 0}
+                        onChange={(e) => handleStyleUpdate("borderWidth", Number(e.target.value))}
                         className="mt-2"
                     />
                 </div>
@@ -72,9 +64,8 @@ export function ShapeProperties({ element, onUpdate }: ShapePropertiesProps) {
                         type="number"
                         min="0"
                         max="100"
-                        value={localBorderRadius}
-                        onChange={(e) => setLocalBorderRadius(Number(e.target.value))}
-                        onBlur={() => handleStyleUpdate("borderRadius", localBorderRadius)}
+                        value={style.borderRadius || 0}
+                        onChange={(e) => handleStyleUpdate("borderRadius", Number(e.target.value))}
                         className="mt-2"
                     />
                 </div>

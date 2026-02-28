@@ -29,29 +29,11 @@ const FONTS = [
 
 export function TextProperties({ element, onUpdate, getDefaultTextColor }: TextPropertiesProps) {
     const style = element.style || {};
-    const [localContent, setLocalContent] = useState(element.content || "");
-
-    // Sync local content when the element changes (e.g., if another element is selected)
-    useEffect(() => {
-        setLocalContent(element.content || "");
-    }, [element.id]);
 
     const handleStyleUpdate = (prop: string, value: any) => {
         onUpdate({
             style: { ...style, [prop]: value }
         });
-    };
-
-    const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        const value = e.target.value;
-        setLocalContent(value);
-
-        // Debounce the update to the store
-        const timeout = setTimeout(() => {
-            onUpdate({ content: value });
-        }, 500);
-
-        return () => clearTimeout(timeout);
     };
 
     return (
@@ -60,9 +42,8 @@ export function TextProperties({ element, onUpdate, getDefaultTextColor }: TextP
                 <Label htmlFor="text-content">Content</Label>
                 <Textarea
                     id="text-content"
-                    value={localContent}
-                    onChange={handleContentChange}
-                    onBlur={() => onUpdate({ content: localContent })}
+                    value={element.content || ""}
+                    onChange={(e) => onUpdate({ content: e.target.value })}
                     className="mt-2 resize-none"
                     rows={4}
                 />

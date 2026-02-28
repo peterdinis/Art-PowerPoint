@@ -13,13 +13,6 @@ interface TablePropertiesProps {
 
 export function TableProperties({ element, onUpdate }: TablePropertiesProps) {
     const style = element.style || {};
-    const [localRows, setLocalRows] = useState(style.rows || 1);
-    const [localCols, setLocalCols] = useState(style.cols || 1);
-
-    useEffect(() => {
-        setLocalRows(style.rows || 1);
-        setLocalCols(style.cols || 1);
-    }, [element.id, style.rows, style.cols]);
 
     const handleStyleUpdate = (prop: string, value: any) => {
         onUpdate({
@@ -37,9 +30,8 @@ export function TableProperties({ element, onUpdate }: TablePropertiesProps) {
                         type="number"
                         min="1"
                         max="20"
-                        value={localRows}
-                        onChange={(e) => setLocalRows(Number(e.target.value))}
-                        onBlur={() => handleStyleUpdate("rows", localRows)}
+                        value={style.rows || 1}
+                        onChange={(e) => handleStyleUpdate("rows", Number(e.target.value))}
                         className="mt-2"
                     />
                 </div>
@@ -50,9 +42,8 @@ export function TableProperties({ element, onUpdate }: TablePropertiesProps) {
                         type="number"
                         min="1"
                         max="10"
-                        value={localCols}
-                        onChange={(e) => setLocalCols(Number(e.target.value))}
-                        onBlur={() => handleStyleUpdate("cols", localCols)}
+                        value={style.cols || 1}
+                        onChange={(e) => handleStyleUpdate("cols", Number(e.target.value))}
                         className="mt-2"
                     />
                 </div>
