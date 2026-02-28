@@ -30,7 +30,7 @@
 		"@radix-ui/react-switch": "^1.2.6",
 		"@radix-ui/react-tabs": "^1.1.13",
 		"@radix-ui/react-toast": "^1.2.15",
-		"@tanstack/react-virtual": "^3.13.18",
+		"@tanstack/react-virtual": "^3.13.19",
 		"@tiptap/extension-code": "^3.20.0",
 		"@tiptap/extension-color": "^3.20.0",
 		"@tiptap/extension-font-family": "^3.20.0",
@@ -83,16 +83,16 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.14",
-		"@tailwindcss/postcss": "^4.2.0",
+		"@tailwindcss/postcss": "^4.2.1",
 		"@types/d3": "^7.4.3",
 		"@types/jszip": "^3.4.1",
-		"@types/node": "^20.19.33",
+		"@types/node": "^20.19.35",
 		"@types/react": "^19.2.14",
 		"@types/react-dom": "^19.2.3",
 		"@types/react-resizable": "^3.0.8",
 		"babel-plugin-react-compiler": "1.0.0",
 		"critters": "^0.0.25",
-		"tailwindcss": "^4.2.0",
+		"tailwindcss": "^4.2.1",
 		"typescript": "^5.9.3"
 	}
 }

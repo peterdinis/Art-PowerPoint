@@ -4,7 +4,10 @@ import { useRef } from "react";
 import { usePresentationStore } from "@/store/presentationStore";
 import { useDrop } from "react-dnd";
 import { cn } from "@/lib/utils";
-import { Sparkles, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import { Wand2, ChevronLeft, ChevronRight, Trash2, Sparkles } from "lucide-react";
+import type { AnimationType } from "@/types/presentation";
+
+import { useMemo } from "react";
 import SlideElement from "./SlideElement";
 import { Button } from "./ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,27 +18,24 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Wand2 } from "lucide-react";
 
 export default function EditorCanvas() {
-	const {
-		currentPresentation,
-		currentSlideIndex,
-		selectedElementId,
-		selectElement,
-		updateElement,
-		previousSlide,
-		nextSlide,
-		deleteElement,
-		moveElementLayer,
-		alignElement,
-		zoomLevel,
-		showGrid,
-	} = usePresentationStore();
+	const currentPresentation = usePresentationStore((state) => state.currentPresentation);
+	const currentSlideIndex = usePresentationStore((state) => state.currentSlideIndex);
+	const selectedElementId = usePresentationStore((state) => state.selectedElementId);
+	const selectElement = usePresentationStore((state) => state.selectElement);
+	const updateElement = usePresentationStore((state) => state.updateElement);
+	const previousSlide = usePresentationStore((state) => state.previousSlide);
+	const nextSlide = usePresentationStore((state) => state.nextSlide);
+	const deleteElement = usePresentationStore((state) => state.deleteElement);
+	const moveElementLayer = usePresentationStore((state) => state.moveElementLayer);
+	const alignElement = usePresentationStore((state) => state.alignElement);
+	const zoomLevel = usePresentationStore((state) => state.zoomLevel);
+	const showGrid = usePresentationStore((state) => state.showGrid);
 
-	const selectedElement = currentPresentation?.slides[
-		currentSlideIndex
-	]?.elements.find((el) => el.id === selectedElementId);
+	const selectedElement = currentPresentation?.slides[currentSlideIndex]?.elements.find(
+		(el) => el.id === selectedElementId,
+	);
 	const dropRef = useRef<HTMLDivElement>(null);
 
 	const [{ isOver }, drop] = useDrop({
@@ -43,36 +43,45 @@ export default function EditorCanvas() {
 		drop: (item: { id: string }, monitor) => {
 			if (!monitor.didDrop() && currentPresentation && dropRef.current) {
 				const delta = monitor.getDifferenceFromInitialOffset();
-				if (delta) {
-					const element = currentPresentation.slides[
-						currentSlideIndex
-					]?.elements.find((el: { id: string }) => el.id === item.id);
-					if (element) {
-						const slideElement = dropRef.current;
-						const rect = slideElement.getBoundingClientRect();
-						// Adjust scaling calculation to include zoom level
-						const scaleX = rect.width / zoomLevel / 960;
-						const scaleY = rect.height / zoomLevel / 540;
+				if (!delta) return;
 
-						const newX = Math.max(
+				// Click without drag (or tiny move): select element so user can edit in Properties
+				if (Math.abs(delta.x) < 4 && Math.abs(delta.y) < 4) {
+					selectElement(item.id);
+					return;
+				}
+
+				const currentSlide = currentPresentation.slides[currentSlideIndex];
+				const element = currentSlide?.elements.find((el) => el.id === item.id);
+
+				if (element) {
+					const rect = dropRef.current.getBoundingClientRect();
+					// Scale factor: how many screen pixels represent one canvas pixel
+					const scaleX = rect.width / zoomLevel / 960;
+					const scaleY = rect.height / zoomLevel / 540;
+
+					const newX = Math.round(
+						Math.max(
 							0,
 							Math.min(
 								960 - element.size.width,
 								element.position.x + delta.x / scaleX,
 							),
-						);
-						const newY = Math.max(
+						),
+					);
+					const newY = Math.round(
+						Math.max(
 							0,
 							Math.min(
 								540 - element.size.height,
 								element.position.y + delta.y / scaleY,
 							),
-						);
+						),
+					);
 
-						updateElement(item.id, {
-							position: { x: newX, y: newY },
-						});
-					}
+					updateElement(item.id, {
+						position: { x: newX, y: newY },
+					});
 				}
 			}
 		},
@@ -83,20 +92,13 @@ export default function EditorCanvas() {
 
 	drop(dropRef);
 
-	const handleElementResize = (
-		elementId: string,
-		width: number,
-		height: number,
-	) => {
+	const handleElementResize = (elementId: string, width: number, height: number) => {
 		updateElement(elementId, {
 			size: { width, height },
 		});
 	};
 
-	if (!currentPresentation) return null;
-
-	const currentSlide = currentPresentation.slides[currentSlideIndex];
-	if (!currentSlide) return null;
+	const currentSlide = currentPresentation?.slides[currentSlideIndex];
 
 	// Funkcie pre navigáciu slides pomocou klávesnice
 	const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -104,10 +106,7 @@ export default function EditorCanvas() {
 			previousSlide();
 		} else if (e.key === "ArrowRight") {
 			nextSlide();
-		} else if (
-			(e.key === "Delete" || e.key === "Backspace") &&
-			selectedElementId
-		) {
+		} else if ((e.key === "Delete" || e.key === "Backspace") && selectedElementId) {
 			// Don't delete if we're in an input or textarea
 			const activeElement = document.activeElement as HTMLElement | null;
 			if (
@@ -124,6 +123,44 @@ export default function EditorCanvas() {
 			}
 		}
 	};
+
+	const backgroundStyle = useMemo(() => {
+		if (!currentSlide?.background) return {};
+
+		const stops =
+			currentSlide.background.gradientStops && currentSlide.background.gradientStops.length > 0
+				? currentSlide.background.gradientStops
+					.map((s) => `${s.color} ${s.offset}%`)
+					.join(", ")
+				: (currentSlide.background.gradient as string);
+
+		const image = currentSlide.background.image
+			? `url(${currentSlide.background.image})`
+			: undefined;
+
+		let backgroundImage = image;
+
+		if (stops) {
+			const type = currentSlide.background.gradientType || "linear";
+			const angle = currentSlide.background.gradientAngle || 135;
+			const gradient =
+				type === "linear"
+					? `linear-gradient(${angle}deg, ${stops})`
+					: `radial-gradient(circle, ${stops})`;
+
+			backgroundImage = image ? `${gradient}, ${image}` : gradient;
+		}
+
+		return {
+			backgroundImage,
+			backgroundSize: "cover",
+			backgroundPosition: "center",
+			transform: `scale(${zoomLevel})`,
+			transformOrigin: "center center",
+		};
+	}, [currentSlide?.background, zoomLevel]);
+
+	if (!currentPresentation || !currentSlide) return null;
 
 	return (
 		<div
@@ -165,36 +202,7 @@ export default function EditorCanvas() {
 						width: "100%",
 						maxWidth: "960px",
 						aspectRatio: "16/9",
-						backgroundImage: (() => {
-							const stops =
-								currentSlide.background?.gradientStops &&
-								currentSlide.background.gradientStops.length > 0
-									? currentSlide.background.gradientStops
-											.map((s: any) => `${s.color} ${s.offset}%`)
-											.join(", ")
-									: currentSlide.background?.gradient;
-
-							const image = currentSlide.background?.image
-								? `url(${currentSlide.background.image})`
-								: undefined;
-
-							if (stops) {
-								const type = currentSlide.background?.gradientType || "linear";
-								const angle = currentSlide.background?.gradientAngle || 135;
-								const gradient =
-									type === "linear"
-										? `linear-gradient(${angle}deg, ${stops})`
-										: `radial-gradient(circle, ${stops})`;
-
-								return image ? `${gradient}, ${image}` : gradient;
-							}
-
-							return image;
-						})(),
-						backgroundSize: "cover",
-						backgroundPosition: "center",
-						transform: `scale(${zoomLevel})`,
-						transformOrigin: "center center",
+						...backgroundStyle,
 					}}
 					onClick={(e) => {
 						if (
@@ -219,7 +227,7 @@ export default function EditorCanvas() {
 						/>
 					)}
 
-					{currentSlide.elements.map((element: any) => (
+					{currentSlide.elements.map((element) => (
 						<SlideElement
 							key={element.id}
 							element={element}
@@ -373,7 +381,7 @@ export default function EditorCanvas() {
 										updateElement(selectedElementId, {
 											animation: {
 												...(selectedElement?.animation || { duration: 500 }),
-												type: val as any,
+												type: val as AnimationType,
 											},
 										})
 									}

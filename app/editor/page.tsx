@@ -88,7 +88,7 @@ function EditorContent() {
 	const [chartType, setChartType] = useState<string>("bar");
 	const [chartTitle, setChartTitle] = useState<string>("My Chart");
 	const [chartDataInput, setChartDataInput] = useState<string>("");
-	const [files, setFiles] = useState<any[]>([]);
+	const [files, setFiles] = useState<File[]>([]);
 
 	useEffect(() => {
 		loadPresentations();
@@ -266,7 +266,7 @@ function EditorContent() {
 	};
 
 	// Funkcia pre spracovanie nahratého súboru
-	const handleFileProcess = async (file: any) => {
+	const handleFileProcess = async (file: File) => {
 		try {
 			const text = await file.text();
 			let chartData: ChartData;
@@ -327,7 +327,7 @@ function EditorContent() {
 			}
 
 			// Vytvoríme chart element
-			const chartElement = {
+			const chartElement: SlideElement = {
 				id: `chart-${Date.now()}`,
 				type: "chart",
 				x: 100,
@@ -769,7 +769,7 @@ Example:
 					</div>
 
 					{/* Properties Panel - Desktop */}
-					<div className="hidden lg:block">
+					<div className="hidden lg:flex lg:flex-col lg:h-full lg:min-h-0 lg:shrink-0">
 						<PropertiesPanel />
 					</div>
 

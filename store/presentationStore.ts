@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import type { Presentation, Slide, SlideElement } from "@/types/presentation";
+import type { PresentationTemplate } from "@/lib/templates/presentationTemplates";
 import { getTemplateById } from "@/lib/templates/presentationTemplates";
 import { toast } from "sonner";
 import localforage from "localforage";
@@ -10,6 +11,8 @@ localforage.config({
 	name: "PresentationBuilder",
 	storeName: "presentations_store",
 });
+
+const templateCache = new Map<string, PresentationTemplate>();
 
 interface PresentationStore {
 	presentations: Presentation[];
@@ -51,7 +54,7 @@ interface PresentationStore {
 
 	// Element actions
 	addElement: (element: Omit<SlideElement, "id">) => void;
-	addElementToSlide: (slideId: string, element: any) => void;
+	addElementToSlide: (slideId: string, element: SlideElement) => void;
 	updateElement: (elementId: string, updates: Partial<SlideElement>) => void;
 	deleteElement: (elementId: string) => void;
 	selectElement: (elementId: string | null) => void;
@@ -95,12 +98,17 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		let slides: Slide[] = [createDefaultSlide()];
 
 		if (templateId) {
-			const template = getTemplateById(templateId);
+			let template = templateCache.get(templateId);
+			if (!template) {
+				template = getTemplateById(templateId);
+				if (template) templateCache.set(templateId, template);
+			}
+
 			if (template) {
-				slides = template.slides.map((slide) => ({
+				slides = template.slides.map((slide: Slide) => ({
 					...slide,
 					id: uuidv4(),
-					elements: slide.elements.map((el: any) => ({
+					elements: slide.elements.map((el: SlideElement) => ({
 						...el,
 						id: uuidv4(),
 					})),
@@ -231,7 +239,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			let presentations: Presentation[] = [];
 
 			if (stored) {
-				presentations = JSON.parse(stored).map((p: any) => ({
+				presentations = (JSON.parse(stored) as Presentation[]).map((p) => ({
 					...p,
 					createdAt: new Date(p.createdAt),
 					updatedAt: new Date(p.updatedAt),
@@ -296,7 +304,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				"presentationOrder",
 				JSON.stringify(state.presentationOrder),
 			);
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("Error saving presentations to IndexedDB:", error);
 			toast.error(
 				"Failed to save your presentation locally. If the issue persists, export it to avoid losing changes.",
@@ -541,8 +549,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		const state = get();
 		if (!state.currentPresentation) return;
 
-		const currentSlide =
-			state.currentPresentation.slides[state.currentSlideIndex];
+		const currentSlide = state.currentPresentation.slides[state.currentSlideIndex];
 		if (!currentSlide) return;
 
 		const newElement: SlideElement = {
@@ -550,101 +557,133 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			id: uuidv4(),
 		};
 
-		set((state) => {
-			if (!state.currentPresentation) return state;
+		const updatedSlides = [...state.currentPresentation.slides];
+		updatedSlides[state.currentSlideIndex] = {
+			...currentSlide,
+			elements: [...currentSlide.elements, newElement],
+		};
 
-			const slides = state.currentPresentation.slides.map(
-				(slide: Slide, index: number) =>
-					index === state.currentSlideIndex
-						? { ...slide, elements: [...slide.elements, newElement] }
-						: slide,
-			);
+		const updatedPresentation = {
+			...state.currentPresentation,
+			slides: updatedSlides,
+			updatedAt: new Date(),
+		};
 
-			const newCurrent = {
-				...state.currentPresentation,
-				slides,
-				updatedAt: new Date(),
-			};
-
-			return {
-				currentPresentation: newCurrent,
-				presentations: state.presentations.map((p) =>
-					p.id === newCurrent.id ? newCurrent : p,
-				),
-				selectedElementId: newElement.id,
-			};
+		set({
+			currentPresentation: updatedPresentation,
+			presentations: state.presentations.map((p) =>
+				p.id === updatedPresentation.id ? updatedPresentation : p,
+			),
+			selectedElementId: newElement.id,
 		});
 
-		setTimeout(() => {
-			get().savePresentations();
-		}, 0);
+		get().savePresentations();
 	},
 
 	updateElement: (elementId: string, updates: Partial<SlideElement>) => {
 		const state = get();
 		if (!state.currentPresentation) return;
 
+		const { currentSlideIndex, currentPresentation } = state;
+		const currentSlide = currentPresentation.slides[currentSlideIndex];
+
+		if (!currentSlide) return;
+
+		// Using a functional update for better performance and to avoid closure traps
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
-			const slides = state.currentPresentation.slides.map((slide: Slide) => ({
+			const currentSlide = state.currentPresentation.slides[state.currentSlideIndex];
+			if (!currentSlide) return state;
+
+			const elementInCurrentSlide = currentSlide.elements.some(
+				(el) => el.id === elementId,
+			);
+
+			if (elementInCurrentSlide) {
+				const updatedElements = currentSlide.elements.map((el) =>
+					el.id === elementId ? { ...el, ...updates } : el,
+				);
+
+				const updatedSlides = [...state.currentPresentation.slides];
+				updatedSlides[state.currentSlideIndex] = {
+					...currentSlide,
+					elements: updatedElements,
+				};
+
+				const updatedPresentation = {
+					...state.currentPresentation,
+					slides: updatedSlides,
+					updatedAt: new Date(),
+				};
+
+				return {
+					currentPresentation: updatedPresentation,
+					presentations: state.presentations.map((p) =>
+						p.id === updatedPresentation.id ? updatedPresentation : p,
+					),
+				};
+			}
+
+			// Fallback: search in all slides (slow path)
+			const updatedSlides = state.currentPresentation.slides.map((slide) => ({
 				...slide,
-				elements: slide.elements.map((el: SlideElement) =>
+				elements: slide.elements.map((el) =>
 					el.id === elementId ? { ...el, ...updates } : el,
 				),
 			}));
 
-			const newCurrent = {
+			const updatedPresentation = {
 				...state.currentPresentation,
-				slides,
+				slides: updatedSlides,
 				updatedAt: new Date(),
 			};
 
 			return {
-				currentPresentation: newCurrent,
+				currentPresentation: updatedPresentation,
 				presentations: state.presentations.map((p) =>
-					p.id === newCurrent.id ? newCurrent : p,
+					p.id === updatedPresentation.id ? updatedPresentation : p,
 				),
 			};
 		});
 
-		setTimeout(() => {
-			get().savePresentations();
-		}, 0);
+		get().savePresentations();
 	},
 
 	deleteElement: (elementId: string) => {
 		const state = get();
 		if (!state.currentPresentation) return;
 
-		set((state) => {
-			if (!state.currentPresentation) return state;
+		const { currentSlideIndex, currentPresentation } = state;
+		const currentSlide = currentPresentation.slides[currentSlideIndex];
 
-			const slides = state.currentPresentation.slides.map((slide: Slide) => ({
-				...slide,
-				elements: slide.elements.filter(
-					(el: SlideElement) => el.id !== elementId,
-				),
-			}));
+		if (!currentSlide) return;
 
-			const newCurrent = {
-				...state.currentPresentation,
-				slides,
-				updatedAt: new Date(),
-			};
+		const updatedElements = currentSlide.elements.filter(
+			(el) => el.id !== elementId,
+		);
 
-			return {
-				currentPresentation: newCurrent,
-				presentations: state.presentations.map((p) =>
-					p.id === newCurrent.id ? newCurrent : p,
-				),
-				selectedElementId: null,
-			};
+		const updatedSlides = [...currentPresentation.slides];
+		updatedSlides[currentSlideIndex] = {
+			...currentSlide,
+			elements: updatedElements,
+		};
+
+		const updatedPresentation = {
+			...currentPresentation,
+			slides: updatedSlides,
+			updatedAt: new Date(),
+		};
+
+		set({
+			currentPresentation: updatedPresentation,
+			presentations: state.presentations.map((p) =>
+				p.id === updatedPresentation.id ? updatedPresentation : p,
+			),
+			selectedElementId: null,
 		});
 
-		setTimeout(() => {
-			get().savePresentations();
-		}, 0);
+		get().savePresentations();
 	},
 
 	selectElement: (elementId: string | null) => {
@@ -749,7 +788,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		setTimeout(() => get().savePresentations(), 0);
 	},
 
-	addElementToSlide: (slideId: string, element: any) => {
+	addElementToSlide: (slideId: string, element: SlideElement) => {
 		const state = get();
 		if (!state.currentPresentation) return;
 

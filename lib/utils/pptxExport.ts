@@ -6,14 +6,32 @@ import type {
 	SlideElement,
 } from "../../types/presentation";
 
+interface PptxGenJS {
+	addSlide: () => any;
+	writeFile: (options: { fileName: string }) => Promise<string>;
+	title: string;
+	subject: string;
+	author: string;
+	ShapeType: {
+		rect: any;
+		ellipse: any;
+		triangle: any;
+	};
+}
+
+interface WindowWithPptxGen extends Window {
+	pptxgen?: { new(): PptxGenJS };
+	PptxGenJS?: { new(): PptxGenJS };
+}
+
 export const exportToPPTX = async (presentation: Presentation) => {
-	let pptxgen;
+	let pptxgen: { new(): PptxGenJS } | undefined;
 	try {
 		// @ts-ignore
 		const module = await import("pptxgenjs");
 		pptxgen = module.default;
 	} catch (e) {
-		const windowAny = window as any;
+		const windowAny = window as unknown as WindowWithPptxGen;
 		if (windowAny.pptxgen) {
 			pptxgen = windowAny.pptxgen;
 		} else {
@@ -26,7 +44,7 @@ export const exportToPPTX = async (presentation: Presentation) => {
 				script.onerror = reject;
 				document.head.appendChild(script);
 			});
-			pptxgen = (window as any).PptxGenJS;
+			pptxgen = (window as unknown as WindowWithPptxGen).PptxGenJS;
 		}
 	}
 

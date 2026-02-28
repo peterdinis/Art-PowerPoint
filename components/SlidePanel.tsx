@@ -1,12 +1,13 @@
 "use client";
 
 import { usePresentationStore } from "@/store/presentationStore";
+import type { Slide } from "@/types/presentation";
 import { Plus, Trash2, Copy, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, Key } from "react";
 import {
 	DndContext,
 	closestCenter,
@@ -26,7 +27,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 interface SortableSlideProps {
-	slide: any;
+	slide: Slide;
 	index: number;
 	isSelected: boolean;
 	onSelect: () => void;
@@ -83,7 +84,7 @@ function SortableSlideItem({
 								slide.background?.gradientStops &&
 								slide.background.gradientStops.length > 0
 									? slide.background.gradientStops
-											.map((s: any) => `${s.color} ${s.offset}%`)
+											.map((s: { color: string; offset: string; }) => `${s.color} ${s.offset}%`)
 											.join(", ")
 									: slide.background?.gradient;
 
@@ -119,7 +120,7 @@ function SortableSlideItem({
 
 					{/* Preview of elements */}
 					<div className="absolute inset-0 p-2 pointer-events-none">
-						{slide.elements.slice(0, 3).map((el: any) => (
+						{slide.elements.slice(0, 3).map((el: { id: Key | null | undefined; position: { x: number; y: number; }; size: { width: number; height: number; }; }) => (
 							<div
 								key={el.id}
 								className="absolute bg-primary/20 border border-primary/40 rounded"

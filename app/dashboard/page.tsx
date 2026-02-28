@@ -22,8 +22,6 @@ import { usePresentationStore } from "@/store/presentationStore";
 import { Slide, Presentation } from "@/types/presentation";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { importPPTX } from "@/lib/utils/pptxImport";
-import { importODP } from "@/lib/utils/odpImport";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import { Input } from "@/components/ui/input";
@@ -73,6 +71,7 @@ import {
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { FilePond, registerPlugin } from "react-filepond";
+import type { FilePondFile } from "filepond";
 import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
 import FilePondPluginFileValidateSize from "filepond-plugin-file-validate-size";
 import "filepond/dist/filepond.min.css";
@@ -90,7 +89,7 @@ function SortableGridItem({
 	formatDate,
 	isOverlay = false,
 }: {
-	presentation: any;
+	presentation: Presentation;
 	handleDelete: (id: string, title?: string) => void;
 	formatDate: (date: Date) => string;
 	isOverlay?: boolean;
@@ -211,7 +210,7 @@ function SortableListItem({
 	formatDate,
 	isOverlay = false,
 }: {
-	presentation: any;
+	presentation: Presentation;
 	handleDelete: (id: string, title?: string) => void;
 	formatDate: (date: Date) => string;
 	isOverlay?: boolean;
@@ -341,31 +340,33 @@ export default function Home() {
 	const [isSearching, setIsSearching] = useState(false);
 
 	const [showImportDialog, setShowImportDialog] = useState(false);
-	const [importFiles, setImportFiles] = useState<any[]>([]);
+	const [importFiles, setImportFiles] = useState<FilePondFile[]>([]);
 
 	// Analysis state
 	const [showAnalysisDialog, setShowAnalysisDialog] = useState(false);
-	const [importedData, setImportedData] = useState<any>(null);
+	const [importedData, setImportedData] = useState<unknown>(null);
 
 	// Dialog state
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [newTitle, setNewTitle] = useState("");
 	const [newDescription, setNewDescription] = useState("");
 
-	const handleFilePondImport = async (fileItem: any) => {
+	const handleFilePondImport = async (fileItem: FilePondFile) => {
 		const file = fileItem.file;
 		if (!file) return;
 
 		try {
-			toast.loading("Analyzing presentation...", { id: "import-file" });
+			toast.loading("Načítavam prezentáciu...", { id: "import-file" });
 			let parsedData;
 
 			if (
 				file.name.toLowerCase().endsWith(".odp") ||
 				file.type === "application/vnd.oasis.opendocument.presentation"
 			) {
+				const { importODP } = await import("@/lib/utils/odpImport");
 				parsedData = await importODP(file);
 			} else {
+				const { importPPTX } = await import("@/lib/utils/pptxImport");
 				parsedData = await importPPTX(file);
 			}
 
@@ -1100,7 +1101,7 @@ export default function Home() {
 								<div className="flex justify-between items-center">
 									<span className="text-sm text-muted-foreground">Title</span>
 									<span
-										className="font-medium truncate max-w-[200px]"
+										className="font-medium truncate max-w-50"
 										title={importedData.title || "Untitled"}
 									>
 										{importedData.title || "Untitled"}
@@ -1120,7 +1121,7 @@ export default function Home() {
 									</span>
 									<span className="font-medium">
 										{importedData.slides?.reduce(
-											(count: number, slide: any) =>
+											(count: number, slide: { elements: string | number[]; }) =>
 												count + (slide.elements?.length || 0),
 											0,
 										) || 0}
