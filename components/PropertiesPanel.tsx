@@ -1,5 +1,4 @@
-"use client";
-
+import { useState, useEffect } from "react";
 import { usePresentationStore } from "@/store/presentationStore";
 import {
 	Trash2,
@@ -10,6 +9,8 @@ import {
 	Video,
 	Table2,
 	Code,
+	Save,
+	RotateCcw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +28,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion } from "framer-motion";
 import { useTheme } from "@/components/ThemeProvider";
 import type { SlideElement } from "@/types/presentation";
+import { toast } from "sonner";
 
 import SlideBackgroundEditor from "./SlideBackgroundEditor";
 import { SlideNotesEditor } from "./SlideNotesEditor";
@@ -50,6 +52,9 @@ export default function PropertiesPanel() {
 	} = usePresentationStore();
 	const { theme } = useTheme();
 
+	const [draftElement, setDraftElement] = useState<SlideElement | null>(null);
+	const [hasChanges, setHasChanges] = useState(false);
+
 	const getDefaultTextColor = () => {
 		if (typeof window === "undefined") return "#212121";
 		const isDark = document.documentElement.classList.contains("dark");
@@ -65,26 +70,57 @@ export default function PropertiesPanel() {
 		? currentSlide.elements.find((el) => el.id === selectedElementId)
 		: undefined;
 
-	const handleUpdate = (updates: Partial<SlideElement>) => {
-		if (!selectedElement) return;
-
-		const updateData: Partial<SlideElement> = { ...updates };
-
-		if (updates.style) {
-			updateData.style = {
-				...(selectedElement.style || {}),
-				...updates.style,
-			};
+	// Initial draft sync when element selection changes
+	useEffect(() => {
+		if (selectedElement) {
+			setDraftElement(JSON.parse(JSON.stringify(selectedElement)));
+			setHasChanges(false);
+		} else {
+			setDraftElement(null);
+			setHasChanges(false);
 		}
+	}, [selectedElementId, selectedElement ? selectedElement.id : null]);
 
-		if (updates.animation) {
-			updateData.animation = {
-				...(selectedElement.animation || { type: "none", duration: 500 }),
-				...updates.animation,
-			};
+	const handleDraftUpdate = (updates: Partial<SlideElement>) => {
+		if (!draftElement) return;
+
+		setDraftElement(prev => {
+			if (!prev) return null;
+			const newData = { ...prev, ...updates };
+
+			// Deep merge for style and animation if they exist in updates
+			if (updates.style) {
+				newData.style = {
+					...(prev.style || {}),
+					...updates.style,
+				};
+			}
+
+			if (updates.animation) {
+				newData.animation = {
+					...(prev.animation || { type: "none", duration: 500 }),
+					...updates.animation,
+				};
+			}
+
+			setHasChanges(true);
+			return newData;
+		});
+	};
+
+	const saveChanges = () => {
+		if (!draftElement) return;
+		updateElement(draftElement.id, draftElement);
+		setHasChanges(false);
+		toast.success("Changes saved");
+	};
+
+	const discardChanges = () => {
+		if (selectedElement) {
+			setDraftElement(JSON.parse(JSON.stringify(selectedElement)));
+			setHasChanges(false);
+			toast.info("Changes discarded");
 		}
-
-		updateElement(selectedElement.id, updateData);
 	};
 
 	const handleSlideBackgroundUpdate = (updates: {
@@ -106,7 +142,7 @@ export default function PropertiesPanel() {
 		updatePresentation(currentPresentation.id, { slides: updatedSlides });
 	};
 
-	if (!selectedElement) {
+	if (!selectedElement || !draftElement) {
 		return (
 			<motion.div
 				initial={{ x: 320, opacity: 0 }}
@@ -178,7 +214,7 @@ export default function PropertiesPanel() {
 	}
 
 	const getElementIcon = () => {
-		switch (selectedElement.type) {
+		switch (draftElement.type) {
 			case "text": return <Type className="w-5 h-5" />;
 			case "image": return <ImageIcon className="w-5 h-5" />;
 			case "shape": return <Square className="w-5 h-5" />;
@@ -191,7 +227,7 @@ export default function PropertiesPanel() {
 
 	return (
 		<motion.div
-			key={selectedElement.id}
+			key={draftElement.id}
 			initial={{ x: 320, opacity: 0 }}
 			animate={{ x: 0, opacity: 1 }}
 			transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -201,14 +237,14 @@ export default function PropertiesPanel() {
 				<div className="flex items-center justify-between">
 					<CardTitle className="flex items-center gap-2">
 						{getElementIcon()}
-						<span className="capitalize">{selectedElement.type}</span> Properties
+						<span className="capitalize">{draftElement.type}</span> Properties
 					</CardTitle>
 					<Button
 						variant="ghost"
 						size="icon"
 						onClick={() => {
 							if (confirm("Delete this element?")) {
-								deleteElement(selectedElement.id);
+								deleteElement(draftElement.id);
 								selectElement(null);
 							}
 						}}
@@ -227,47 +263,67 @@ export default function PropertiesPanel() {
 						</TabsList>
 
 						<TabsContent value="style" className="space-y-6">
-							<LayoutProperties element={selectedElement} onUpdate={handleUpdate} />
+							<LayoutProperties element={draftElement} onUpdate={handleDraftUpdate} />
 
-							{selectedElement.type === "text" && (
+							{draftElement.type === "text" && (
 								<>
 									<Separator />
 									<TextProperties
-										element={selectedElement}
-										onUpdate={handleUpdate}
+										element={draftElement}
+										onUpdate={handleDraftUpdate}
 										getDefaultTextColor={getDefaultTextColor}
 									/>
 								</>
 							)}
 
-							{(selectedElement.type === "image" || selectedElement.type === "video") && (
+							{(draftElement.type === "image" || draftElement.type === "video") && (
 								<>
 									<Separator />
-									<MediaProperties element={selectedElement} onUpdate={handleUpdate} />
+									<MediaProperties element={draftElement} onUpdate={handleDraftUpdate} />
 								</>
 							)}
 
-							{selectedElement.type === "shape" && (
+							{draftElement.type === "shape" && (
 								<>
 									<Separator />
-									<ShapeProperties element={selectedElement} onUpdate={handleUpdate} />
+									<ShapeProperties element={draftElement} onUpdate={handleDraftUpdate} />
 								</>
 							)}
 
-							{selectedElement.type === "table" && (
+							{draftElement.type === "table" && (
 								<>
 									<Separator />
-									<TableProperties element={selectedElement} onUpdate={handleUpdate} />
+									<TableProperties element={draftElement} onUpdate={handleDraftUpdate} />
 								</>
 							)}
 						</TabsContent>
 
 						<TabsContent value="animation">
-							<AnimationProperties element={selectedElement} onUpdate={handleUpdate} />
+							<AnimationProperties element={draftElement} onUpdate={handleDraftUpdate} />
 						</TabsContent>
 					</Tabs>
 				</CardContent>
 			</ScrollArea>
+
+			{/* Action Buttons */}
+			<div className="p-4 border-t bg-muted/30 flex items-center gap-3 shrink-0">
+				<Button
+					className="flex-1"
+					onClick={saveChanges}
+					disabled={!hasChanges}
+				>
+					<Save className="w-4 h-4 mr-2" />
+					Save Changes
+				</Button>
+				<Button
+					variant="outline"
+					size="icon"
+					onClick={discardChanges}
+					disabled={!hasChanges}
+				>
+					<RotateCcw className="w-4 h-4" />
+				</Button>
+			</div>
 		</motion.div>
 	);
 }
