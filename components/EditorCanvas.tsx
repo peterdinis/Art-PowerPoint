@@ -7,25 +7,35 @@ import { cn } from "@/lib/utils";
 import { Wand2, ChevronLeft, ChevronRight, Trash2, Sparkles } from "lucide-react";
 import type { AnimationType } from "@/types/presentation";
 
-export default function EditorCanvas() {
-	const {
-		currentPresentation,
-		currentSlideIndex,
-		selectedElementId,
-		selectElement,
-		updateElement,
-		previousSlide,
-		nextSlide,
-		deleteElement,
-		moveElementLayer,
-		alignElement,
-		zoomLevel,
-		showGrid,
-	} = usePresentationStore();
+import { useMemo } from "react";
+import SlideElement from "./SlideElement";
+import { Button } from "./ui/button";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 
-	const selectedElement = currentPresentation?.slides[
-		currentSlideIndex
-	]?.elements.find((el) => el.id === selectedElementId);
+export default function EditorCanvas() {
+	const currentPresentation = usePresentationStore((state) => state.currentPresentation);
+	const currentSlideIndex = usePresentationStore((state) => state.currentSlideIndex);
+	const selectedElementId = usePresentationStore((state) => state.selectedElementId);
+	const selectElement = usePresentationStore((state) => state.selectElement);
+	const updateElement = usePresentationStore((state) => state.updateElement);
+	const previousSlide = usePresentationStore((state) => state.previousSlide);
+	const nextSlide = usePresentationStore((state) => state.nextSlide);
+	const deleteElement = usePresentationStore((state) => state.deleteElement);
+	const moveElementLayer = usePresentationStore((state) => state.moveElementLayer);
+	const alignElement = usePresentationStore((state) => state.alignElement);
+	const zoomLevel = usePresentationStore((state) => state.zoomLevel);
+	const showGrid = usePresentationStore((state) => state.showGrid);
+
+	const selectedElement = currentPresentation?.slides[currentSlideIndex]?.elements.find(
+		(el) => el.id === selectedElementId,
+	);
 	const dropRef = useRef<HTMLDivElement>(null);
 
 	const [{ isOver }, drop] = useDrop({
@@ -82,20 +92,13 @@ export default function EditorCanvas() {
 
 	drop(dropRef);
 
-	const handleElementResize = (
-		elementId: string,
-		width: number,
-		height: number,
-	) => {
+	const handleElementResize = (elementId: string, width: number, height: number) => {
 		updateElement(elementId, {
 			size: { width, height },
 		});
 	};
 
-	if (!currentPresentation) return null;
-
-	const currentSlide = currentPresentation.slides[currentSlideIndex];
-	if (!currentSlide) return null;
+	const currentSlide = currentPresentation?.slides[currentSlideIndex];
 
 	// Funkcie pre navigáciu slides pomocou klávesnice
 	const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -103,10 +106,7 @@ export default function EditorCanvas() {
 			previousSlide();
 		} else if (e.key === "ArrowRight") {
 			nextSlide();
-		} else if (
-			(e.key === "Delete" || e.key === "Backspace") &&
-			selectedElementId
-		) {
+		} else if ((e.key === "Delete" || e.key === "Backspace") && selectedElementId) {
 			// Don't delete if we're in an input or textarea
 			const activeElement = document.activeElement as HTMLElement | null;
 			if (
@@ -124,17 +124,15 @@ export default function EditorCanvas() {
 		}
 	};
 
-	return (
 	const backgroundStyle = useMemo(() => {
 		if (!currentSlide?.background) return {};
 
 		const stops =
-			currentSlide.background.gradientStops &&
-				currentSlide.background.gradientStops.length > 0
+			currentSlide.background.gradientStops && currentSlide.background.gradientStops.length > 0
 				? currentSlide.background.gradientStops
 					.map((s) => `${s.color} ${s.offset}%`)
 					.join(", ")
-				: currentSlide.background.gradient;
+				: (currentSlide.background.gradient as string);
 
 		const image = currentSlide.background.image
 			? `url(${currentSlide.background.image})`
@@ -161,6 +159,8 @@ export default function EditorCanvas() {
 			transformOrigin: "center center",
 		};
 	}, [currentSlide?.background, zoomLevel]);
+
+	if (!currentPresentation || !currentSlide) return null;
 
 	return (
 		<div

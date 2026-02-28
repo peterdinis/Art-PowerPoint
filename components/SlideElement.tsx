@@ -51,7 +51,7 @@ const getAnimationVariants = (type?: AnimationType): Variants => {
 				animate: {
 					scale: 1,
 					opacity: 1,
-					transition: { type: "spring", stiffness: 260, damping: 20 } as unknown as Easing,
+					transition: { type: "spring", stiffness: 260, damping: 20 },
 				},
 			};
 		case "rotate":
@@ -83,14 +83,14 @@ const getAnimationVariants = (type?: AnimationType): Variants => {
 						duration: 0.2,
 						repeat: Infinity,
 						repeatDelay: 3,
-					} as unknown as Easing,
+					},
 				},
 			};
 		case "pulse":
 			return {
 				animate: {
 					scale: [1, 1.05, 1],
-					transition: { duration: 2, repeat: Infinity } as unknown as Easing,
+					transition: { duration: 2, repeat: Infinity },
 				},
 			};
 		default:
@@ -98,14 +98,17 @@ const getAnimationVariants = (type?: AnimationType): Variants => {
 	}
 };
 
-export default function SlideElement({
+import { memo } from "react";
+
+const SlideElement = memo(function SlideElement({
 	element,
 	isSelected,
 	onSelect,
 	onResize,
 }: SlideElementProps) {
-	const { deleteElement, selectElement } = usePresentationStore();
-	const { performance } = useSettingsStore();
+	const deleteElement = usePresentationStore((state) => state.deleteElement);
+	const selectElement = usePresentationStore((state) => state.selectElement);
+	const performance = useSettingsStore((state) => state.performance);
 
 	const [{ isDragging }, drag] = useDrag({
 		type: "element",
@@ -152,33 +155,33 @@ export default function SlideElement({
 		if (element.type === "text") {
 			const filterStyles = element.style?.filters
 				? {
-						filter: [
-							element.style.filters.blur
-								? `blur(${element.style.filters.blur}px)`
-								: "",
-							element.style.filters.brightness
-								? `brightness(${element.style.filters.brightness})`
-								: "",
-							element.style.filters.contrast
-								? `contrast(${element.style.filters.contrast})`
-								: "",
-							element.style.filters.grayscale
-								? `grayscale(${element.style.filters.grayscale})`
-								: "",
-							element.style.filters.sepia
-								? `sepia(${element.style.filters.sepia})`
-								: "",
-							element.style.filters.hueRotate
-								? `hue-rotate(${element.style.filters.hueRotate}deg)`
-								: "",
-							element.style.filters.saturate
-								? `saturate(${element.style.filters.saturate})`
-								: "",
-							element.style.filters.invert
-								? `invert(${element.style.filters.invert})`
-								: "",
-						].join(" "),
-					}
+					filter: [
+						element.style.filters.blur
+							? `blur(${element.style.filters.blur}px)`
+							: "",
+						element.style.filters.brightness
+							? `brightness(${element.style.filters.brightness})`
+							: "",
+						element.style.filters.contrast
+							? `contrast(${element.style.filters.contrast})`
+							: "",
+						element.style.filters.grayscale
+							? `grayscale(${element.style.filters.grayscale})`
+							: "",
+						element.style.filters.sepia
+							? `sepia(${element.style.filters.sepia})`
+							: "",
+						element.style.filters.hueRotate
+							? `hue-rotate(${element.style.filters.hueRotate}deg)`
+							: "",
+						element.style.filters.saturate
+							? `saturate(${element.style.filters.saturate})`
+							: "",
+						element.style.filters.invert
+							? `invert(${element.style.filters.invert})`
+							: "",
+					].join(" "),
+				}
 				: {};
 
 			const getBackgroundStyle = () => {
@@ -325,11 +328,11 @@ export default function SlideElement({
 				whileHover={
 					!isSelected && performance.complexAnimations
 						? {
-								scale: 1.05,
-								rotateY: 10,
-								rotateX: -5,
-								boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
-							}
+							scale: 1.05,
+							rotateY: 10,
+							rotateX: -5,
+							boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
+						}
 						: {}
 				}
 				transition={{
@@ -358,4 +361,6 @@ export default function SlideElement({
 			</motion.div>
 		</ResizableBox>
 	);
-}
+});
+
+export default SlideElement;

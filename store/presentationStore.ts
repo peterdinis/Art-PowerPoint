@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import type { Presentation, Slide, SlideElement } from "@/types/presentation";
+import type { PresentationTemplate } from "@/lib/templates/presentationTemplates";
 import { getTemplateById } from "@/lib/templates/presentationTemplates";
 import { toast } from "sonner";
 import localforage from "localforage";
@@ -10,6 +11,8 @@ localforage.config({
 	name: "PresentationBuilder",
 	storeName: "presentations_store",
 });
+
+const templateCache = new Map<string, PresentationTemplate>();
 
 interface PresentationStore {
 	presentations: Presentation[];
@@ -95,9 +98,14 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		let slides: Slide[] = [createDefaultSlide()];
 
 		if (templateId) {
-			const template = getTemplateById(templateId);
+			let template = templateCache.get(templateId);
+			if (!template) {
+				template = getTemplateById(templateId);
+				if (template) templateCache.set(templateId, template);
+			}
+
 			if (template) {
-				slides = template.slides.map((slide) => ({
+				slides = template.slides.map((slide: Slide) => ({
 					...slide,
 					id: uuidv4(),
 					elements: slide.elements.map((el: SlideElement) => ({
@@ -581,37 +589,44 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 		if (!currentSlide) return;
 
-		// Check if element is in current slide first (fast path)
-		const elementInCurrentSlide = currentSlide.elements.some(
-			(el) => el.id === elementId,
-		);
+		// Using a functional update for better performance and to avoid closure traps
+		set((state) => {
+			if (!state.currentPresentation) return state;
 
-		if (elementInCurrentSlide) {
-			const updatedElements = currentSlide.elements.map((el) =>
-				el.id === elementId ? { ...el, ...updates } : el,
+			const currentSlide = state.currentPresentation.slides[state.currentSlideIndex];
+			if (!currentSlide) return state;
+
+			const elementInCurrentSlide = currentSlide.elements.some(
+				(el) => el.id === elementId,
 			);
 
-			const updatedSlides = [...currentPresentation.slides];
-			updatedSlides[currentSlideIndex] = {
-				...currentSlide,
-				elements: updatedElements,
-			};
+			if (elementInCurrentSlide) {
+				const updatedElements = currentSlide.elements.map((el) =>
+					el.id === elementId ? { ...el, ...updates } : el,
+				);
 
-			const updatedPresentation = {
-				...currentPresentation,
-				slides: updatedSlides,
-				updatedAt: new Date(),
-			};
+				const updatedSlides = [...state.currentPresentation.slides];
+				updatedSlides[state.currentSlideIndex] = {
+					...currentSlide,
+					elements: updatedElements,
+				};
 
-			set({
-				currentPresentation: updatedPresentation,
-				presentations: state.presentations.map((p) =>
-					p.id === updatedPresentation.id ? updatedPresentation : p,
-				),
-			});
-		} else {
+				const updatedPresentation = {
+					...state.currentPresentation,
+					slides: updatedSlides,
+					updatedAt: new Date(),
+				};
+
+				return {
+					currentPresentation: updatedPresentation,
+					presentations: state.presentations.map((p) =>
+						p.id === updatedPresentation.id ? updatedPresentation : p,
+					),
+				};
+			}
+
 			// Fallback: search in all slides (slow path)
-			const updatedSlides = currentPresentation.slides.map((slide) => ({
+			const updatedSlides = state.currentPresentation.slides.map((slide) => ({
 				...slide,
 				elements: slide.elements.map((el) =>
 					el.id === elementId ? { ...el, ...updates } : el,
@@ -619,18 +634,18 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			}));
 
 			const updatedPresentation = {
-				...currentPresentation,
+				...state.currentPresentation,
 				slides: updatedSlides,
 				updatedAt: new Date(),
 			};
 
-			set({
+			return {
 				currentPresentation: updatedPresentation,
 				presentations: state.presentations.map((p) =>
 					p.id === updatedPresentation.id ? updatedPresentation : p,
 				),
-			});
-		}
+			};
+		});
 
 		get().savePresentations();
 	},
