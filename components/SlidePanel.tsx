@@ -82,10 +82,10 @@ function SortableSlideItem({
 						backgroundImage: (() => {
 							const stops =
 								slide.background?.gradientStops &&
-								slide.background.gradientStops.length > 0
+									slide.background.gradientStops.length > 0
 									? slide.background.gradientStops
-											.map((s: { color: string; offset: string; }) => `${s.color} ${s.offset}%`)
-											.join(", ")
+										.map((s) => `${s.color} ${s.offset}%`)
+										.join(", ")
 									: slide.background?.gradient;
 
 							const image = slide.background?.image
@@ -120,7 +120,7 @@ function SortableSlideItem({
 
 					{/* Preview of elements */}
 					<div className="absolute inset-0 p-2 pointer-events-none">
-						{slide.elements.slice(0, 3).map((el: { id: Key | null | undefined; position: { x: number; y: number; }; size: { width: number; height: number; }; }) => (
+						{slide.elements.slice(0, 3).map((el) => (
 							<div
 								key={el.id}
 								className="absolute bg-primary/20 border border-primary/40 rounded"

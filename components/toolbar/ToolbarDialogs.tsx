@@ -191,6 +191,7 @@ export function ToolbarDialogs({ activeDialog, onClose }: ToolbarDialogsProps) {
                         <Button onClick={handleAddLink} className="w-full">
                             Add Link
                         </Button>
+                        <KeepOpenToggle />
                     </div>
                 </DialogContent>
             </Dialog>
@@ -226,6 +227,7 @@ export function ToolbarDialogs({ activeDialog, onClose }: ToolbarDialogsProps) {
                                 </Button>
                             ))}
                         </div>
+                        <KeepOpenToggle />
                     </div>
                 </DialogContent>
             </Dialog>
@@ -265,6 +267,7 @@ export function ToolbarDialogs({ activeDialog, onClose }: ToolbarDialogsProps) {
                             </Button>
                         </TabsContent>
                     </Tabs>
+                    <KeepOpenToggle />
                 </DialogContent>
             </Dialog>
 
@@ -288,6 +291,7 @@ export function ToolbarDialogs({ activeDialog, onClose }: ToolbarDialogsProps) {
                         <Button onClick={handleAddVideo} className="w-full">
                             Add Video
                         </Button>
+                        <KeepOpenToggle />
                     </div>
                 </DialogContent>
             </Dialog>
@@ -322,6 +326,7 @@ export function ToolbarDialogs({ activeDialog, onClose }: ToolbarDialogsProps) {
                     <Button onClick={handleAddTable} className="w-full">
                         Add Table
                     </Button>
+                    <KeepOpenToggle />
                 </DialogContent>
             </Dialog>
 
@@ -376,6 +381,7 @@ export function ToolbarDialogs({ activeDialog, onClose }: ToolbarDialogsProps) {
                         <Button onClick={handleAddChart} className="w-full">
                             Add Chart
                         </Button>
+                        <KeepOpenToggle />
                     </div>
                 </DialogContent>
             </Dialog>

@@ -9,22 +9,15 @@ import {
     PieChart,
     Shapes,
     Link as LinkIcon,
-    Code,
     Plus,
     ChevronDown,
     AlignLeft,
-    Bold,
-    Italic,
-    Underline,
     Heading1,
     Heading2,
     Zap,
     Grid,
     ZoomIn,
     ZoomOut,
-    Maximize,
-    FileDown,
-    Archive
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
