@@ -1120,7 +1120,7 @@ export default function Home() {
 									</span>
 									<span className="font-medium">
 										{importedData.slides?.reduce(
-											(count: number, slide: any) =>
+											(count: number, slide: { elements: string | number[]; }) =>
 												count + (slide.elements?.length || 0),
 											0,
 										) || 0}

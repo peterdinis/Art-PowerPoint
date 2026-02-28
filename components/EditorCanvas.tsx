@@ -172,7 +172,7 @@ export default function EditorCanvas() {
 								currentSlide.background?.gradientStops &&
 								currentSlide.background.gradientStops.length > 0
 									? currentSlide.background.gradientStops
-											.map((s: any) => `${s.color} ${s.offset}%`)
+											.map((s) => `${s.color} ${s.offset}%`)
 											.join(", ")
 									: currentSlide.background?.gradient;
 
@@ -221,7 +221,7 @@ export default function EditorCanvas() {
 						/>
 					)}
 
-					{currentSlide.elements.map((element: any) => (
+					{currentSlide.elements.map((element) => (
 						<SlideElement
 							key={element.id}
 							element={element}
