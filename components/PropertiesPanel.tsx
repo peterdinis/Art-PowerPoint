@@ -10,8 +10,11 @@ import {
 	Table2,
 	Code,
 	Save,
-	RotateCcw
+	RotateCcw,
+	Settings
 } from "lucide-react";
+import { useTranslate } from "@/lib/useTranslate";
+import { useSettingsStore } from "@/store/settingsStore";
 import { Button } from "@/components/ui/button";
 import {
 	Select,
@@ -51,6 +54,7 @@ export default function PropertiesPanel() {
 		updatePresentation,
 	} = usePresentationStore();
 	const { theme } = useTheme();
+	const { t, language } = useTranslate();
 
 	const [draftElement, setDraftElement] = useState<SlideElement | null>(null);
 	const [hasChanges, setHasChanges] = useState(false);
@@ -112,14 +116,14 @@ export default function PropertiesPanel() {
 		if (!draftElement) return;
 		updateElement(draftElement.id, draftElement);
 		setHasChanges(false);
-		toast.success("Changes saved");
+		toast.success(language === "sk" ? "Zmeny uložené" : "Changes saved");
 	};
 
 	const discardChanges = () => {
 		if (selectedElement) {
 			setDraftElement(JSON.parse(JSON.stringify(selectedElement)));
 			setHasChanges(false);
-			toast.info("Changes discarded");
+			toast.info(language === "sk" ? "Zmeny zahodené" : "Changes discarded");
 		}
 	};
 
@@ -153,13 +157,13 @@ export default function PropertiesPanel() {
 				<CardHeader className="flex-none shrink-0">
 					<CardTitle className="flex items-center gap-2">
 						<Layers className="w-5 h-5" />
-						Slide Properties
+						{language === "sk" ? "Vlastnosti snímky" : "Slide Properties"}
 					</CardTitle>
 				</CardHeader>
 				<ScrollArea className="flex-1 min-h-0">
 					<CardContent className="space-y-6 pb-8">
 						<p className="text-sm text-muted-foreground">
-							Select an element to edit its properties or use the settings below for this slide.
+							{language === "sk" ? "Vyberte prvok na úpravu jeho vlastností alebo použite nastavenia nižšie pre túto snímku." : "Select an element to edit its properties or use the settings below for this slide."}
 						</p>
 
 						<SlideBackgroundEditor
@@ -209,6 +213,17 @@ export default function PropertiesPanel() {
 						</div>
 					</CardContent>
 				</ScrollArea>
+				<div className="h-full flex flex-col items-center justify-center p-8 text-center text-muted-foreground">
+					<div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-6">
+						<Settings className="w-8 h-8 opacity-20" />
+					</div>
+					<h3 className="text-lg font-medium text-foreground mb-2">
+						{language === "sk" ? "Žiadny vybratý prvok" : "No element selected"}
+					</h3>
+					<p className="max-w-[200px] text-sm leading-relaxed">
+						{language === "sk" ? "Vyberte prvok na plátne a upravte jeho vlastnosti" : "Select an element on the canvas to edit its properties"}
+					</p>
+				</div>
 			</motion.div>
 		);
 	}
@@ -237,13 +252,13 @@ export default function PropertiesPanel() {
 				<div className="flex items-center justify-between">
 					<CardTitle className="flex items-center gap-2">
 						{getElementIcon()}
-						<span className="capitalize">{draftElement.type}</span> Properties
+						<span className="capitalize">{draftElement.type}</span> {t("editor.properties")}
 					</CardTitle>
 					<Button
 						variant="ghost"
 						size="icon"
 						onClick={() => {
-							if (confirm("Delete this element?")) {
+							if (confirm(language === "sk" ? "Odstrániť tento prvok?" : "Delete this element?")) {
 								deleteElement(draftElement.id);
 								selectElement(null);
 							}
@@ -258,7 +273,7 @@ export default function PropertiesPanel() {
 				<CardContent className="space-y-8 py-6">
 					<Tabs defaultValue="style">
 						<TabsList className="grid w-full grid-cols-2 mb-6">
-							<TabsTrigger value="style">Style</TabsTrigger>
+							<TabsTrigger value="style">{t("editor.properties")}</TabsTrigger>
 							<TabsTrigger value="animation">Animation</TabsTrigger>
 						</TabsList>
 
@@ -313,7 +328,7 @@ export default function PropertiesPanel() {
 					disabled={!hasChanges}
 				>
 					<Save className="w-4 h-4 mr-2" />
-					Save Changes
+					{t("editor.saveChanges")}
 				</Button>
 				<Button
 					variant="outline"

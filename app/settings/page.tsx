@@ -29,10 +29,12 @@ import { Switch } from "@/components/ui/switch";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { useSettingsStore, type Language } from "@/store/settingsStore";
 import { usePresentationStore } from "@/store/presentationStore";
+import { useTranslate } from "@/lib/useTranslate";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
 	const [isMounted, setIsMounted] = useState(false);
+	const { t, language: currentLang } = useTranslate();
 	const { theme, setTheme } = useTheme();
 	const {
 		language,
@@ -54,16 +56,18 @@ export default function SettingsPage() {
 	const handleClearAllData = () => {
 		if (
 			confirm(
-				"Are you sure you want to clear all data? This will delete all presentations and reset all settings. This cannot be undone.",
+				currentLang === "sk"
+					? "Ste si istý, že chcete vymazať všetky údaje? Toto vymaže všetky prezentácie a resetuje všetky nastavenia. Túto akciu nie je možné vrátiť späť."
+					: "Are you sure you want to clear all data? This will delete all presentations and reset all settings. This cannot be undone.",
 			)
 		) {
 			// Clear presentations
-			presentations.forEach((p) => permanentlyDeletePresentation(p.id));
+			presentations.forEach((p: { id: string }) => permanentlyDeletePresentation(p.id));
 			// Reset settings
 			resetSettings();
 			// Clear localStorage just in case
 			localStorage.clear();
-			toast.success("All data has been cleared.");
+			toast.success(t("settings.allDataCleared"));
 			setTimeout(() => window.location.reload(), 1000);
 		}
 	};
@@ -73,7 +77,7 @@ export default function SettingsPage() {
 			<div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
 				<Loader2 className="w-8 h-8 animate-spin text-primary" />
 				<p className="text-muted-foreground animate-pulse">
-					Loading settings...
+					{t("common.loading")}
 				</p>
 			</div>
 		);
@@ -89,12 +93,12 @@ export default function SettingsPage() {
 							<Button variant="ghost" asChild className="mb-4">
 								<Link href="/dashboard">
 									<ArrowLeft className="w-4 h-4 mr-2" />
-									Back
+									{t("common.back")}
 								</Link>
 							</Button>
-							<h1 className="text-3xl font-bold mb-2">Settings</h1>
+							<h1 className="text-3xl font-bold mb-2">{t("common.settings")}</h1>
 							<p className="text-muted-foreground">
-								Manage application settings and preferences
+								{language === "sk" ? "Spravujte nastavenia a predvoľby aplikácie" : "Manage application settings and preferences"}
 							</p>
 						</div>
 
@@ -104,15 +108,15 @@ export default function SettingsPage() {
 								<CardHeader>
 									<div className="flex items-center gap-2">
 										<Sun className="w-5 h-5 text-primary" />
-										<CardTitle>Appearance</CardTitle>
+										<CardTitle>{t("settings.appearance")}</CardTitle>
 									</div>
 									<CardDescription>
-										Customize the look of the application to your preference
+										{t("settings.appearanceDesc")}
 									</CardDescription>
 								</CardHeader>
 								<CardContent className="space-y-4">
 									<div className="space-y-2">
-										<Label>Theme</Label>
+										<Label>{t("settings.theme")}</Label>
 										<RadioGroup
 											value={theme}
 											onValueChange={(value) =>
@@ -130,7 +134,7 @@ export default function SettingsPage() {
 													className="sr-only"
 												/>
 												<Sun className="w-4 h-4" />
-												<span>Light Mode</span>
+												<span>{t("settings.lightMode")}</span>
 											</Label>
 											<Label
 												htmlFor="dark"
@@ -142,7 +146,7 @@ export default function SettingsPage() {
 													className="sr-only"
 												/>
 												<Moon className="w-4 h-4" />
-												<span>Dark Mode</span>
+												<span>{t("settings.darkMode")}</span>
 											</Label>
 											<Label
 												htmlFor="system"
@@ -154,7 +158,7 @@ export default function SettingsPage() {
 													className="sr-only"
 												/>
 												<Monitor className="w-4 h-4" />
-												<span>System</span>
+												<span>{t("settings.system")}</span>
 											</Label>
 										</RadioGroup>
 									</div>
@@ -166,10 +170,10 @@ export default function SettingsPage() {
 								<CardHeader>
 									<div className="flex items-center gap-2">
 										<Globe className="w-5 h-5 text-primary" />
-										<CardTitle>Language</CardTitle>
+										<CardTitle>{t("settings.language")}</CardTitle>
 									</div>
 									<CardDescription>
-										Select your preferred language for the interface
+										{t("settings.languageDesc")}
 									</CardDescription>
 								</CardHeader>
 								<CardContent>
@@ -188,17 +192,16 @@ export default function SettingsPage() {
 										</Label>
 										<Label
 											htmlFor="sk"
-											className="flex items-center space-x-2 p-4 border rounded-xl hover:bg-accent cursor-pointer transition-all has-[:checked]:bg-primary/5 has-[:checked]:border-primary opacity-60"
+											className="flex items-center space-x-2 p-4 border rounded-xl hover:bg-accent cursor-pointer transition-all has-[:checked]:bg-primary/5 has-[:checked]:border-primary"
 										>
 											<RadioGroupItem
 												value="sk"
 												id="sk"
 												className="sr-only"
-												disabled
 											/>
 											<span className="text-xl">🇸🇰</span>
-											<span className="font-medium text-muted-foreground">
-												Slovenčina (Coming Soon)
+											<span className="font-medium">
+												Slovenčina
 											</span>
 										</Label>
 									</RadioGroup>
@@ -210,18 +213,18 @@ export default function SettingsPage() {
 								<CardHeader>
 									<div className="flex items-center gap-2">
 										<Zap className="w-5 h-5 text-primary" />
-										<CardTitle>Performance</CardTitle>
+										<CardTitle>{t("settings.performance")}</CardTitle>
 									</div>
 									<CardDescription>
-										Optimize the application performance for your device
+										{t("settings.performanceDesc")}
 									</CardDescription>
 								</CardHeader>
 								<CardContent className="space-y-4">
 									<div className="flex items-center justify-between p-2">
 										<div className="space-y-0.5">
-											<Label className="text-base">Complex Animations</Label>
+											<Label className="text-base">{t("settings.complexAnimations")}</Label>
 											<p className="text-sm text-muted-foreground">
-												Enable advanced Framer Motion effects and transitions
+												{t("settings.complexAnimationsDesc")}
 											</p>
 										</div>
 										<Switch
@@ -234,9 +237,9 @@ export default function SettingsPage() {
 									<Separator />
 									<div className="flex items-center justify-between p-2">
 										<div className="space-y-0.5">
-											<Label className="text-base">Hardware Acceleration</Label>
+											<Label className="text-base">{t("settings.hardwareAcceleration")}</Label>
 											<p className="text-sm text-muted-foreground">
-												Use GPU for smoother rendering of slide elements
+												{t("settings.hardwareAccelerationDesc")}
 											</p>
 										</div>
 										<Switch
@@ -254,18 +257,18 @@ export default function SettingsPage() {
 								<CardHeader>
 									<div className="flex items-center gap-2">
 										<Bell className="w-5 h-5 text-primary" />
-										<CardTitle>Notifications</CardTitle>
+										<CardTitle>{t("settings.notifications")}</CardTitle>
 									</div>
 									<CardDescription>
-										Control which notifications you receive
+										{t("settings.notificationsDesc")}
 									</CardDescription>
 								</CardHeader>
 								<CardContent className="space-y-4">
 									<div className="flex items-center justify-between p-2">
 										<div className="space-y-0.5">
-											<Label className="text-base">Collaboration Updates</Label>
+											<Label className="text-base">{t("settings.collaborationUpdates")}</Label>
 											<p className="text-sm text-muted-foreground">
-												Notify when someone edits a shared presentation
+												{t("settings.collaborationUpdatesDesc")}
 											</p>
 										</div>
 										<Switch
@@ -278,9 +281,9 @@ export default function SettingsPage() {
 									<Separator />
 									<div className="flex items-center justify-between p-2">
 										<div className="space-y-0.5">
-											<Label className="text-base">System Announcements</Label>
+											<Label className="text-base">{t("settings.systemAnnouncements")}</Label>
 											<p className="text-sm text-muted-foreground">
-												Stay updated with new features and stability fixes
+												{t("settings.systemAnnouncementsDesc")}
 											</p>
 										</div>
 										<Switch
@@ -298,21 +301,20 @@ export default function SettingsPage() {
 								<CardHeader>
 									<div className="flex items-center gap-2">
 										<HardDrive className="w-5 h-5 text-destructive" />
-										<CardTitle>Storage & Data</CardTitle>
+										<CardTitle>{t("settings.storage")}</CardTitle>
 									</div>
 									<CardDescription>
-										Manage local storage and data persistence
+										{t("settings.storageDesc")}
 									</CardDescription>
 								</CardHeader>
 								<CardContent className="space-y-4">
 									<div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border border-destructive/20 rounded-xl bg-background/50">
 										<div className="space-y-1">
 											<p className="font-semibold text-destructive">
-												Danger Zone
+												{t("settings.dangerZone")}
 											</p>
 											<p className="text-sm text-muted-foreground max-w-md">
-												Clearing data will permanently delete all your local
-												presentations and reset all application settings.
+												{t("settings.dangerZoneDesc")}
 											</p>
 										</div>
 										<Button
@@ -321,11 +323,16 @@ export default function SettingsPage() {
 											className="shadow-lg shadow-destructive/20"
 											onClick={handleClearAllData}
 										>
-											Clear All Data
+											{t("settings.clearData")}
 										</Button>
 									</div>
 								</CardContent>
 							</Card>
+							<div className="flex justify-center pt-4">
+								<Button variant="outline" onClick={resetSettings}>
+									{t("common.reset")}
+								</Button>
+							</div>
 						</div>
 					</div>
 				</div>

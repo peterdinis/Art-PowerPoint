@@ -1026,7 +1026,7 @@ export default function Home() {
 					<div className="py-4">
 						<FilePond
 							files={importFiles}
-							onupdatefiles={setImportFiles}
+							onupdatefiles={(fileItems) => setImportFiles(fileItems)}
 							allowMultiple={false}
 							maxFiles={1}
 							acceptedFileTypes={[
