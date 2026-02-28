@@ -308,17 +308,20 @@ export default function SlideElement({
 			onResize={handleResize}
 			resizeHandles={isSelected ? ["s", "w", "e", "n", "sw", "nw", "se", "ne"] : []}
 			handleSize={[8, 8]}
+			className={cn(
+				"absolute cursor-move overflow-visible",
+				isSelected && "ring-2 ring-primary ring-offset-2 z-1000",
+			)}
+			style={elementStyles}
 		>
 			<motion.div
 				ref={(node) => {
 					if (node) drag(node);
 				}}
 				className={cn(
-					"absolute cursor-move overflow-visible",
-					isSelected && "ring-2 ring-primary ring-offset-2 z-1000",
+					"w-full h-full",
 					isDragging && "opacity-50",
 				)}
-				style={elementStyles}
 				variants={animationVariants}
 				initial="initial"
 				animate="animate"
