@@ -28,7 +28,8 @@ import {
     createTableElement,
     createChartElement,
     createTextElement,
-    createIconElement
+    createIconElement,
+    createCodeElement
 } from "@/lib/utils/elementFactory";
 import {
     Search,
@@ -49,6 +50,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import AdvancedChartDialog from "@/components/editor/AdvancedChartDialog";
 
 interface ToolbarDialogsProps {
     activeDialog: string | null;
@@ -69,11 +71,9 @@ export function ToolbarDialogs({ activeDialog, onClose }: ToolbarDialogsProps) {
     const [tableRows, setTableRows] = useState(3);
     const [tableColumns, setTableColumns] = useState(3);
 
-    // Chart Dialog State
-    const [chartType, setChartType] = useState("bar");
-    const [chartTitle, setChartTitle] = useState("");
-    const [chartLabels, setChartLabels] = useState("Q1, Q2, Q3, Q4");
-    const [chartValues, setChartValues] = useState("30, 45, 25, 60");
+    // Code Dialog State
+    const [codeLanguage, setCodeLanguage] = useState("javascript");
+    const [codeContent, setCodeContent] = useState("// Write your code here...");
 
     const maybeClose = () => {
         if (!keepOpen) onClose();
@@ -110,12 +110,8 @@ export function ToolbarDialogs({ activeDialog, onClose }: ToolbarDialogsProps) {
         maybeClose();
     };
 
-    const handleAddChart = () => {
-        const labels = chartLabels.split(",").map(l => l.trim());
-        const values = chartValues.split(",").map(v => parseFloat(v.trim()));
-        const colors = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6"]; // Default colors
-
-        addElement(createChartElement(chartType as any, chartTitle, labels, values, colors));
+    const handleAddCode = () => {
+        addElement(createCodeElement(codeLanguage, { content: codeContent } as any));
         maybeClose();
     };
 
@@ -331,55 +327,48 @@ export function ToolbarDialogs({ activeDialog, onClose }: ToolbarDialogsProps) {
             </Dialog>
 
             {/* Chart Dialog */}
-            <Dialog open={activeDialog === "chart"} onOpenChange={(open) => !open && onClose()}>
+            <AdvancedChartDialog
+                open={activeDialog === "chart"}
+                onOpenChange={(open) => !open && onClose()}
+            />
+
+            {/* Code Dialog */}
+            <Dialog open={activeDialog === "code"} onOpenChange={(open) => !open && onClose()}>
                 <DialogContent className="sm:max-w-[600px]">
                     <DialogHeader>
-                        <DialogTitle>Add Chart</DialogTitle>
-                        <DialogDescription>Configure your chart data</DialogDescription>
+                        <DialogTitle>Add Code Block</DialogTitle>
+                        <DialogDescription>Insert a syntax-highlighted code block</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label>Chart Type</Label>
-                                <Select value={chartType} onValueChange={setChartType}>
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="bar">Bar Chart</SelectItem>
-                                        <SelectItem value="line">Line Chart</SelectItem>
-                                        <SelectItem value="pie">Pie Chart</SelectItem>
-                                        <SelectItem value="area">Area Chart</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="chartTitle">Title</Label>
-                                <Input
-                                    id="chartTitle"
-                                    value={chartTitle}
-                                    onChange={(e) => setChartTitle(e.target.value)}
-                                />
-                            </div>
+                        <div className="space-y-2">
+                            <Label>Language</Label>
+                            <Select value={codeLanguage} onValueChange={setCodeLanguage}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="javascript">JavaScript</SelectItem>
+                                    <SelectItem value="typescript">TypeScript</SelectItem>
+                                    <SelectItem value="tsx">TSX</SelectItem>
+                                    <SelectItem value="html">HTML</SelectItem>
+                                    <SelectItem value="css">CSS</SelectItem>
+                                    <SelectItem value="python">Python</SelectItem>
+                                    <SelectItem value="rust">Rust</SelectItem>
+                                    <SelectItem value="go">Go</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="labels">Labels (comma separated)</Label>
-                            <Input
-                                id="labels"
-                                value={chartLabels}
-                                onChange={(e) => setChartLabels(e.target.value)}
+                            <Label htmlFor="codeContent">Code</Label>
+                            <textarea
+                                id="codeContent"
+                                className="min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                value={codeContent}
+                                onChange={(e) => setCodeContent(e.target.value)}
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="values">Values (comma separated)</Label>
-                            <Input
-                                id="values"
-                                value={chartValues}
-                                onChange={(e) => setChartValues(e.target.value)}
-                            />
-                        </div>
-                        <Button onClick={handleAddChart} className="w-full">
-                            Add Chart
+                        <Button onClick={handleAddCode} className="w-full">
+                            Add Code Block
                         </Button>
                         <KeepOpenToggle />
                     </div>

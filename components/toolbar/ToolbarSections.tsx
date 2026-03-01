@@ -18,6 +18,8 @@ import {
     Grid,
     ZoomIn,
     ZoomOut,
+    Quote,
+    Code
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -86,6 +88,12 @@ export function ToolbarSections({ onOpenDialog, getDefaultTextColor }: ToolbarSe
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleAddText("body")}>
                             <AlignLeft className="h-4 w-4 mr-2" /> Body Text
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleAddText("quote")}>
+                            <Quote className="h-4 w-4 mr-2" /> Quote
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onOpenDialog("code")}>
+                            <Code className="h-4 w-4 mr-2" /> Code Block
                         </DropdownMenuItem>
 
                         <DropdownMenuSeparator />

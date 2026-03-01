@@ -217,7 +217,13 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	},
 
 	selectPresentation: (id: string) => {
-		const presentation = get().presentations.find((p) => p.id === id);
+		const state = get();
+		if (state.currentPresentation?.id === id) {
+			// Already selected, just update references if needed (though usually handled by updatePresentation)
+			return;
+		}
+
+		const presentation = state.presentations.find((p) => p.id === id);
 		if (presentation) {
 			set({
 				currentPresentation: {
@@ -841,6 +847,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			presentations: state.presentations.map((p) =>
 				p.id === updatedPresentation.id ? updatedPresentation : p,
 			),
+			selectedElementId: element.id,
 		});
 
 		setTimeout(() => {
