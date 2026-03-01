@@ -11,7 +11,7 @@ import {
 	Code,
 	Save,
 	RotateCcw,
-	Settings
+	Settings,
 } from "lucide-react";
 import { useTranslate } from "@/lib/useTranslate";
 import { useSettingsStore } from "@/store/settingsStore";
@@ -88,7 +88,7 @@ export default function PropertiesPanel() {
 	const handleDraftUpdate = (updates: Partial<SlideElement>) => {
 		if (!draftElement) return;
 
-		setDraftElement(prev => {
+		setDraftElement((prev) => {
 			if (!prev) return null;
 			const newData = { ...prev, ...updates };
 
@@ -135,12 +135,12 @@ export default function PropertiesPanel() {
 		const updatedSlides = currentPresentation.slides.map((slide, index) =>
 			index === currentSlideIndex
 				? {
-					...slide,
-					background: {
-						...(slide.background || { type: "color", color: "#ffffff" }),
-						...updates,
-					},
-				}
+						...slide,
+						background: {
+							...(slide.background || { type: "color", color: "#ffffff" }),
+							...updates,
+						},
+					}
 				: slide,
 		);
 		updatePresentation(currentPresentation.id, { slides: updatedSlides });
@@ -163,11 +163,15 @@ export default function PropertiesPanel() {
 				<ScrollArea className="flex-1 min-h-0">
 					<CardContent className="space-y-6 pb-8">
 						<p className="text-sm text-muted-foreground">
-							{language === "sk" ? "Vyberte prvok na úpravu jeho vlastností alebo použite nastavenia nižšie pre túto snímku." : "Select an element to edit its properties or use the settings below for this slide."}
+							{language === "sk"
+								? "Vyberte prvok na úpravu jeho vlastností alebo použite nastavenia nižšie pre túto snímku."
+								: "Select an element to edit its properties or use the settings below for this slide."}
 						</p>
 
 						<SlideBackgroundEditor
-							currentBackground={currentSlide.background || { type: "color", color: "#ffffff" }}
+							currentBackground={
+								currentSlide.background || { type: "color", color: "#ffffff" }
+							}
 							onUpdate={handleSlideBackgroundUpdate}
 						/>
 
@@ -180,10 +184,13 @@ export default function PropertiesPanel() {
 							<SlideNotesEditor
 								content={currentSlide.notes || ""}
 								onChange={(html) => {
-									const updatedSlides = currentPresentation.slides.map((s, i) =>
-										i === currentSlideIndex ? { ...s, notes: html } : s
+									const updatedSlides = currentPresentation.slides.map(
+										(s, i) =>
+											i === currentSlideIndex ? { ...s, notes: html } : s,
 									);
-									updatePresentation(currentPresentation.id, { slides: updatedSlides });
+									updatePresentation(currentPresentation.id, {
+										slides: updatedSlides,
+									});
 								}}
 							/>
 						</div>
@@ -191,22 +198,46 @@ export default function PropertiesPanel() {
 						<Separator />
 
 						<div className="space-y-3">
-							<Label htmlFor="slide-transition" className="font-semibold">Slide Transition</Label>
+							<Label htmlFor="slide-transition" className="font-semibold">
+								Slide Transition
+							</Label>
 							<Select
 								value={currentSlide.transition?.type || "fade"}
 								onValueChange={(val: any) => {
-									const updatedSlides = currentPresentation.slides.map((s, i) =>
-										i === currentSlideIndex ? { ...s, transition: { ...s.transition, type: val, duration: 500 } } : s
+									const updatedSlides = currentPresentation.slides.map(
+										(s, i) =>
+											i === currentSlideIndex
+												? {
+														...s,
+														transition: {
+															...s.transition,
+															type: val,
+															duration: 500,
+														},
+													}
+												: s,
 									);
-									updatePresentation(currentPresentation.id, { slides: updatedSlides });
+									updatePresentation(currentPresentation.id, {
+										slides: updatedSlides,
+									});
 								}}
 							>
 								<SelectTrigger id="slide-transition">
 									<SelectValue placeholder="Select transition" />
 								</SelectTrigger>
 								<SelectContent>
-									{["none", "fade", "slide", "zoom", "blur", "cube", "flip"].map(t => (
-										<SelectItem key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</SelectItem>
+									{[
+										"none",
+										"fade",
+										"slide",
+										"zoom",
+										"blur",
+										"cube",
+										"flip",
+									].map((t) => (
+										<SelectItem key={t} value={t}>
+											{t.charAt(0).toUpperCase() + t.slice(1)}
+										</SelectItem>
 									))}
 								</SelectContent>
 							</Select>
@@ -221,7 +252,9 @@ export default function PropertiesPanel() {
 						{language === "sk" ? "Žiadny vybratý prvok" : "No element selected"}
 					</h3>
 					<p className="max-w-[200px] text-sm leading-relaxed">
-						{language === "sk" ? "Vyberte prvok na plátne a upravte jeho vlastnosti" : "Select an element on the canvas to edit its properties"}
+						{language === "sk"
+							? "Vyberte prvok na plátne a upravte jeho vlastnosti"
+							: "Select an element on the canvas to edit its properties"}
 					</p>
 				</div>
 			</motion.div>
@@ -230,13 +263,20 @@ export default function PropertiesPanel() {
 
 	const getElementIcon = () => {
 		switch (draftElement.type) {
-			case "text": return <Type className="w-5 h-5" />;
-			case "image": return <ImageIcon className="w-5 h-5" />;
-			case "shape": return <Square className="w-5 h-5" />;
-			case "video": return <Video className="w-5 h-5" />;
-			case "table": return <Table2 className="w-5 h-5" />;
-			case "code": return <Code className="w-5 h-5" />;
-			default: return <Layers className="w-5 h-5" />;
+			case "text":
+				return <Type className="w-5 h-5" />;
+			case "image":
+				return <ImageIcon className="w-5 h-5" />;
+			case "shape":
+				return <Square className="w-5 h-5" />;
+			case "video":
+				return <Video className="w-5 h-5" />;
+			case "table":
+				return <Table2 className="w-5 h-5" />;
+			case "code":
+				return <Code className="w-5 h-5" />;
+			default:
+				return <Layers className="w-5 h-5" />;
 		}
 	};
 
@@ -252,13 +292,20 @@ export default function PropertiesPanel() {
 				<div className="flex items-center justify-between">
 					<CardTitle className="flex items-center gap-2">
 						{getElementIcon()}
-						<span className="capitalize">{draftElement.type}</span> {t("editor.properties")}
+						<span className="capitalize">{draftElement.type}</span>{" "}
+						{t("editor.properties")}
 					</CardTitle>
 					<Button
 						variant="ghost"
 						size="icon"
 						onClick={() => {
-							if (confirm(language === "sk" ? "Odstrániť tento prvok?" : "Delete this element?")) {
+							if (
+								confirm(
+									language === "sk"
+										? "Odstrániť tento prvok?"
+										: "Delete this element?",
+								)
+							) {
 								deleteElement(draftElement.id);
 								selectElement(null);
 							}
@@ -278,7 +325,10 @@ export default function PropertiesPanel() {
 						</TabsList>
 
 						<TabsContent value="style" className="space-y-6">
-							<LayoutProperties element={draftElement} onUpdate={handleDraftUpdate} />
+							<LayoutProperties
+								element={draftElement}
+								onUpdate={handleDraftUpdate}
+							/>
 
 							{draftElement.type === "text" && (
 								<>
@@ -291,30 +341,43 @@ export default function PropertiesPanel() {
 								</>
 							)}
 
-							{(draftElement.type === "image" || draftElement.type === "video") && (
+							{(draftElement.type === "image" ||
+								draftElement.type === "video") && (
 								<>
 									<Separator />
-									<MediaProperties element={draftElement} onUpdate={handleDraftUpdate} />
+									<MediaProperties
+										element={draftElement}
+										onUpdate={handleDraftUpdate}
+									/>
 								</>
 							)}
 
 							{draftElement.type === "shape" && (
 								<>
 									<Separator />
-									<ShapeProperties element={draftElement} onUpdate={handleDraftUpdate} />
+									<ShapeProperties
+										element={draftElement}
+										onUpdate={handleDraftUpdate}
+									/>
 								</>
 							)}
 
 							{draftElement.type === "table" && (
 								<>
 									<Separator />
-									<TableProperties element={draftElement} onUpdate={handleDraftUpdate} />
+									<TableProperties
+										element={draftElement}
+										onUpdate={handleDraftUpdate}
+									/>
 								</>
 							)}
 						</TabsContent>
 
 						<TabsContent value="animation">
-							<AnimationProperties element={draftElement} onUpdate={handleDraftUpdate} />
+							<AnimationProperties
+								element={draftElement}
+								onUpdate={handleDraftUpdate}
+							/>
 						</TabsContent>
 					</Tabs>
 				</CardContent>
@@ -322,11 +385,7 @@ export default function PropertiesPanel() {
 
 			{/* Action Buttons */}
 			<div className="p-4 border-t bg-muted/30 flex items-center gap-3 shrink-0">
-				<Button
-					className="flex-1"
-					onClick={saveChanges}
-					disabled={!hasChanges}
-				>
+				<Button className="flex-1" onClick={saveChanges} disabled={!hasChanges}>
 					<Save className="w-4 h-4 mr-2" />
 					{t("editor.saveChanges")}
 				</Button>

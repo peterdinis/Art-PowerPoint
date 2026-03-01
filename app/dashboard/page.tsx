@@ -458,7 +458,9 @@ export default function Home() {
 			(p) =>
 				!p.deletedAt &&
 				(p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-					(p.description || "").toLowerCase().includes(searchQuery.toLowerCase())),
+					(p.description || "")
+						.toLowerCase()
+						.includes(searchQuery.toLowerCase())),
 		);
 
 		if (sortBy === "custom") {
@@ -524,7 +526,8 @@ export default function Home() {
 			0,
 		);
 		const recentCount = presentations.filter((p) => {
-			const updatedAt = p.updatedAt instanceof Date ? p.updatedAt : new Date(p.updatedAt);
+			const updatedAt =
+				p.updatedAt instanceof Date ? p.updatedAt : new Date(p.updatedAt);
 			const daysSinceUpdate =
 				(Date.now() - updatedAt.getTime()) / (1000 * 60 * 60 * 24);
 			return daysSinceUpdate <= 7;
@@ -1096,7 +1099,7 @@ export default function Home() {
 									</span>
 									<span className="font-medium">
 										{importedData.slides?.reduce(
-											(count: number, slide: { elements: any[]; }) =>
+											(count: number, slide: { elements: any[] }) =>
 												count + (slide.elements?.length || 0),
 											0,
 										) || 0}

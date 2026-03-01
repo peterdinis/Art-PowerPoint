@@ -62,7 +62,9 @@ export default function SettingsPage() {
 			)
 		) {
 			// Clear presentations
-			presentations.forEach((p: { id: string }) => permanentlyDeletePresentation(p.id));
+			presentations.forEach((p: { id: string }) =>
+				permanentlyDeletePresentation(p.id),
+			);
 			// Reset settings
 			resetSettings();
 			// Clear localStorage just in case
@@ -96,9 +98,13 @@ export default function SettingsPage() {
 									{t("common.back")}
 								</Link>
 							</Button>
-							<h1 className="text-3xl font-bold mb-2">{t("common.settings")}</h1>
+							<h1 className="text-3xl font-bold mb-2">
+								{t("common.settings")}
+							</h1>
 							<p className="text-muted-foreground">
-								{language === "sk" ? "Spravujte nastavenia a predvoľby aplikácie" : "Manage application settings and preferences"}
+								{language === "sk"
+									? "Spravujte nastavenia a predvoľby aplikácie"
+									: "Manage application settings and preferences"}
 							</p>
 						</div>
 
@@ -194,15 +200,9 @@ export default function SettingsPage() {
 											htmlFor="sk"
 											className="flex items-center space-x-2 p-4 border rounded-xl hover:bg-accent cursor-pointer transition-all has-[:checked]:bg-primary/5 has-[:checked]:border-primary"
 										>
-											<RadioGroupItem
-												value="sk"
-												id="sk"
-												className="sr-only"
-											/>
+											<RadioGroupItem value="sk" id="sk" className="sr-only" />
 											<span className="text-xl">🇸🇰</span>
-											<span className="font-medium">
-												Slovenčina
-											</span>
+											<span className="font-medium">Slovenčina</span>
 										</Label>
 									</RadioGroup>
 								</CardContent>
@@ -222,7 +222,9 @@ export default function SettingsPage() {
 								<CardContent className="space-y-4">
 									<div className="flex items-center justify-between p-2">
 										<div className="space-y-0.5">
-											<Label className="text-base">{t("settings.complexAnimations")}</Label>
+											<Label className="text-base">
+												{t("settings.complexAnimations")}
+											</Label>
 											<p className="text-sm text-muted-foreground">
 												{t("settings.complexAnimationsDesc")}
 											</p>
@@ -237,7 +239,9 @@ export default function SettingsPage() {
 									<Separator />
 									<div className="flex items-center justify-between p-2">
 										<div className="space-y-0.5">
-											<Label className="text-base">{t("settings.hardwareAcceleration")}</Label>
+											<Label className="text-base">
+												{t("settings.hardwareAcceleration")}
+											</Label>
 											<p className="text-sm text-muted-foreground">
 												{t("settings.hardwareAccelerationDesc")}
 											</p>
@@ -266,7 +270,9 @@ export default function SettingsPage() {
 								<CardContent className="space-y-4">
 									<div className="flex items-center justify-between p-2">
 										<div className="space-y-0.5">
-											<Label className="text-base">{t("settings.collaborationUpdates")}</Label>
+											<Label className="text-base">
+												{t("settings.collaborationUpdates")}
+											</Label>
 											<p className="text-sm text-muted-foreground">
 												{t("settings.collaborationUpdatesDesc")}
 											</p>
@@ -281,7 +287,9 @@ export default function SettingsPage() {
 									<Separator />
 									<div className="flex items-center justify-between p-2">
 										<div className="space-y-0.5">
-											<Label className="text-base">{t("settings.systemAnnouncements")}</Label>
+											<Label className="text-base">
+												{t("settings.systemAnnouncements")}
+											</Label>
 											<p className="text-sm text-muted-foreground">
 												{t("settings.systemAnnouncementsDesc")}
 											</p>
@@ -303,9 +311,7 @@ export default function SettingsPage() {
 										<HardDrive className="w-5 h-5 text-destructive" />
 										<CardTitle>{t("settings.storage")}</CardTitle>
 									</div>
-									<CardDescription>
-										{t("settings.storageDesc")}
-									</CardDescription>
+									<CardDescription>{t("settings.storageDesc")}</CardDescription>
 								</CardHeader>
 								<CardContent className="space-y-4">
 									<div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border border-destructive/20 rounded-xl bg-background/50">

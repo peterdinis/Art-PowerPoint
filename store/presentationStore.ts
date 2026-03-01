@@ -202,12 +202,16 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	deletePresentation: (id: string) => {
 		set((state) => {
 			const updatedPresentations = state.presentations.map((p) =>
-				p.id === id ? { ...p, deletedAt: new Date(), updatedAt: new Date() } : p,
+				p.id === id
+					? { ...p, deletedAt: new Date(), updatedAt: new Date() }
+					: p,
 			);
 			return {
 				presentations: updatedPresentations,
 				currentPresentation:
-					state.currentPresentation?.id === id ? null : state.currentPresentation,
+					state.currentPresentation?.id === id
+						? null
+						: state.currentPresentation,
 			};
 		});
 		setTimeout(() => get().savePresentations(), 0);
@@ -254,7 +258,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		if (!metadata) return;
 
 		try {
-			const contentStr = await localforage.getItem<string>(`presentation_content_${id}`);
+			const contentStr = await localforage.getItem<string>(
+				`presentation_content_${id}`,
+			);
 			let presentation: Presentation;
 
 			if (contentStr) {
@@ -294,7 +300,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set({ isLoading: true });
 
 		try {
-			const metadataStored = await localforage.getItem<string>("presentation_metadata");
+			const metadataStored = await localforage.getItem<string>(
+				"presentation_metadata",
+			);
 			let presentations: PresentationSummary[] = [];
 
 			if (metadataStored) {
@@ -308,14 +316,16 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				// Migration path
 				const oldStored = await localforage.getItem<string>("presentations");
 				if (oldStored) {
-					const oldPresentations = (JSON.parse(oldStored) as Presentation[]).map((p) => ({
+					const oldPresentations = (
+						JSON.parse(oldStored) as Presentation[]
+					).map((p) => ({
 						...p,
 						createdAt: new Date(p.createdAt),
 						updatedAt: new Date(p.updatedAt),
 						deletedAt: p.deletedAt ? new Date(p.deletedAt) : undefined,
 					}));
 
-					presentations = oldPresentations.map(p => ({
+					presentations = oldPresentations.map((p) => ({
 						id: p.id,
 						title: p.title,
 						description: p.description,
@@ -327,13 +337,20 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 					}));
 
 					for (const p of oldPresentations) {
-						await localforage.setItem(`presentation_content_${p.id}`, JSON.stringify(p));
+						await localforage.setItem(
+							`presentation_content_${p.id}`,
+							JSON.stringify(p),
+						);
 					}
-					await localforage.setItem("presentation_metadata", JSON.stringify(presentations));
+					await localforage.setItem(
+						"presentation_metadata",
+						JSON.stringify(presentations),
+					);
 				}
 			}
 
-			const orderStored = await localforage.getItem<string>("presentationOrder");
+			const orderStored =
+				await localforage.getItem<string>("presentationOrder");
 			let presentationOrder: string[] = [];
 
 			if (orderStored) {
@@ -378,23 +395,28 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			try {
 				const currentState = get();
 
-				const metadata: PresentationSummary[] = currentState.presentations.map(p => ({
-					id: p.id,
-					title: p.title,
-					description: p.description,
-					updatedAt: p.updatedAt,
-					createdAt: p.createdAt,
-					slidesCount: p.slidesCount || 0,
-					deletedAt: p.deletedAt,
-					visibility: p.visibility,
-				}));
+				const metadata: PresentationSummary[] = currentState.presentations.map(
+					(p) => ({
+						id: p.id,
+						title: p.title,
+						description: p.description,
+						updatedAt: p.updatedAt,
+						createdAt: p.createdAt,
+						slidesCount: p.slidesCount || 0,
+						deletedAt: p.deletedAt,
+						visibility: p.visibility,
+					}),
+				);
 
-				await localforage.setItem("presentation_metadata", JSON.stringify(metadata));
+				await localforage.setItem(
+					"presentation_metadata",
+					JSON.stringify(metadata),
+				);
 
 				if (currentState.currentPresentation) {
 					await localforage.setItem(
 						`presentation_content_${currentState.currentPresentation.id}`,
-						JSON.stringify(currentState.currentPresentation)
+						JSON.stringify(currentState.currentPresentation),
 					);
 				}
 
@@ -475,7 +497,11 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 	addSlide: (presentationId: string) => {
 		set((state) => {
-			if (!state.currentPresentation || state.currentPresentation.id !== presentationId) return state;
+			if (
+				!state.currentPresentation ||
+				state.currentPresentation.id !== presentationId
+			)
+				return state;
 
 			const newSlide = createDefaultSlide();
 			const updatedPresentation = {
@@ -489,7 +515,11 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				currentPresentation: updatedPresentation,
 				presentations: state.presentations.map((p) =>
 					p.id === updatedPresentation.id
-						? { ...p, slidesCount: updatedPresentation.slides.length, updatedAt: updatedPresentation.updatedAt }
+						? {
+								...p,
+								slidesCount: updatedPresentation.slides.length,
+								updatedAt: updatedPresentation.updatedAt,
+							}
 						: p,
 				),
 				currentSlideIndex: updatedPresentation.slides.length - 1,
@@ -503,8 +533,11 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
-			const newSlides = (state.currentPresentation.slides || []).filter(s => s.id !== slideId);
-			if (newSlides.length === (state.currentPresentation.slides || []).length) return state;
+			const newSlides = (state.currentPresentation.slides || []).filter(
+				(s) => s.id !== slideId,
+			);
+			if (newSlides.length === (state.currentPresentation.slides || []).length)
+				return state;
 
 			const newIndex = Math.min(state.currentSlideIndex, newSlides.length - 1);
 			const updatedPresentation = {
@@ -518,7 +551,11 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				currentPresentation: updatedPresentation,
 				presentations: state.presentations.map((p) =>
 					p.id === updatedPresentation.id
-						? { ...p, slidesCount: updatedPresentation.slides.length, updatedAt: updatedPresentation.updatedAt }
+						? {
+								...p,
+								slidesCount: updatedPresentation.slides.length,
+								updatedAt: updatedPresentation.updatedAt,
+							}
 						: p,
 				),
 				currentSlideIndex: Math.max(0, newIndex),
@@ -532,14 +569,19 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
-			const slideIndex = (state.currentPresentation.slides || []).findIndex(s => s.id === slideId);
+			const slideIndex = (state.currentPresentation.slides || []).findIndex(
+				(s) => s.id === slideId,
+			);
 			if (slideIndex === -1) return state;
 
 			const slideToDuplicate = state.currentPresentation.slides[slideIndex];
 			const duplicatedSlide: Slide = {
 				...slideToDuplicate,
 				id: uuidv4(),
-				elements: (slideToDuplicate.elements || []).map(el => ({ ...el, id: uuidv4() })),
+				elements: (slideToDuplicate.elements || []).map((el) => ({
+					...el,
+					id: uuidv4(),
+				})),
 			};
 
 			const newSlides = [...state.currentPresentation.slides];
@@ -556,7 +598,11 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 				currentPresentation: updatedPresentation,
 				presentations: state.presentations.map((p) =>
 					p.id === updatedPresentation.id
-						? { ...p, slidesCount: updatedPresentation.slides.length, updatedAt: updatedPresentation.updatedAt }
+						? {
+								...p,
+								slidesCount: updatedPresentation.slides.length,
+								updatedAt: updatedPresentation.updatedAt,
+							}
 						: p,
 				),
 				currentSlideIndex: slideIndex + 1,
@@ -613,7 +659,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	addElement: (element: Omit<SlideElement, "id">) => {
 		set((state) => {
 			if (!state.currentPresentation) return state;
-			const currentSlide = (state.currentPresentation.slides || [])[state.currentSlideIndex];
+			const currentSlide = (state.currentPresentation.slides || [])[
+				state.currentSlideIndex
+			];
 			if (!currentSlide) return state;
 
 			const newElement: SlideElement = { ...element, id: uuidv4() };
@@ -632,7 +680,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			return {
 				currentPresentation: updatedPresentation,
 				presentations: state.presentations.map((p) =>
-					p.id === updatedPresentation.id ? { ...p, updatedAt: updatedPresentation.updatedAt } : p,
+					p.id === updatedPresentation.id
+						? { ...p, updatedAt: updatedPresentation.updatedAt }
+						: p,
 				),
 				selectedElementId: newElement.id,
 			};
@@ -643,7 +693,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	addElementToSlide: (slideId: string, element: SlideElement) => {
 		set((state) => {
 			if (!state.currentPresentation) return state;
-			const slideIndex = (state.currentPresentation.slides || []).findIndex(s => s.id === slideId);
+			const slideIndex = (state.currentPresentation.slides || []).findIndex(
+				(s) => s.id === slideId,
+			);
 			if (slideIndex === -1) return state;
 
 			const updatedSlides = [...state.currentPresentation.slides];
@@ -661,7 +713,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			return {
 				currentPresentation: updatedPresentation,
 				presentations: state.presentations.map((p) =>
-					p.id === updatedPresentation.id ? { ...p, updatedAt: updatedPresentation.updatedAt } : p,
+					p.id === updatedPresentation.id
+						? { ...p, updatedAt: updatedPresentation.updatedAt }
+						: p,
 				),
 			};
 		});
@@ -672,10 +726,14 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
-			const updatedSlides = (state.currentPresentation.slides || []).map(slide => ({
-				...slide,
-				elements: (slide.elements || []).map(el => (el.id === elementId ? { ...el, ...updates } : el)),
-			}));
+			const updatedSlides = (state.currentPresentation.slides || []).map(
+				(slide) => ({
+					...slide,
+					elements: (slide.elements || []).map((el) =>
+						el.id === elementId ? { ...el, ...updates } : el,
+					),
+				}),
+			);
 
 			const updatedPresentation = {
 				...state.currentPresentation,
@@ -686,7 +744,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			return {
 				currentPresentation: updatedPresentation,
 				presentations: state.presentations.map((p) =>
-					p.id === updatedPresentation.id ? { ...p, updatedAt: updatedPresentation.updatedAt } : p,
+					p.id === updatedPresentation.id
+						? { ...p, updatedAt: updatedPresentation.updatedAt }
+						: p,
 				),
 			};
 		});
@@ -697,10 +757,12 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		set((state) => {
 			if (!state.currentPresentation) return state;
 
-			const updatedSlides = (state.currentPresentation.slides || []).map(slide => ({
-				...slide,
-				elements: (slide.elements || []).filter(el => el.id !== elementId),
-			}));
+			const updatedSlides = (state.currentPresentation.slides || []).map(
+				(slide) => ({
+					...slide,
+					elements: (slide.elements || []).filter((el) => el.id !== elementId),
+				}),
+			);
 
 			const updatedPresentation = {
 				...state.currentPresentation,
@@ -711,7 +773,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			return {
 				currentPresentation: updatedPresentation,
 				presentations: state.presentations.map((p) =>
-					p.id === updatedPresentation.id ? { ...p, updatedAt: updatedPresentation.updatedAt } : p,
+					p.id === updatedPresentation.id
+						? { ...p, updatedAt: updatedPresentation.updatedAt }
+						: p,
 				),
 				selectedElementId: null,
 			};
@@ -726,24 +790,32 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	moveElementLayer: (elementId, direction) => {
 		set((state) => {
 			if (!state.currentPresentation) return state;
-			const currentSlide = (state.currentPresentation.slides || [])[state.currentSlideIndex];
+			const currentSlide = (state.currentPresentation.slides || [])[
+				state.currentSlideIndex
+			];
 			if (!currentSlide) return state;
 
 			const elements = [...(currentSlide.elements || [])];
-			const index = elements.findIndex(el => el.id === elementId);
+			const index = elements.findIndex((el) => el.id === elementId);
 			if (index === -1) return state;
 
 			const element = elements.splice(index, 1)[0];
 			if (direction === "front") elements.push(element);
 			else if (direction === "back") elements.unshift(element);
-			else if (direction === "forward") elements.splice(Math.min(index + 1, elements.length), 0, element);
-			else if (direction === "backward") elements.splice(Math.max(index - 1, 0), 0, element);
+			else if (direction === "forward")
+				elements.splice(Math.min(index + 1, elements.length), 0, element);
+			else if (direction === "backward")
+				elements.splice(Math.max(index - 1, 0), 0, element);
 
 			const updatedSlides = [...state.currentPresentation.slides];
 			updatedSlides[state.currentSlideIndex] = { ...currentSlide, elements };
 
 			return {
-				currentPresentation: { ...state.currentPresentation, slides: updatedSlides, updatedAt: new Date() },
+				currentPresentation: {
+					...state.currentPresentation,
+					slides: updatedSlides,
+					updatedAt: new Date(),
+				},
 			};
 		});
 		get().savePresentations();
@@ -752,10 +824,12 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	alignElement: (elementId, alignment) => {
 		set((state) => {
 			if (!state.currentPresentation) return state;
-			const currentSlide = (state.currentPresentation.slides || [])[state.currentSlideIndex];
+			const currentSlide = (state.currentPresentation.slides || [])[
+				state.currentSlideIndex
+			];
 			if (!currentSlide) return state;
 
-			const elements = (currentSlide.elements || []).map(el => {
+			const elements = (currentSlide.elements || []).map((el) => {
 				if (el.id !== elementId) return el;
 				const newPos = { ...el.position };
 				if (alignment === "left") newPos.x = 0;
@@ -771,7 +845,11 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			updatedSlides[state.currentSlideIndex] = { ...currentSlide, elements };
 
 			return {
-				currentPresentation: { ...state.currentPresentation, slides: updatedSlides, updatedAt: new Date() },
+				currentPresentation: {
+					...state.currentPresentation,
+					slides: updatedSlides,
+					updatedAt: new Date(),
+				},
 			};
 		});
 		get().savePresentations();
@@ -784,7 +862,10 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 
 	nextSlide: () => {
 		const { currentSlideIndex, currentPresentation, selectSlide } = get();
-		if (currentPresentation && currentSlideIndex < (currentPresentation.slides || []).length - 1) {
+		if (
+			currentPresentation &&
+			currentSlideIndex < (currentPresentation.slides || []).length - 1
+		) {
 			selectSlide(currentSlideIndex + 1);
 		}
 	},
@@ -792,7 +873,6 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	setZoomLevel: (zoom) => set({ zoomLevel: zoom }),
 	toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
 	compressPresentation: () => {
-		toast.info("Compression logic not implemented yet.")
+		toast.info("Compression logic not implemented yet.");
 	},
-})
-);
+}));

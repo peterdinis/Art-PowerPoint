@@ -82,10 +82,10 @@ function SortableSlideItem({
 						backgroundImage: (() => {
 							const stops =
 								slide.background?.gradientStops &&
-									slide.background.gradientStops.length > 0
+								slide.background.gradientStops.length > 0
 									? slide.background.gradientStops
-										.map((s) => `${s.color} ${s.offset}%`)
-										.join(", ")
+											.map((s) => `${s.color} ${s.offset}%`)
+											.join(", ")
 									: slide.background?.gradient;
 
 							const image = slide.background?.image

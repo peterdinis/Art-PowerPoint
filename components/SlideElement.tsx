@@ -155,33 +155,33 @@ const SlideElement = memo(function SlideElement({
 		if (element.type === "text") {
 			const filterStyles = element.style?.filters
 				? {
-					filter: [
-						element.style.filters.blur
-							? `blur(${element.style.filters.blur}px)`
-							: "",
-						element.style.filters.brightness
-							? `brightness(${element.style.filters.brightness})`
-							: "",
-						element.style.filters.contrast
-							? `contrast(${element.style.filters.contrast})`
-							: "",
-						element.style.filters.grayscale
-							? `grayscale(${element.style.filters.grayscale})`
-							: "",
-						element.style.filters.sepia
-							? `sepia(${element.style.filters.sepia})`
-							: "",
-						element.style.filters.hueRotate
-							? `hue-rotate(${element.style.filters.hueRotate}deg)`
-							: "",
-						element.style.filters.saturate
-							? `saturate(${element.style.filters.saturate})`
-							: "",
-						element.style.filters.invert
-							? `invert(${element.style.filters.invert})`
-							: "",
-					].join(" "),
-				}
+						filter: [
+							element.style.filters.blur
+								? `blur(${element.style.filters.blur}px)`
+								: "",
+							element.style.filters.brightness
+								? `brightness(${element.style.filters.brightness})`
+								: "",
+							element.style.filters.contrast
+								? `contrast(${element.style.filters.contrast})`
+								: "",
+							element.style.filters.grayscale
+								? `grayscale(${element.style.filters.grayscale})`
+								: "",
+							element.style.filters.sepia
+								? `sepia(${element.style.filters.sepia})`
+								: "",
+							element.style.filters.hueRotate
+								? `hue-rotate(${element.style.filters.hueRotate}deg)`
+								: "",
+							element.style.filters.saturate
+								? `saturate(${element.style.filters.saturate})`
+								: "",
+							element.style.filters.invert
+								? `invert(${element.style.filters.invert})`
+								: "",
+						].join(" "),
+					}
 				: {};
 
 			const getBackgroundStyle = () => {
@@ -261,7 +261,8 @@ const SlideElement = memo(function SlideElement({
 					backgroundColor: element.style?.backgroundColor || "#3b82f6",
 					borderColor: element.style?.borderColor,
 					borderWidth: element.style?.borderWidth || 0,
-					borderStyle: (element.style?.borderStyle as unknown as BorderStyle) || "solid",
+					borderStyle:
+						(element.style?.borderStyle as unknown as BorderStyle) || "solid",
 					borderRadius: element.style?.borderRadius || 0,
 					boxShadow: element.style?.boxShadow,
 				};
@@ -300,7 +301,9 @@ const SlideElement = memo(function SlideElement({
 		zIndex: element.style?.zIndex || 1,
 		transform: `rotate(${element.rotation || 0}deg) ${performance.hardwareAcceleration ? "translate3d(0,0,0)" : ""}`,
 		opacity: element.style?.opacity || 1,
-		willChange: performance.hardwareAcceleration ? "transform, opacity" : "auto",
+		willChange: performance.hardwareAcceleration
+			? "transform, opacity"
+			: "auto",
 	};
 
 	return (
@@ -310,7 +313,9 @@ const SlideElement = memo(function SlideElement({
 			minConstraints={[50, 50]}
 			maxConstraints={[800, 600]}
 			onResize={handleResize}
-			resizeHandles={isSelected ? ["s", "w", "e", "n", "sw", "nw", "se", "ne"] : []}
+			resizeHandles={
+				isSelected ? ["s", "w", "e", "n", "sw", "nw", "se", "ne"] : []
+			}
 			handleSize={[8, 8]}
 		>
 			<motion.div
@@ -329,11 +334,11 @@ const SlideElement = memo(function SlideElement({
 				whileHover={
 					!isSelected && performance.complexAnimations
 						? {
-							scale: 1.05,
-							rotateY: 10,
-							rotateX: -5,
-							boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
-						}
+								scale: 1.05,
+								rotateY: 10,
+								rotateX: -5,
+								boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
+							}
 						: {}
 				}
 				transition={{
@@ -349,7 +354,13 @@ const SlideElement = memo(function SlideElement({
 					<button
 						onClick={(e) => {
 							e.stopPropagation();
-							if (confirm(useSettingsStore.getState().language === "sk" ? "Naozaj odstrániť tento prvok?" : "Really delete this element?")) {
+							if (
+								confirm(
+									useSettingsStore.getState().language === "sk"
+										? "Naozaj odstrániť tento prvok?"
+										: "Really delete this element?",
+								)
+							) {
 								deleteElement(element.id);
 								selectElement(null);
 							}

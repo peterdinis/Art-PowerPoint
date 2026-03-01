@@ -195,10 +195,7 @@ export function SlideNotesEditor({
 				<Button
 					variant="ghost"
 					size="icon"
-					className={cn(
-						"h-8 w-8",
-						editor.isActive("strike") && "bg-accent",
-					)}
+					className={cn("h-8 w-8", editor.isActive("strike") && "bg-accent")}
 					onClick={() => editor.chain().focus().toggleStrike().run()}
 					title="Strikethrough"
 				>
@@ -255,7 +252,10 @@ export function SlideNotesEditor({
 				<Button
 					variant="ghost"
 					size="icon"
-					className={cn("h-8 w-8", editor.isActive("bulletList") && "bg-accent")}
+					className={cn(
+						"h-8 w-8",
+						editor.isActive("bulletList") && "bg-accent",
+					)}
 					onClick={() => editor.chain().focus().toggleBulletList().run()}
 					title="Bullet list"
 				>
@@ -264,7 +264,10 @@ export function SlideNotesEditor({
 				<Button
 					variant="ghost"
 					size="icon"
-					className={cn("h-8 w-8", editor.isActive("orderedList") && "bg-accent")}
+					className={cn(
+						"h-8 w-8",
+						editor.isActive("orderedList") && "bg-accent",
+					)}
 					onClick={() => editor.chain().focus().toggleOrderedList().run()}
 					title="Numbered list"
 				>
@@ -411,7 +414,10 @@ export function SlideNotesEditor({
 				<Button
 					variant="ghost"
 					size="icon"
-					className={cn("h-8 w-8", editor.isActive("blockquote") && "bg-accent")}
+					className={cn(
+						"h-8 w-8",
+						editor.isActive("blockquote") && "bg-accent",
+					)}
 					onClick={() => editor.chain().focus().toggleBlockquote().run()}
 					title="Quote"
 				>

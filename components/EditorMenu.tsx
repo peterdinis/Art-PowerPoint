@@ -82,11 +82,17 @@ export default function EditorMenu({
 									</div>
 									<div>
 										<h1 className="font-semibold text-foreground text-base leading-tight">
-											{currentPresentation?.title || (language === "sk" ? "Prezentácia" : "Presentation")}
+											{currentPresentation?.title ||
+												(language === "sk" ? "Prezentácia" : "Presentation")}
 										</h1>
 										<p className="text-xs text-muted-foreground">
-											{currentPresentation?.slides.length || 0} {language === "sk" ? "snímka" : "slide"}
-											{currentPresentation?.slides.length !== 1 ? (language === "sk" ? "y" : "s") : ""}
+											{currentPresentation?.slides.length || 0}{" "}
+											{language === "sk" ? "snímka" : "slide"}
+											{currentPresentation?.slides.length !== 1
+												? language === "sk"
+													? "y"
+													: "s"
+												: ""}
 										</p>
 									</div>
 								</div>
@@ -102,7 +108,9 @@ export default function EditorMenu({
 								onClick={() => setShareOpen(true)}
 							>
 								<Share2 className="w-4 h-4" />
-								<span className="hidden lg:inline">{language === "sk" ? "Zdieľať" : "Share"}</span>
+								<span className="hidden lg:inline">
+									{language === "sk" ? "Zdieľať" : "Share"}
+								</span>
 							</Button>
 
 							<Button
@@ -112,7 +120,9 @@ export default function EditorMenu({
 								onClick={() => setHistoryOpen(true)}
 							>
 								<History className="w-4 h-4" />
-								<span className="hidden lg:inline">{language === "sk" ? "História" : "History"}</span>
+								<span className="hidden lg:inline">
+									{language === "sk" ? "História" : "History"}
+								</span>
 							</Button>
 
 							<Separator orientation="vertical" className="h-6" />
@@ -125,7 +135,9 @@ export default function EditorMenu({
 								className="gap-2"
 							>
 								<BarChart3 className="w-4 h-4" />
-								<span className="hidden lg:inline">{language === "sk" ? "Nahrať graf" : "Upload Chart"}</span>
+								<span className="hidden lg:inline">
+									{language === "sk" ? "Nahrať graf" : "Upload Chart"}
+								</span>
 							</Button>
 
 							<DropdownMenu>
@@ -187,7 +199,9 @@ export default function EditorMenu({
 								disabled={!currentPresentation}
 							>
 								<Play className="w-4 h-4" />
-								<span className="hidden lg:inline">{language === "sk" ? "Prehrať" : "Play"}</span>
+								<span className="hidden lg:inline">
+									{language === "sk" ? "Prehrať" : "Play"}
+								</span>
 							</Button>
 
 							<Button
@@ -207,7 +221,9 @@ export default function EditorMenu({
 								className="gap-2"
 							>
 								<Download className="w-4 h-4" />
-								<span className="hidden lg:inline">{language === "sk" ? "Exportovať" : "Export"}</span>
+								<span className="hidden lg:inline">
+									{language === "sk" ? "Exportovať" : "Export"}
+								</span>
 							</Button>
 						</div>
 
@@ -227,11 +243,19 @@ export default function EditorMenu({
 											</div>
 											<div>
 												<h2 className="font-semibold text-lg">
-													{currentPresentation?.title || (language === "sk" ? "Prezentácia" : "Presentation")}
+													{currentPresentation?.title ||
+														(language === "sk"
+															? "Prezentácia"
+															: "Presentation")}
 												</h2>
 												<p className="text-sm text-muted-foreground">
-													{currentPresentation?.slides.length || 0} {language === "sk" ? "snímka" : "slide"}
-													{currentPresentation?.slides.length !== 1 ? (language === "sk" ? "y" : "s") : ""}
+													{currentPresentation?.slides.length || 0}{" "}
+													{language === "sk" ? "snímka" : "slide"}
+													{currentPresentation?.slides.length !== 1
+														? language === "sk"
+															? "y"
+															: "s"
+														: ""}
 												</p>
 											</div>
 										</div>
@@ -292,7 +316,9 @@ export default function EditorMenu({
 											variant="default"
 										>
 											<Play className="w-4 h-4" />
-											{language === "sk" ? "Prehrať prezentáciu" : "Play Presentation"}
+											{language === "sk"
+												? "Prehrať prezentáciu"
+												: "Play Presentation"}
 										</Button>
 										<Button
 											onClick={() => {
@@ -335,7 +361,9 @@ export default function EditorMenu({
 											</Link>
 										</Button>
 										<div className="flex items-center justify-between px-3 py-2 rounded-md bg-muted/50">
-											<span className="text-sm font-medium">{language === "sk" ? "Téma" : "Theme"}</span>
+											<span className="text-sm font-medium">
+												{language === "sk" ? "Téma" : "Theme"}
+											</span>
 											<ThemeToggle />
 										</div>
 									</div>

@@ -7,7 +7,7 @@ import {
 	FileDown,
 	ChevronDown,
 	Archive,
-	FileUp
+	FileUp,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -62,7 +62,11 @@ export default function Toolbar() {
 					</div>
 					<Input
 						value={currentPresentation.title}
-						onChange={(e) => updatePresentation(currentPresentation.id, { title: e.target.value })}
+						onChange={(e) =>
+							updatePresentation(currentPresentation.id, {
+								title: e.target.value,
+							})
+						}
 						className="h-8 w-48 bg-transparent border-none focus-visible:ring-1 focus-visible:ring-primary font-semibold"
 					/>
 				</div>
@@ -74,12 +78,22 @@ export default function Toolbar() {
 			</div>
 
 			<div className="flex items-center gap-2">
-				<Button variant="outline" size="sm" onClick={addSlide} className="gap-1">
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={addSlide}
+					className="gap-1"
+				>
 					<Plus className="h-4 w-4" />
 					<span className="hidden sm:inline">Add Slide</span>
 				</Button>
 
-				<Button variant="outline" size="sm" onClick={handleExport} className="gap-1">
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={handleExport}
+					className="gap-1"
+				>
 					<FileDown className="h-4 w-4" />
 					<span className="hidden sm:inline">Export</span>
 				</Button>

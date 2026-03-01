@@ -11,7 +11,7 @@ import {
 	Pause,
 	RotateCcw,
 	EyeOff,
-	Edit
+	Edit,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoadingPresentation } from "@/components/ui/LoadingPresentation";
@@ -112,7 +112,7 @@ export default function PresentationPage() {
 
 	const toggleFullscreen = useCallback(() => {
 		if (!document.fullscreenElement) {
-			document.documentElement.requestFullscreen().catch(() => { });
+			document.documentElement.requestFullscreen().catch(() => {});
 			setIsFullscreen(true);
 		} else {
 			document.exitFullscreen();
@@ -158,7 +158,17 @@ export default function PresentationPage() {
 
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [presentation, nextSlide, prevSlide, toggleFullscreen, togglePlayMode, restartPlayFromBeginning, stopPlaying, returnToEditor, isMounted]);
+	}, [
+		presentation,
+		nextSlide,
+		prevSlide,
+		toggleFullscreen,
+		togglePlayMode,
+		restartPlayFromBeginning,
+		stopPlaying,
+		returnToEditor,
+		isMounted,
+	]);
 
 	useEffect(() => {
 		if (isPlaying && presentation && isMounted) {
@@ -262,10 +272,7 @@ export default function PresentationPage() {
 	return (
 		<div className="fixed inset-0 bg-black z-50 overflow-hidden">
 			{/* Slide container */}
-			<div
-				ref={slideRef}
-				className="absolute inset-0"
-			>
+			<div ref={slideRef} className="absolute inset-0">
 				{/* Slide background */}
 				<div
 					className="absolute inset-0 transition-all"
@@ -276,10 +283,10 @@ export default function PresentationPage() {
 						backgroundImage: (() => {
 							const stops =
 								currentSlide.background?.gradientStops &&
-									currentSlide.background.gradientStops.length > 0
+								currentSlide.background.gradientStops.length > 0
 									? currentSlide.background.gradientStops
-										.map((s) => `${s.color} ${s.offset}%`)
-										.join(", ")
+											.map((s) => `${s.color} ${s.offset}%`)
+											.join(", ")
 									: currentSlide.background?.gradient;
 
 							const image = currentSlide.background?.image
@@ -393,7 +400,7 @@ export default function PresentationPage() {
 								onClick={togglePlayMode}
 								className={cn(
 									"text-white hover:bg-white/20",
-									isPlaying && "bg-primary/50 hover:bg-primary/70"
+									isPlaying && "bg-primary/50 hover:bg-primary/70",
 								)}
 								title={isPlaying ? "Pause (P)" : "Play (P)"}
 							>
@@ -464,7 +471,7 @@ export default function PresentationPage() {
 											onClick={() => changeInterval(3000)}
 											className={cn(
 												"h-7 w-7 text-xs text-white hover:bg-white/20",
-												autoPlayInterval === 3000 && "bg-white/30"
+												autoPlayInterval === 3000 && "bg-white/30",
 											)}
 											title="3 seconds"
 										>
@@ -476,7 +483,7 @@ export default function PresentationPage() {
 											onClick={() => changeInterval(5000)}
 											className={cn(
 												"h-7 w-7 text-xs text-white hover:bg-white/20",
-												autoPlayInterval === 5000 && "bg-white/30"
+												autoPlayInterval === 5000 && "bg-white/30",
 											)}
 											title="5 seconds"
 										>
@@ -488,7 +495,7 @@ export default function PresentationPage() {
 											onClick={() => changeInterval(8000)}
 											className={cn(
 												"h-7 w-7 text-xs text-white hover:bg-white/20",
-												autoPlayInterval === 8000 && "bg-white/30"
+												autoPlayInterval === 8000 && "bg-white/30",
 											)}
 											title="8 seconds"
 										>
@@ -549,13 +556,16 @@ export default function PresentationPage() {
 				{/* Keyboard shortcuts hint */}
 				<motion.div
 					initial={{ opacity: 0, y: 20 }}
-					animate={{ opacity: showControls ? 0.5 : 0, y: showControls ? 0 : 20 }}
+					animate={{
+						opacity: showControls ? 0.5 : 0,
+						y: showControls ? 0 : 20,
+					}}
 					className="absolute bottom-24 left-4 text-white/50 text-xs hidden md:block"
 				>
-					Press <kbd className="px-1 bg-white/20 rounded">P</kbd> play/pause •{' '}
-					<kbd className="px-1 bg-white/20 rounded">R</kbd> restart •{' '}
-					<kbd className="px-1 bg-white/20 rounded">Esc</kbd> stop •{' '}
-					<kbd className="px-1 bg-white/20 rounded">F</kbd> fullscreen •{' '}
+					Press <kbd className="px-1 bg-white/20 rounded">P</kbd> play/pause •{" "}
+					<kbd className="px-1 bg-white/20 rounded">R</kbd> restart •{" "}
+					<kbd className="px-1 bg-white/20 rounded">Esc</kbd> stop •{" "}
+					<kbd className="px-1 bg-white/20 rounded">F</kbd> fullscreen •{" "}
 					<kbd className="px-1 bg-white/20 rounded">E</kbd> edit
 				</motion.div>
 
@@ -615,8 +625,8 @@ function PresentationElement({
 		};
 
 		updateDimensions();
-		window.addEventListener('resize', updateDimensions);
-		return () => window.removeEventListener('resize', updateDimensions);
+		window.addEventListener("resize", updateDimensions);
+		return () => window.removeEventListener("resize", updateDimensions);
 	}, [containerRef, isMounted]);
 
 	useEffect(() => {
@@ -657,7 +667,7 @@ function PresentationElement({
 	const calculateStyle = (): React.CSSProperties => {
 		const baseWidth = 1920;
 		const baseHeight = 1080;
-		
+
 		const scaleX = dimensions.width / baseWidth;
 		const scaleY = dimensions.height / baseHeight;
 		const scale = Math.min(scaleX, scaleY);
@@ -666,8 +676,8 @@ function PresentationElement({
 		const offsetX = (dimensions.width - baseWidth * scale) / 2;
 		const offsetY = (dimensions.height - baseHeight * scale) / 2;
 
-		const left = offsetX + (element.position.x * scale);
-		const top = offsetY + (element.position.y * scale);
+		const left = offsetX + element.position.x * scale;
+		const top = offsetY + element.position.y * scale;
 
 		return {
 			position: "absolute",
@@ -694,33 +704,33 @@ function PresentationElement({
 			case "text": {
 				const filterStyles = element.style?.filters
 					? {
-						filter: [
-							element.style.filters.blur
-								? `blur(${element.style.filters.blur}px)`
-								: "",
-							element.style.filters.brightness
-								? `brightness(${element.style.filters.brightness})`
-								: "",
-							element.style.filters.contrast
-								? `contrast(${element.style.filters.contrast})`
-								: "",
-							element.style.filters.grayscale
-								? `grayscale(${element.style.filters.grayscale})`
-								: "",
-							element.style.filters.sepia
-								? `sepia(${element.style.filters.sepia})`
-								: "",
-							element.style.filters.hueRotate
-								? `hue-rotate(${element.style.filters.hueRotate}deg)`
-								: "",
-							element.style.filters.saturate
-								? `saturate(${element.style.filters.saturate})`
-								: "",
-							element.style.filters.invert
-								? `invert(${element.style.filters.invert})`
-								: "",
-						].join(" "),
-					}
+							filter: [
+								element.style.filters.blur
+									? `blur(${element.style.filters.blur}px)`
+									: "",
+								element.style.filters.brightness
+									? `brightness(${element.style.filters.brightness})`
+									: "",
+								element.style.filters.contrast
+									? `contrast(${element.style.filters.contrast})`
+									: "",
+								element.style.filters.grayscale
+									? `grayscale(${element.style.filters.grayscale})`
+									: "",
+								element.style.filters.sepia
+									? `sepia(${element.style.filters.sepia})`
+									: "",
+								element.style.filters.hueRotate
+									? `hue-rotate(${element.style.filters.hueRotate}deg)`
+									: "",
+								element.style.filters.saturate
+									? `saturate(${element.style.filters.saturate})`
+									: "",
+								element.style.filters.invert
+									? `invert(${element.style.filters.invert})`
+									: "",
+							].join(" "),
+						}
 					: {};
 
 				const getBackgroundStyle = () => {
@@ -783,33 +793,33 @@ function PresentationElement({
 			case "image": {
 				const imageFilters = element.style?.filters
 					? {
-						filter: [
-							element.style.filters.blur
-								? `blur(${element.style.filters.blur}px)`
-								: "",
-							element.style.filters.brightness
-								? `brightness(${element.style.filters.brightness})`
-								: "",
-							element.style.filters.contrast
-								? `contrast(${element.style.filters.contrast})`
-								: "",
-							element.style.filters.grayscale
-								? `grayscale(${element.style.filters.grayscale})`
-								: "",
-							element.style.filters.sepia
-								? `sepia(${element.style.filters.sepia})`
-								: "",
-							element.style.filters.hueRotate
-								? `hue-rotate(${element.style.filters.hueRotate}deg)`
-								: "",
-							element.style.filters.saturate
-								? `saturate(${element.style.filters.saturate})`
-								: "",
-							element.style.filters.invert
-								? `invert(${element.style.filters.invert})`
-								: "",
-						].join(" "),
-					}
+							filter: [
+								element.style.filters.blur
+									? `blur(${element.style.filters.blur}px)`
+									: "",
+								element.style.filters.brightness
+									? `brightness(${element.style.filters.brightness})`
+									: "",
+								element.style.filters.contrast
+									? `contrast(${element.style.filters.contrast})`
+									: "",
+								element.style.filters.grayscale
+									? `grayscale(${element.style.filters.grayscale})`
+									: "",
+								element.style.filters.sepia
+									? `sepia(${element.style.filters.sepia})`
+									: "",
+								element.style.filters.hueRotate
+									? `hue-rotate(${element.style.filters.hueRotate}deg)`
+									: "",
+								element.style.filters.saturate
+									? `saturate(${element.style.filters.saturate})`
+									: "",
+								element.style.filters.invert
+									? `invert(${element.style.filters.invert})`
+									: "",
+							].join(" "),
+						}
 					: {};
 
 				return (
@@ -833,33 +843,33 @@ function PresentationElement({
 				const shapeType = element.content || "square";
 				const shapeFilters = element.style?.filters
 					? {
-						filter: [
-							element.style.filters.blur
-								? `blur(${element.style.filters.blur}px)`
-								: "",
-							element.style.filters.brightness
-								? `brightness(${element.style.filters.brightness})`
-								: "",
-							element.style.filters.contrast
-								? `contrast(${element.style.filters.contrast})`
-								: "",
-							element.style.filters.grayscale
-								? `grayscale(${element.style.filters.grayscale})`
-								: "",
-							element.style.filters.sepia
-								? `sepia(${element.style.filters.sepia})`
-								: "",
-							element.style.filters.hueRotate
-								? `hue-rotate(${element.style.filters.hueRotate}deg)`
-								: "",
-							element.style.filters.saturate
-								? `saturate(${element.style.filters.saturate})`
-								: "",
-							element.style.filters.invert
-								? `invert(${element.style.filters.invert})`
-								: "",
-						].join(" "),
-					}
+							filter: [
+								element.style.filters.blur
+									? `blur(${element.style.filters.blur}px)`
+									: "",
+								element.style.filters.brightness
+									? `brightness(${element.style.filters.brightness})`
+									: "",
+								element.style.filters.contrast
+									? `contrast(${element.style.filters.contrast})`
+									: "",
+								element.style.filters.grayscale
+									? `grayscale(${element.style.filters.grayscale})`
+									: "",
+								element.style.filters.sepia
+									? `sepia(${element.style.filters.sepia})`
+									: "",
+								element.style.filters.hueRotate
+									? `hue-rotate(${element.style.filters.hueRotate}deg)`
+									: "",
+								element.style.filters.saturate
+									? `saturate(${element.style.filters.saturate})`
+									: "",
+								element.style.filters.invert
+									? `invert(${element.style.filters.invert})`
+									: "",
+							].join(" "),
+						}
 					: {};
 
 				const shapeStyle: React.CSSProperties = {
@@ -900,8 +910,8 @@ function PresentationElement({
 							style={{
 								width: 0,
 								height: 0,
-								borderLeft: `${element.size.width * scale / 2}px solid transparent`,
-								borderRight: `${element.size.width * scale / 2}px solid transparent`,
+								borderLeft: `${(element.size.width * scale) / 2}px solid transparent`,
+								borderRight: `${(element.size.width * scale) / 2}px solid transparent`,
 								borderBottom: `${element.size.height * scale}px solid ${element.style?.backgroundColor || "#3b82f6"}`,
 								...shapeFilters,
 							}}
@@ -913,7 +923,8 @@ function PresentationElement({
 							<div
 								style={{
 									color: element.style?.backgroundColor || "#ec4899",
-									fontSize: Math.min(element.size.width, element.size.height) * 0.8,
+									fontSize:
+										Math.min(element.size.width, element.size.height) * 0.8,
 									...shapeFilters,
 								}}
 							>
@@ -957,7 +968,7 @@ function PresentationElement({
 			className={cn(
 				"select-none",
 				getAnimationClass(),
-				element.type === "text" && "overflow-hidden"
+				element.type === "text" && "overflow-hidden",
 			)}
 		>
 			{renderContent()}
