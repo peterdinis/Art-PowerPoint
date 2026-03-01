@@ -10,6 +10,7 @@ import {
     SelectValue
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { useState, useEffect } from "react";
 import type { SlideElement, ObjectFit } from "@/types/presentation";
 
 interface MediaPropertiesProps {

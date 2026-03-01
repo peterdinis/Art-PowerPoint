@@ -3,6 +3,7 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { useState, useEffect } from "react";
 import type { SlideElement } from "@/types/presentation";
 
 interface LayoutPropertiesProps {
@@ -11,6 +12,26 @@ interface LayoutPropertiesProps {
 }
 
 export function LayoutProperties({ element, onUpdate }: LayoutPropertiesProps) {
+    const handleUpdate = (prop: string, value: any) => {
+        if (prop === "x" || prop === "y") {
+            onUpdate({
+                position: { ...element.position, [prop]: value }
+            });
+        } else if (prop === "width" || prop === "height") {
+            onUpdate({
+                size: { ...element.size, [prop]: value }
+            });
+        } else {
+            onUpdate({ [prop]: value });
+        }
+    };
+
+    const handleStyleUpdate = (prop: string, value: any) => {
+        onUpdate({
+            style: { ...element.style, [prop]: value }
+        });
+    };
+
     return (
         <div className="space-y-6">
             <div>
@@ -22,9 +43,7 @@ export function LayoutProperties({ element, onUpdate }: LayoutPropertiesProps) {
                             id="pos-x"
                             type="number"
                             value={element.position?.x || 0}
-                            onChange={(e) => onUpdate({
-                                position: { x: Number(e.target.value), y: element.position?.y || 0 }
-                            })}
+                            onChange={(e) => handleUpdate("x", Number(e.target.value))}
                             className="mt-1"
                         />
                     </div>
@@ -34,9 +53,7 @@ export function LayoutProperties({ element, onUpdate }: LayoutPropertiesProps) {
                             id="pos-y"
                             type="number"
                             value={element.position?.y || 0}
-                            onChange={(e) => onUpdate({
-                                position: { x: element.position?.x || 0, y: Number(e.target.value) }
-                            })}
+                            onChange={(e) => handleUpdate("y", Number(e.target.value))}
                             className="mt-1"
                         />
                     </div>
@@ -54,9 +71,7 @@ export function LayoutProperties({ element, onUpdate }: LayoutPropertiesProps) {
                             id="size-w"
                             type="number"
                             value={element.size?.width || 100}
-                            onChange={(e) => onUpdate({
-                                size: { width: Math.max(10, Number(e.target.value)), height: element.size?.height || 100 }
-                            })}
+                            onChange={(e) => handleUpdate("width", Math.max(10, Number(e.target.value)))}
                             min="10"
                             className="mt-1"
                         />
@@ -67,9 +82,7 @@ export function LayoutProperties({ element, onUpdate }: LayoutPropertiesProps) {
                             id="size-h"
                             type="number"
                             value={element.size?.height || 100}
-                            onChange={(e) => onUpdate({
-                                size: { width: element.size?.width || 100, height: Math.max(10, Number(e.target.value)) }
-                            })}
+                            onChange={(e) => handleUpdate("height", Math.max(10, Number(e.target.value)))}
                             min="10"
                             className="mt-1"
                         />
@@ -86,7 +99,7 @@ export function LayoutProperties({ element, onUpdate }: LayoutPropertiesProps) {
                         min="0"
                         max="360"
                         value={element.rotation || 0}
-                        onChange={(e) => onUpdate({ rotation: Number(e.target.value) })}
+                        onChange={(e) => handleUpdate("rotation", Number(e.target.value))}
                         className="flex-1"
                     />
                     <span className="text-sm w-12 text-right">{element.rotation || 0}°</span>
@@ -102,9 +115,7 @@ export function LayoutProperties({ element, onUpdate }: LayoutPropertiesProps) {
                         min="0"
                         max="100"
                         value={(element.style?.opacity || 1) * 100}
-                        onChange={(e) => onUpdate({
-                            style: { ...element.style, opacity: Number(e.target.value) / 100 }
-                        })}
+                        onChange={(e) => handleStyleUpdate("opacity", Number(e.target.value) / 100)}
                         className="flex-1"
                     />
                     <span className="text-sm w-12 text-right">

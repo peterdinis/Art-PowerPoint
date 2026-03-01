@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
 import type { SlideElement, FontWeight, FontStyle, TextDecoration, TextAlign } from "@/types/presentation";
 
 interface TextPropertiesProps {

@@ -27,8 +27,8 @@ import CodeElement from "./elements/CodeElement";
 interface SlideElementProps {
 	element: SlideElementType;
 	isSelected: boolean;
-	onSelect: () => void;
-	onResize?: (width: number, height: number) => void;
+	onSelect: (id: string) => void;
+	onResize?: (id: string, width: number, height: number) => void;
 }
 
 const getAnimationVariants = (type?: AnimationType): Variants => {
@@ -131,7 +131,7 @@ const SlideElement = memo(function SlideElement({
 		{ size }: { size: { width: number; height: number } },
 	) => {
 		if (onResize) {
-			onResize(size.width, size.height);
+			onResize(element.id, size.width, size.height);
 		}
 	};
 
@@ -294,12 +294,13 @@ const SlideElement = memo(function SlideElement({
 		return null;
 	};
 
-	const elementStyles = {
+	const elementStyles: React.CSSProperties = {
 		left: element.position.x,
 		top: element.position.y,
 		zIndex: element.style?.zIndex || 1,
-		transform: `rotate(${element.rotation || 0}deg)`,
+		transform: `rotate(${element.rotation || 0}deg) ${performance.hardwareAcceleration ? "translate3d(0,0,0)" : ""}`,
 		opacity: element.style?.opacity || 1,
+		willChange: performance.hardwareAcceleration ? "transform, opacity" : "auto",
 	};
 
 	return (
@@ -340,7 +341,7 @@ const SlideElement = memo(function SlideElement({
 					delay: (element.animation?.delay || 0) / 1000,
 					ease: (element.animation?.easing || "easeOut") as unknown as Easing,
 				}}
-				onClick={onSelect}
+				onClick={() => onSelect(element.id)}
 			>
 				{getElementContent()}
 
@@ -348,7 +349,7 @@ const SlideElement = memo(function SlideElement({
 					<button
 						onClick={(e) => {
 							e.stopPropagation();
-							if (confirm("Naozaj odstrániť tento prvok?")) {
+							if (confirm(useSettingsStore.getState().language === "sk" ? "Naozaj odstrániť tento prvok?" : "Really delete this element?")) {
 								deleteElement(element.id);
 								selectElement(null);
 							}

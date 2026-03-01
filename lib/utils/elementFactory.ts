@@ -247,15 +247,15 @@ export const createIconElement = (
 
 export const createCodeElement = (
     language: string = "javascript",
-    options: ElementOptions = {}
+    options: ElementOptions & { content?: string } = {}
 ): SlideElement => {
-    const { position = { x: 100, y: 100 } } = options;
+    const { position = { x: 100, y: 100 }, content = "// Write your code here..." } = options;
     return {
         id: uuidv4(),
         type: "code",
         position,
         size: { width: 600, height: 400 },
-        content: "// Write your code here...",
+        content,
         style: {
             language,
             theme: "dark",
