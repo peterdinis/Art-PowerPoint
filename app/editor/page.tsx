@@ -5,17 +5,23 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { usePresentationStore } from "@/store/presentationStore";
-import EditorCanvas from "@/components/EditorCanvas";
-import SlidePanel from "@/components/SlidePanel";
-import Toolbar from "@/components/Toolbar";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import EditorMenu from "@/components/EditorMenu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { toast } from "sonner";
-import PropertiesPanel from "@/components/PropertiesPanel";
-import AdvancedChartDialog from "@/components/editor/AdvancedChartDialog";
+
+// Dynamic imports for performance
+const EditorCanvas = dynamic(() => import("@/components/EditorCanvas"), {
+	ssr: false,
+	loading: () => <div className="flex-1 flex items-center justify-center bg-muted/20">Loading Canvas...</div>
+});
+const SlidePanel = dynamic(() => import("@/components/SlidePanel"), { ssr: false });
+const Toolbar = dynamic(() => import("@/components/Toolbar"), { ssr: false });
+const PropertiesPanel = dynamic(() => import("@/components/PropertiesPanel"), { ssr: false });
+const AdvancedChartDialog = dynamic(() => import("@/components/editor/AdvancedChartDialog"), { ssr: false });
 
 function EditorContent() {
 	const searchParams = useSearchParams();
@@ -38,30 +44,31 @@ function EditorContent() {
 	}, [loadPresentations]);
 
 	useEffect(() => {
-		if (presentations.length === 0 && !isLoading) {
-			return;
-		}
+		const initPresentation = async () => {
+			if (presentations.length === 0 && !isLoading) {
+				return;
+			}
 
-		// Initial load: don't redirect until we have presentations
-		if (presentations.length === 0) return;
+			if (presentations.length === 0) return;
 
-		const id = searchParams.get("id");
-		if (id) {
-			const presentation = presentations.find((p) => p.id === id);
-			if (presentation) {
-				if (!hasSelected.current) {
-					selectPresentation(id);
-					hasSelected.current = true;
+			const id = searchParams.get("id");
+			if (id) {
+				const presentation = presentations.find((p) => p.id === id);
+				if (presentation) {
+					if (!hasSelected.current) {
+						hasSelected.current = true;
+						await selectPresentation(id);
+					}
+					setIsLoading(false);
+				} else {
+					router.replace(`/editor?id=${presentations[0].id}`);
 				}
-				setIsLoading(false);
 			} else {
-				// ID not found, redirect to first
 				router.replace(`/editor?id=${presentations[0].id}`);
 			}
-		} else {
-			// No ID in URL, redirect to first
-			router.replace(`/editor?id=${presentations[0].id}`);
-		}
+		};
+
+		initPresentation();
 	}, [searchParams, presentations, selectPresentation, router, isLoading]);
 
 	const handleSave = () => {

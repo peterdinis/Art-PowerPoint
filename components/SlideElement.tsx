@@ -27,8 +27,8 @@ import CodeElement from "./elements/CodeElement";
 interface SlideElementProps {
 	element: SlideElementType;
 	isSelected: boolean;
-	onSelect: () => void;
-	onResize?: (width: number, height: number) => void;
+	onSelect: (id: string) => void;
+	onResize?: (id: string, width: number, height: number) => void;
 }
 
 const getAnimationVariants = (type?: AnimationType): Variants => {
@@ -131,7 +131,7 @@ const SlideElement = memo(function SlideElement({
 		{ size }: { size: { width: number; height: number } },
 	) => {
 		if (onResize) {
-			onResize(size.width, size.height);
+			onResize(element.id, size.width, size.height);
 		}
 	};
 
@@ -341,7 +341,7 @@ const SlideElement = memo(function SlideElement({
 					delay: (element.animation?.delay || 0) / 1000,
 					ease: (element.animation?.easing || "easeOut") as unknown as Easing,
 				}}
-				onClick={onSelect}
+				onClick={() => onSelect(element.id)}
 			>
 				{getElementContent()}
 

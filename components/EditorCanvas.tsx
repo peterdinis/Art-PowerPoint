@@ -1,13 +1,12 @@
 "use client";
 
-import { useRef } from "react";
+import React, { useRef, useMemo, useCallback } from "react";
 import { usePresentationStore } from "@/store/presentationStore";
+import { useSettingsStore } from "@/store/settingsStore";
 import { useDrop } from "react-dnd";
 import { cn } from "@/lib/utils";
 import { Wand2, ChevronLeft, ChevronRight, Trash2, Sparkles } from "lucide-react";
 import type { AnimationType } from "@/types/presentation";
-
-import { useMemo } from "react";
 import SlideElement from "./SlideElement";
 import { Button } from "./ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,11 +31,19 @@ export default function EditorCanvas() {
 	const alignElement = usePresentationStore((state) => state.alignElement);
 	const zoomLevel = usePresentationStore((state) => state.zoomLevel);
 	const showGrid = usePresentationStore((state) => state.showGrid);
+	const performance = useSettingsStore((state) => state.performance);
 
-	const selectedElement = currentPresentation?.slides[currentSlideIndex]?.elements.find(
-		(el) => el.id === selectedElementId,
-	);
 	const dropRef = useRef<HTMLDivElement>(null);
+
+	const handleSelectElement = useCallback((id: string | null) => {
+		selectElement(id);
+	}, [selectElement]);
+
+	const handleElementResize = useCallback((elementId: string, width: number, height: number) => {
+		updateElement(elementId, {
+			size: { width, height },
+		});
+	}, [updateElement]);
 
 	const [{ isOver }, drop] = useDrop({
 		accept: "element",
@@ -47,7 +54,7 @@ export default function EditorCanvas() {
 
 				// Click without drag (or tiny move): select element so user can edit in Properties
 				if (Math.abs(delta.x) < 4 && Math.abs(delta.y) < 4) {
-					selectElement(item.id);
+					handleSelectElement(item.id);
 					return;
 				}
 
@@ -92,13 +99,8 @@ export default function EditorCanvas() {
 
 	drop(dropRef);
 
-	const handleElementResize = (elementId: string, width: number, height: number) => {
-		updateElement(elementId, {
-			size: { width, height },
-		});
-	};
-
 	const currentSlide = currentPresentation?.slides[currentSlideIndex];
+	const selectedElement = currentSlide?.elements.find((el) => el.id === selectedElementId);
 
 	// Funkcie pre navigáciu slides pomocou klávesnice
 	const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -119,7 +121,7 @@ export default function EditorCanvas() {
 
 			if (confirm("Delete this element?")) {
 				deleteElement(selectedElementId);
-				selectElement(null);
+				handleSelectElement(null);
 			}
 		}
 	};
@@ -209,7 +211,7 @@ export default function EditorCanvas() {
 							e.target === e.currentTarget ||
 							(e.target as HTMLElement).classList.contains("slide-background")
 						) {
-							selectElement(null);
+							handleSelectElement(null);
 						}
 					}}
 				>
@@ -232,10 +234,8 @@ export default function EditorCanvas() {
 							key={element.id}
 							element={element}
 							isSelected={selectedElementId === element.id}
-							onSelect={() => selectElement(element.id)}
-							onResize={(width, height) =>
-								handleElementResize(element.id, width, height)
-							}
+							onSelect={handleSelectElement}
+							onResize={handleElementResize}
 						/>
 					))}
 
@@ -412,7 +412,7 @@ export default function EditorCanvas() {
 								onClick={() => {
 									if (confirm("Delete this element?")) {
 										deleteElement(selectedElementId);
-										selectElement(null);
+										handleSelectElement(null);
 									}
 								}}
 							>
