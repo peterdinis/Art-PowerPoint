@@ -299,7 +299,16 @@ function EditorContent() {
 	// Funkcia pre uloženie chartu do prezentácie
 	const handleSaveChart = () => {
 		try {
-			if (!currentPresentation || !currentPresentation.selectedSlideId) {
+			if (!currentPresentation) {
+				toast.error("No presentation active");
+				return;
+			}
+
+			// Try to get slide ID from current scroll/selection
+			const activeSlideId = currentPresentation.selectedSlideId ||
+				currentPresentation.slides[usePresentationStore.getState().currentSlideIndex]?.id;
+
+			if (!activeSlideId) {
 				toast.error("No slide selected");
 				return;
 			}
@@ -330,10 +339,6 @@ function EditorContent() {
 			const chartElement: SlideElement = {
 				id: `chart-${Date.now()}`,
 				type: "chart",
-				x: 100,
-				y: 100,
-				width: 400,
-				height: 300,
 				content: JSON.stringify({
 					type: chartType,
 					data: chartData,
@@ -350,11 +355,13 @@ function EditorContent() {
 						},
 					},
 				}),
+				position: { x: 100, y: 100 },
+				size: { width: 400, height: 300 },
 				style: {},
 			};
 
 			// Pridáme element do aktuálneho slide
-			addElementToSlide(currentPresentation.selectedSlideId, chartElement);
+			addElementToSlide(activeSlideId, chartElement);
 
 			// Zatvoríme dialog a ukážeme toast
 			setShowChartDialog(false);

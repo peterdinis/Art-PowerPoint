@@ -220,7 +220,10 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		const presentation = get().presentations.find((p) => p.id === id);
 		if (presentation) {
 			set({
-				currentPresentation: presentation,
+				currentPresentation: {
+					...presentation,
+					selectedSlideId: presentation.slides[0]?.id,
+				},
 				currentSlideIndex: 0,
 				selectedElementId: null,
 			});
@@ -413,6 +416,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			const newCurrent = {
 				...state.currentPresentation,
 				slides: [...state.currentPresentation.slides, newSlide],
+				selectedSlideId: newSlide.id,
 				updatedAt: new Date(),
 			};
 
@@ -453,6 +457,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			const newCurrent = {
 				...state.currentPresentation,
 				slides: newSlides,
+				selectedSlideId: newSlides[Math.max(0, newIndex)]?.id,
 				updatedAt: new Date(),
 			};
 
@@ -500,6 +505,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			const newCurrent = {
 				...state.currentPresentation,
 				slides: newSlides,
+				selectedSlideId: duplicatedSlide.id,
 				updatedAt: new Date(),
 			};
 
@@ -518,7 +524,17 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	},
 
 	selectSlide: (index: number) => {
+		const state = get();
+		if (!state.currentPresentation) return;
+
+		const slide = state.currentPresentation.slides[index];
+		if (!slide) return;
+
 		set({
+			currentPresentation: {
+				...state.currentPresentation,
+				selectedSlideId: slide.id,
+			},
 			currentSlideIndex: index,
 			selectedElementId: null,
 		});
@@ -538,6 +554,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			const newCurrent = {
 				...state.currentPresentation,
 				slides: newSlides,
+				selectedSlideId: removed.id,
 				updatedAt: new Date(),
 			};
 
