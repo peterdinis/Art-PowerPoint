@@ -6,7 +6,6 @@ import { useSettingsStore } from "@/store/settingsStore";
 import { useDrop } from "react-dnd";
 import { cn } from "@/lib/utils";
 import { Wand2, ChevronLeft, ChevronRight, Trash2, Sparkles } from "lucide-react";
-import type { AnimationType } from "@/types/presentation";
 import SlideElement from "./SlideElement";
 import { Button } from "./ui/button";
 import { motion, AnimatePresence } from "framer-motion";
