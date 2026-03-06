@@ -301,7 +301,6 @@ export default function SlideElement({
 
 	return (
 		<ResizableBox
-			data-element-id={element.id}
 			width={element.size.width}
 			height={element.size.height}
 			minConstraints={[50, 50]}
@@ -316,6 +315,7 @@ export default function SlideElement({
 			style={elementStyles}
 		>
 			<motion.div
+				data-element-id={element.id}
 				ref={(node) => {
 					if (node) drag(node);
 				}}

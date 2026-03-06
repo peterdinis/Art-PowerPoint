@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { usePresentationStore } from "@/store/presentationStore";
 import { useDrop } from "react-dnd";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,8 @@ export default function EditorCanvas() {
 		currentPresentation,
 		currentSlideIndex,
 		selectedElementId,
+		lastAddedElementId,
+		clearLastAddedElementId,
 		selectElement,
 		updateElement,
 		previousSlide,
@@ -38,6 +40,21 @@ export default function EditorCanvas() {
 		currentSlideIndex
 	]?.elements.find((el) => el.id === selectedElementId);
 	const dropRef = useRef<HTMLDivElement>(null);
+
+	// Scroll newly added element into view so user sees it immediately
+	useEffect(() => {
+		if (!lastAddedElementId) return;
+		const id = setTimeout(() => {
+			const el = document.querySelector(
+				`[data-element-id="${lastAddedElementId}"]`,
+			);
+			if (el instanceof HTMLElement) {
+				el.scrollIntoView({ block: "center", inline: "center", behavior: "smooth" });
+			}
+			clearLastAddedElementId();
+		}, 100);
+		return () => clearTimeout(id);
+	}, [lastAddedElementId, clearLastAddedElementId]);
 
 	const [{ isOver }, drop] = useDrop({
 		accept: "element",
