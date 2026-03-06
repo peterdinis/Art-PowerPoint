@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 import { Sparkles, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import SlideElement from "./SlideElement";
 import { Button } from "./ui/button";
-import { motion, AnimatePresence, AnimationType } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import type { AnimationType } from "@/types/presentation";
 import {
 	Select,
 	SelectContent,
@@ -375,7 +376,7 @@ export default function EditorCanvas() {
 										updateElement(selectedElementId, {
 											animation: {
 												...(selectedElement?.animation || { duration: 500 }),
-												type: val as unknown as AnimationType,
+												type: val as AnimationType,
 											},
 										})
 									}

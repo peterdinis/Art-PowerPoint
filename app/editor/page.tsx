@@ -36,6 +36,7 @@ import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
 import FilePondPluginFileValidateSize from "filepond-plugin-file-validate-size";
 import "filepond/dist/filepond.min.css";
 import PropertiesPanel from "@/components/PropertiesPanel";
+import type { SlideElement } from "@/types/presentation";
 
 // Register plugins
 registerPlugin(FilePondPluginFileValidateType, FilePondPluginFileValidateSize);
@@ -326,14 +327,12 @@ function EditorContent() {
 				};
 			}
 
-			// Vytvoríme chart element
+			// Create chart element
 			const chartElement: SlideElement = {
 				id: `chart-${Date.now()}`,
 				type: "chart",
-				x: 100,
-				y: 100,
-				width: 400,
-				height: 300,
+				position: { x: 100, y: 100 },
+				size: { width: 400, height: 300 },
 				content: JSON.stringify({
 					type: chartType,
 					data: chartData,
@@ -530,7 +529,11 @@ function EditorContent() {
 									<Label className="block mb-2">Upload Data File</Label>
 									<FilePond
 										files={files}
-										onupdatefiles={setFiles}
+										onupdatefiles={(pondFiles) =>
+											setFiles(
+												pondFiles.map((pf) => pf.file).filter((f): f is File => f != null),
+											)
+										}
 										allowMultiple={false}
 										maxFiles={1}
 										acceptedFileTypes={[
@@ -549,7 +552,7 @@ function EditorContent() {
 										labelTapToUndo="tap to undo"
 										onprocessfile={(error, file) => {
 											if (!error) {
-												handleFileProcess(file.file);
+												handleFileProcess(file.file as File);
 											}
 										}}
 										server={{

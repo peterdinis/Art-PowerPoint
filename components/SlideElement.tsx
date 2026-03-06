@@ -8,7 +8,7 @@ import { useDrag } from "react-dnd";
 import React from "react";
 import { cn } from "@/lib/utils";
 import { ResizableBox } from "react-resizable";
-import { Easing, motion } from "framer-motion";
+import { motion, type Easing } from "framer-motion";
 import "react-resizable/css/styles.css";
 import type {
 	SlideElement as SlideElementType,
@@ -51,7 +51,7 @@ const getAnimationVariants = (type?: AnimationType): Variants => {
 				animate: {
 					scale: 1,
 					opacity: 1,
-					transition: { type: "spring", stiffness: 260, damping: 20 } as unknown as Easing,
+					transition: { type: "spring", stiffness: 260, damping: 20 },
 				},
 			};
 		case "rotate":
@@ -83,14 +83,14 @@ const getAnimationVariants = (type?: AnimationType): Variants => {
 						duration: 0.2,
 						repeat: Infinity,
 						repeatDelay: 3,
-					} as unknown as Easing,
+					},
 				},
 			};
 		case "pulse":
 			return {
 				animate: {
 					scale: [1, 1.05, 1],
-					transition: { duration: 2, repeat: Infinity } as unknown as Easing,
+					transition: { duration: 2, repeat: Infinity },
 				},
 			};
 		default:
@@ -301,6 +301,7 @@ export default function SlideElement({
 
 	return (
 		<ResizableBox
+			data-element-id={element.id}
 			width={element.size.width}
 			height={element.size.height}
 			minConstraints={[50, 50]}
@@ -338,7 +339,7 @@ export default function SlideElement({
 				transition={{
 					duration: (element.animation?.duration || 500) / 1000,
 					delay: (element.animation?.delay || 0) / 1000,
-					ease: (element.animation?.easing || "easeOut") as unknown as Easing,
+					ease: (element.animation?.easing || "easeOut") as Easing,
 				}}
 				onClick={onSelect}
 			>

@@ -186,21 +186,6 @@ export default function SettingsPage() {
 											<span className="text-xl">🇺🇸</span>
 											<span className="font-medium">English (US)</span>
 										</Label>
-										<Label
-											htmlFor="sk"
-											className="flex items-center space-x-2 p-4 border rounded-xl hover:bg-accent cursor-pointer transition-all has-[:checked]:bg-primary/5 has-[:checked]:border-primary opacity-60"
-										>
-											<RadioGroupItem
-												value="sk"
-												id="sk"
-												className="sr-only"
-												disabled
-											/>
-											<span className="text-xl">🇸🇰</span>
-											<span className="font-medium text-muted-foreground">
-												Slovenčina (Coming Soon)
-											</span>
-										</Label>
 									</RadioGroup>
 								</CardContent>
 							</Card>

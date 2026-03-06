@@ -20,6 +20,7 @@ interface PresentationStore {
 	currentPresentation: Presentation | null;
 	currentSlideIndex: number;
 	selectedElementId: string | null;
+	lastAddedElementId: string | null;
 	presentationOrder: string[];
 	isLoading: boolean;
 	hasLoadedFromStorage: boolean;
@@ -59,6 +60,7 @@ interface PresentationStore {
 	updateElement: (elementId: string, updates: DeepPartial<SlideElement>) => void;
 	deleteElement: (elementId: string) => void;
 	selectElement: (elementId: string | null) => void;
+	clearLastAddedElementId: () => void;
 	moveElementLayer: (
 		elementId: string,
 		direction: "front" | "back" | "forward" | "backward",
@@ -85,6 +87,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	currentPresentation: null,
 	currentSlideIndex: 0,
 	selectedElementId: null,
+	lastAddedElementId: null,
 	presentationOrder: [],
 	isLoading: false,
 	hasLoadedFromStorage: false,
@@ -576,6 +579,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 					p.id === newCurrent.id ? newCurrent : p,
 				),
 				selectedElementId: newElement.id,
+				lastAddedElementId: newElement.id,
 			};
 		});
 
@@ -583,6 +587,8 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			get().savePresentations();
 		}, 0);
 	},
+
+	clearLastAddedElementId: () => set({ lastAddedElementId: null }),
 
 	// Helper to deep merge nested properties so callers can pass partial nested updates
 	updateElement: (elementId: string, updates: DeepPartial<SlideElement>) => {
@@ -780,16 +786,14 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 		const state = get();
 		if (!state.currentPresentation) return;
 
+		const newEl = { ...element, id: element.id || uuidv4() };
 		const updatedPresentation = {
 			...state.currentPresentation,
 			slides: state.currentPresentation.slides.map((s) => {
 				if (s.id === slideId) {
 					return {
 						...s,
-						elements: [
-							...s.elements,
-							{ ...element, id: element.id || uuidv4() },
-						],
+						elements: [...s.elements, newEl],
 					};
 				}
 				return s;
@@ -802,6 +806,8 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			presentations: state.presentations.map((p) =>
 				p.id === updatedPresentation.id ? updatedPresentation : p,
 			),
+			selectedElementId: newEl.id,
+			lastAddedElementId: newEl.id,
 		});
 
 		setTimeout(() => {
