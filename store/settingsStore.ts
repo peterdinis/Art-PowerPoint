@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type Language = "en" | "sk";
+export type Language = "en";
 
 interface SettingsState {
 	language: Language;
@@ -63,6 +63,11 @@ export const useSettingsStore = create<SettingsState>()(
 		}),
 		{
 			name: "presentation-builder-settings",
+			migrate: (persistedState: unknown) => {
+				const s = persistedState as { language?: string };
+				if (s?.language === "sk") s.language = "en";
+				return persistedState;
+			},
 		},
 	),
 );

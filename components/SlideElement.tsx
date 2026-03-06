@@ -8,7 +8,7 @@ import { useDrag } from "react-dnd";
 import React from "react";
 import { cn } from "@/lib/utils";
 import { ResizableBox } from "react-resizable";
-import { Easing, motion } from "framer-motion";
+import { motion, type Easing } from "framer-motion";
 import "react-resizable/css/styles.css";
 import type {
 	SlideElement as SlideElementType,
@@ -312,17 +312,21 @@ const SlideElement = memo(function SlideElement({
 			onResize={handleResize}
 			resizeHandles={isSelected ? ["s", "w", "e", "n", "sw", "nw", "se", "ne"] : []}
 			handleSize={[8, 8]}
+			className={cn(
+				"absolute cursor-move overflow-visible",
+				isSelected && "ring-2 ring-primary ring-offset-2 z-1000",
+			)}
+			style={elementStyles}
 		>
 			<motion.div
+				data-element-id={element.id}
 				ref={(node) => {
 					if (node) drag(node);
 				}}
 				className={cn(
-					"absolute cursor-move overflow-visible",
-					isSelected && "ring-2 ring-primary ring-offset-2 z-1000",
+					"w-full h-full",
 					isDragging && "opacity-50",
 				)}
-				style={elementStyles}
 				variants={animationVariants}
 				initial="initial"
 				animate="animate"
@@ -339,7 +343,7 @@ const SlideElement = memo(function SlideElement({
 				transition={{
 					duration: (element.animation?.duration || 500) / 1000,
 					delay: (element.animation?.delay || 0) / 1000,
-					ease: (element.animation?.easing || "easeOut") as unknown as Easing,
+					ease: (element.animation?.easing || "easeOut") as Easing,
 				}}
 				onClick={() => onSelect(element.id)}
 			>

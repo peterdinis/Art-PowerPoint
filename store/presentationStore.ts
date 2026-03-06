@@ -26,6 +26,7 @@ interface PresentationStore {
 	currentPresentation: Presentation | null;
 	currentSlideIndex: number;
 	selectedElementId: string | null;
+	lastAddedElementId: string | null;
 	presentationOrder: string[];
 	isLoading: boolean;
 	hasLoadedFromStorage: boolean;
@@ -64,9 +65,10 @@ interface PresentationStore {
 	// Element actions
 	addElement: (element: Omit<SlideElement, "id">) => void;
 	addElementToSlide: (slideId: string, element: SlideElement) => void;
-	updateElement: (elementId: string, updates: Partial<SlideElement>) => void;
+	updateElement: (elementId: string, updates: DeepPartial<SlideElement>) => void;
 	deleteElement: (elementId: string) => void;
 	selectElement: (elementId: string | null) => void;
+	clearLastAddedElementId: () => void;
 	moveElementLayer: (
 		elementId: string,
 		direction: "front" | "back" | "forward" | "backward",
@@ -93,6 +95,7 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	currentPresentation: null,
 	currentSlideIndex: 0,
 	selectedElementId: null,
+	lastAddedElementId: null,
 	presentationOrder: [],
 	isLoading: false,
 	hasLoadedFromStorage: false,

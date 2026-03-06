@@ -10,6 +10,7 @@ import type { AnimationType } from "@/types/presentation";
 import SlideElement from "./SlideElement";
 import { Button } from "./ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import type { AnimationType } from "@/types/presentation";
 import {
 	Select,
 	SelectContent,
