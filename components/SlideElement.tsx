@@ -27,8 +27,8 @@ import CodeElement from "./elements/CodeElement";
 interface SlideElementProps {
 	element: SlideElementType;
 	isSelected: boolean;
-	onSelect: () => void;
-	onResize?: (width: number, height: number) => void;
+	onSelect: (id: string) => void;
+	onResize?: (id: string, width: number, height: number) => void;
 }
 
 const getAnimationVariants = (type?: AnimationType): Variants => {
@@ -98,14 +98,17 @@ const getAnimationVariants = (type?: AnimationType): Variants => {
 	}
 };
 
-export default function SlideElement({
+import { memo } from "react";
+
+const SlideElement = memo(function SlideElement({
 	element,
 	isSelected,
 	onSelect,
 	onResize,
 }: SlideElementProps) {
-	const { deleteElement, selectElement } = usePresentationStore();
-	const { performance } = useSettingsStore();
+	const deleteElement = usePresentationStore((state) => state.deleteElement);
+	const selectElement = usePresentationStore((state) => state.selectElement);
+	const performance = useSettingsStore((state) => state.performance);
 
 	const [{ isDragging }, drag] = useDrag({
 		type: "element",
@@ -128,7 +131,7 @@ export default function SlideElement({
 		{ size }: { size: { width: number; height: number } },
 	) => {
 		if (onResize) {
-			onResize(size.width, size.height);
+			onResize(element.id, size.width, size.height);
 		}
 	};
 
@@ -152,33 +155,33 @@ export default function SlideElement({
 		if (element.type === "text") {
 			const filterStyles = element.style?.filters
 				? {
-						filter: [
-							element.style.filters.blur
-								? `blur(${element.style.filters.blur}px)`
-								: "",
-							element.style.filters.brightness
-								? `brightness(${element.style.filters.brightness})`
-								: "",
-							element.style.filters.contrast
-								? `contrast(${element.style.filters.contrast})`
-								: "",
-							element.style.filters.grayscale
-								? `grayscale(${element.style.filters.grayscale})`
-								: "",
-							element.style.filters.sepia
-								? `sepia(${element.style.filters.sepia})`
-								: "",
-							element.style.filters.hueRotate
-								? `hue-rotate(${element.style.filters.hueRotate}deg)`
-								: "",
-							element.style.filters.saturate
-								? `saturate(${element.style.filters.saturate})`
-								: "",
-							element.style.filters.invert
-								? `invert(${element.style.filters.invert})`
-								: "",
-						].join(" "),
-					}
+					filter: [
+						element.style.filters.blur
+							? `blur(${element.style.filters.blur}px)`
+							: "",
+						element.style.filters.brightness
+							? `brightness(${element.style.filters.brightness})`
+							: "",
+						element.style.filters.contrast
+							? `contrast(${element.style.filters.contrast})`
+							: "",
+						element.style.filters.grayscale
+							? `grayscale(${element.style.filters.grayscale})`
+							: "",
+						element.style.filters.sepia
+							? `sepia(${element.style.filters.sepia})`
+							: "",
+						element.style.filters.hueRotate
+							? `hue-rotate(${element.style.filters.hueRotate}deg)`
+							: "",
+						element.style.filters.saturate
+							? `saturate(${element.style.filters.saturate})`
+							: "",
+						element.style.filters.invert
+							? `invert(${element.style.filters.invert})`
+							: "",
+					].join(" "),
+				}
 				: {};
 
 			const getBackgroundStyle = () => {
@@ -291,12 +294,13 @@ export default function SlideElement({
 		return null;
 	};
 
-	const elementStyles = {
+	const elementStyles: React.CSSProperties = {
 		left: element.position.x,
 		top: element.position.y,
 		zIndex: element.style?.zIndex || 1,
-		transform: `rotate(${element.rotation || 0}deg)`,
+		transform: `rotate(${element.rotation || 0}deg) ${performance.hardwareAcceleration ? "translate3d(0,0,0)" : ""}`,
 		opacity: element.style?.opacity || 1,
+		willChange: performance.hardwareAcceleration ? "transform, opacity" : "auto",
 	};
 
 	return (
@@ -329,11 +333,11 @@ export default function SlideElement({
 				whileHover={
 					!isSelected && performance.complexAnimations
 						? {
-								scale: 1.05,
-								rotateY: 10,
-								rotateX: -5,
-								boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
-							}
+							scale: 1.05,
+							rotateY: 10,
+							rotateX: -5,
+							boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
+						}
 						: {}
 				}
 				transition={{
@@ -341,7 +345,7 @@ export default function SlideElement({
 					delay: (element.animation?.delay || 0) / 1000,
 					ease: (element.animation?.easing || "easeOut") as Easing,
 				}}
-				onClick={onSelect}
+				onClick={() => onSelect(element.id)}
 			>
 				{getElementContent()}
 
@@ -349,7 +353,7 @@ export default function SlideElement({
 					<button
 						onClick={(e) => {
 							e.stopPropagation();
-							if (confirm("Naozaj odstrániť tento prvok?")) {
+							if (confirm(useSettingsStore.getState().language === "sk" ? "Naozaj odstrániť tento prvok?" : "Really delete this element?")) {
 								deleteElement(element.id);
 								selectElement(null);
 							}
@@ -362,4 +366,6 @@ export default function SlideElement({
 			</motion.div>
 		</ResizableBox>
 	);
-}
+});
+
+export default SlideElement;

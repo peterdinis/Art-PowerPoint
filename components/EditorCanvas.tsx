@@ -1,10 +1,12 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import React, { useRef, useMemo, useCallback } from "react";
 import { usePresentationStore } from "@/store/presentationStore";
+import { useSettingsStore } from "@/store/settingsStore";
 import { useDrop } from "react-dnd";
 import { cn } from "@/lib/utils";
-import { Sparkles, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import { Wand2, ChevronLeft, ChevronRight, Trash2, Sparkles } from "lucide-react";
+import type { AnimationType } from "@/types/presentation";
 import SlideElement from "./SlideElement";
 import { Button } from "./ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,77 +18,72 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Wand2 } from "lucide-react";
 
 export default function EditorCanvas() {
-	const {
-		currentPresentation,
-		currentSlideIndex,
-		selectedElementId,
-		lastAddedElementId,
-		clearLastAddedElementId,
-		selectElement,
-		updateElement,
-		previousSlide,
-		nextSlide,
-		deleteElement,
-		moveElementLayer,
-		alignElement,
-		zoomLevel,
-		showGrid,
-	} = usePresentationStore();
+	const currentPresentation = usePresentationStore((state) => state.currentPresentation);
+	const currentSlideIndex = usePresentationStore((state) => state.currentSlideIndex);
+	const selectedElementId = usePresentationStore((state) => state.selectedElementId);
+	const selectElement = usePresentationStore((state) => state.selectElement);
+	const updateElement = usePresentationStore((state) => state.updateElement);
+	const previousSlide = usePresentationStore((state) => state.previousSlide);
+	const nextSlide = usePresentationStore((state) => state.nextSlide);
+	const deleteElement = usePresentationStore((state) => state.deleteElement);
+	const moveElementLayer = usePresentationStore((state) => state.moveElementLayer);
+	const alignElement = usePresentationStore((state) => state.alignElement);
+	const zoomLevel = usePresentationStore((state) => state.zoomLevel);
+	const showGrid = usePresentationStore((state) => state.showGrid);
+	const performance = useSettingsStore((state) => state.performance);
 
-	const selectedElement = currentPresentation?.slides[
-		currentSlideIndex
-	]?.elements.find((el) => el.id === selectedElementId);
 	const dropRef = useRef<HTMLDivElement>(null);
 
-	// Scroll newly added element into view so user sees it immediately
-	useEffect(() => {
-		if (!lastAddedElementId) return;
-		const id = setTimeout(() => {
-			const el = document.querySelector(
-				`[data-element-id="${lastAddedElementId}"]`,
-			);
-			if (el instanceof HTMLElement) {
-				el.scrollIntoView({ block: "center", inline: "center", behavior: "smooth" });
-			}
-			clearLastAddedElementId();
-		}, 100);
-		return () => clearTimeout(id);
-	}, [lastAddedElementId, clearLastAddedElementId]);
+	const handleSelectElement = useCallback((id: string | null) => {
+		selectElement(id);
+	}, [selectElement]);
+
+	const handleElementResize = useCallback((elementId: string, width: number, height: number) => {
+		updateElement(elementId, {
+			size: { width, height },
+		});
+	}, [updateElement]);
 
 	const [{ isOver }, drop] = useDrop({
 		accept: "element",
 		drop: (item: { id: string }, monitor) => {
 			if (!monitor.didDrop() && currentPresentation && dropRef.current) {
 				const delta = monitor.getDifferenceFromInitialOffset();
+				if (!delta) return;
+
 				// Click without drag (or tiny move): select element so user can edit in Properties
-				if (!delta || (Math.abs(delta.x) < 4 && Math.abs(delta.y) < 4)) {
-					selectElement(item.id);
+				if (Math.abs(delta.x) < 4 && Math.abs(delta.y) < 4) {
+					handleSelectElement(item.id);
 					return;
 				}
-				const element = currentPresentation.slides[
-					currentSlideIndex
-				]?.elements.find((el: { id: string }) => el.id === item.id);
+
+				const currentSlide = currentPresentation.slides[currentSlideIndex];
+				const element = currentSlide?.elements.find((el) => el.id === item.id);
+
 				if (element) {
-					const slideElement = dropRef.current;
-					const rect = slideElement.getBoundingClientRect();
+					const rect = dropRef.current.getBoundingClientRect();
+					// Scale factor: how many screen pixels represent one canvas pixel
 					const scaleX = rect.width / zoomLevel / 960;
 					const scaleY = rect.height / zoomLevel / 540;
 
-					const newX = Math.max(
-						0,
-						Math.min(
-							960 - element.size.width,
-							element.position.x + delta.x / scaleX,
+					const newX = Math.round(
+						Math.max(
+							0,
+							Math.min(
+								960 - element.size.width,
+								element.position.x + delta.x / scaleX,
+							),
 						),
 					);
-					const newY = Math.max(
-						0,
-						Math.min(
-							540 - element.size.height,
-							element.position.y + delta.y / scaleY,
+					const newY = Math.round(
+						Math.max(
+							0,
+							Math.min(
+								540 - element.size.height,
+								element.position.y + delta.y / scaleY,
+							),
 						),
 					);
 
@@ -103,20 +100,8 @@ export default function EditorCanvas() {
 
 	drop(dropRef);
 
-	const handleElementResize = (
-		elementId: string,
-		width: number,
-		height: number,
-	) => {
-		updateElement(elementId, {
-			size: { width, height },
-		});
-	};
-
-	if (!currentPresentation) return null;
-
-	const currentSlide = currentPresentation.slides[currentSlideIndex];
-	if (!currentSlide) return null;
+	const currentSlide = currentPresentation?.slides[currentSlideIndex];
+	const selectedElement = currentSlide?.elements.find((el) => el.id === selectedElementId);
 
 	// Funkcie pre navigáciu slides pomocou klávesnice
 	const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -124,10 +109,7 @@ export default function EditorCanvas() {
 			previousSlide();
 		} else if (e.key === "ArrowRight") {
 			nextSlide();
-		} else if (
-			(e.key === "Delete" || e.key === "Backspace") &&
-			selectedElementId
-		) {
+		} else if ((e.key === "Delete" || e.key === "Backspace") && selectedElementId) {
 			// Don't delete if we're in an input or textarea
 			const activeElement = document.activeElement as HTMLElement | null;
 			if (
@@ -140,10 +122,48 @@ export default function EditorCanvas() {
 
 			if (confirm("Delete this element?")) {
 				deleteElement(selectedElementId);
-				selectElement(null);
+				handleSelectElement(null);
 			}
 		}
 	};
+
+	const backgroundStyle = useMemo(() => {
+		if (!currentSlide?.background) return {};
+
+		const stops =
+			currentSlide.background.gradientStops && currentSlide.background.gradientStops.length > 0
+				? currentSlide.background.gradientStops
+					.map((s) => `${s.color} ${s.offset}%`)
+					.join(", ")
+				: (currentSlide.background.gradient as string);
+
+		const image = currentSlide.background.image
+			? `url(${currentSlide.background.image})`
+			: undefined;
+
+		let backgroundImage = image;
+
+		if (stops) {
+			const type = currentSlide.background.gradientType || "linear";
+			const angle = currentSlide.background.gradientAngle || 135;
+			const gradient =
+				type === "linear"
+					? `linear-gradient(${angle}deg, ${stops})`
+					: `radial-gradient(circle, ${stops})`;
+
+			backgroundImage = image ? `${gradient}, ${image}` : gradient;
+		}
+
+		return {
+			backgroundImage,
+			backgroundSize: "cover",
+			backgroundPosition: "center",
+			transform: `scale(${zoomLevel})`,
+			transformOrigin: "center center",
+		};
+	}, [currentSlide?.background, zoomLevel]);
+
+	if (!currentPresentation || !currentSlide) return null;
 
 	return (
 		<div
@@ -185,43 +205,14 @@ export default function EditorCanvas() {
 						width: "100%",
 						maxWidth: "960px",
 						aspectRatio: "16/9",
-						backgroundImage: (() => {
-							const stops =
-								currentSlide.background?.gradientStops &&
-								currentSlide.background.gradientStops.length > 0
-									? currentSlide.background.gradientStops
-											.map((s) => `${s.color} ${s.offset}%`)
-											.join(", ")
-									: currentSlide.background?.gradient;
-
-							const image = currentSlide.background?.image
-								? `url(${currentSlide.background.image})`
-								: undefined;
-
-							if (stops) {
-								const type = currentSlide.background?.gradientType || "linear";
-								const angle = currentSlide.background?.gradientAngle || 135;
-								const gradient =
-									type === "linear"
-										? `linear-gradient(${angle}deg, ${stops})`
-										: `radial-gradient(circle, ${stops})`;
-
-								return image ? `${gradient}, ${image}` : gradient;
-							}
-
-							return image;
-						})(),
-						backgroundSize: "cover",
-						backgroundPosition: "center",
-						transform: `scale(${zoomLevel})`,
-						transformOrigin: "center center",
+						...backgroundStyle,
 					}}
 					onClick={(e) => {
 						if (
 							e.target === e.currentTarget ||
 							(e.target as HTMLElement).classList.contains("slide-background")
 						) {
-							selectElement(null);
+							handleSelectElement(null);
 						}
 					}}
 				>
@@ -244,10 +235,8 @@ export default function EditorCanvas() {
 							key={element.id}
 							element={element}
 							isSelected={selectedElementId === element.id}
-							onSelect={() => selectElement(element.id)}
-							onResize={(width, height) =>
-								handleElementResize(element.id, width, height)
-							}
+							onSelect={handleSelectElement}
+							onResize={handleElementResize}
 						/>
 					))}
 
@@ -424,7 +413,7 @@ export default function EditorCanvas() {
 								onClick={() => {
 									if (confirm("Delete this element?")) {
 										deleteElement(selectedElementId);
-										selectElement(null);
+										handleSelectElement(null);
 									}
 								}}
 							>

@@ -210,3 +210,7 @@ export interface Presentation {
 	updatedAt: Date;
 	deletedAt?: Date;
 }
+
+export interface PresentationSummary extends Omit<Presentation, "slides"> {
+	slidesCount: number;
+}

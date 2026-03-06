@@ -23,7 +23,7 @@ import {
 	DialogTitle,
 	DialogFooter,
 } from "@/components/ui/dialog";
-import Cropper from "react-easy-crop";
+import Cropper, { type Area } from "react-easy-crop";
 import { getCroppedImg } from "@/lib/utils/imageUtils";
 import { toast } from "sonner";
 
@@ -102,7 +102,7 @@ export default function SlideBackgroundEditor({
 	const [showCropDialog, setShowCropDialog] = useState(false);
 	const [crop, setCrop] = useState({ x: 0, y: 0 });
 	const [zoom, setZoom] = useState(1);
-	const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+	const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 	const [isCropping, setIsCropping] = useState(false);
 
 	const handleColorChange = (newColor: string) => {
@@ -147,7 +147,7 @@ export default function SlideBackgroundEditor({
 		}
 	};
 
-	const onCropComplete = (_croppedArea: any, pixels: any) => {
+	const onCropComplete = (_croppedArea: Area, pixels: Area) => {
 		setCroppedAreaPixels(pixels);
 	};
 

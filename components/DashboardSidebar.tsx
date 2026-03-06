@@ -20,6 +20,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
 import TemplateSelector from "@/components/TemplateSelector";
+import { useTranslate } from "@/lib/useTranslate";
 import {
 	Dialog,
 	DialogContent,
@@ -32,6 +33,7 @@ import { Label } from "@/components/ui/label";
 
 export default function DashboardSidebar() {
 	const router = useRouter();
+	const { t } = useTranslate();
 	const pathname = usePathname();
 	const { createPresentation } = usePresentationStore();
 	const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -83,7 +85,7 @@ export default function DashboardSidebar() {
 							<FileText className="w-5 h-5 text-primary-foreground" />
 						</div>
 						<h2 className="text-xl dark:text-white font-bold">
-							Art Powerpoint
+							{t("dashboard.title")}
 						</h2>
 					</div>
 					<Button
@@ -95,7 +97,7 @@ export default function DashboardSidebar() {
 						size="lg"
 					>
 						<Plus className="w-4 h-4 mr-2" />
-						New Presentation
+						{t("dashboard.newPresentation")}
 					</Button>
 				</div>
 
@@ -112,7 +114,7 @@ export default function DashboardSidebar() {
 						)}
 					>
 						<LayoutDashboard className="w-5 h-5" />
-						<span>Dashboard</span>
+						<span>{t("common.dashboard")}</span>
 					</Link>
 					<Button
 						variant="ghost"
@@ -137,7 +139,7 @@ export default function DashboardSidebar() {
 						)}
 					>
 						<Star className="w-5 h-5" />
-						<span>Favorites</span>
+						<span>{t("common.favorites")}</span>
 					</Link>
 					<Link
 						href="/recent"
@@ -151,7 +153,7 @@ export default function DashboardSidebar() {
 						)}
 					>
 						<Clock className="w-5 h-5" />
-						<span>Recent</span>
+						<span>{t("common.recent")}</span>
 					</Link>
 					<Link
 						href="/statistics"
@@ -165,7 +167,7 @@ export default function DashboardSidebar() {
 						)}
 					>
 						<TrendingUp className="w-5 h-5" />
-						<span>Statistics</span>
+						<span>{t("common.statistics")}</span>
 					</Link>
 					<Link
 						href="/trash"
@@ -179,7 +181,7 @@ export default function DashboardSidebar() {
 						)}
 					>
 						<Trash2 className="w-5 h-5" />
-						<span>Trash</span>
+						<span>{t("common.trash")}</span>
 					</Link>
 				</nav>
 
@@ -196,7 +198,7 @@ export default function DashboardSidebar() {
 						)}
 					>
 						<Settings className="w-5 h-5" />
-						<span>Settings</span>
+						<span>{t("common.settings")}</span>
 					</Link>
 					<div className="flex items-center justify-center px-4">
 						<ThemeToggle />

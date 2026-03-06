@@ -19,8 +19,8 @@ import {
 	FileUp,
 } from "lucide-react";
 import { usePresentationStore } from "@/store/presentationStore";
-import { Slide, Presentation } from "@/types/presentation";
-import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { Slide, PresentationSummary } from "@/types/presentation";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
@@ -62,7 +62,6 @@ import {
 	DragOverlay,
 } from "@dnd-kit/core";
 import {
-	arrayMove,
 	SortableContext,
 	sortableKeyboardCoordinates,
 	rectSortingStrategy,
@@ -71,6 +70,7 @@ import {
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { FilePond, registerPlugin } from "react-filepond";
+import type { FilePondFile } from "filepond";
 import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
 import FilePondPluginFileValidateSize from "filepond-plugin-file-validate-size";
 import "filepond/dist/filepond.min.css";
@@ -88,7 +88,7 @@ function SortableGridItem({
 	formatDate,
 	isOverlay = false,
 }: {
-	presentation: any;
+	presentation: PresentationSummary;
 	handleDelete: (id: string, title?: string) => void;
 	formatDate: (date: Date) => string;
 	isOverlay?: boolean;
@@ -132,11 +132,11 @@ function SortableGridItem({
 			>
 				<div className="h-40 bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center relative overflow-hidden rounded-t-lg">
 					<div className="text-5xl font-bold opacity-20 text-primary">
-						{presentation.slides.length}
+						{presentation.slidesCount}
 					</div>
 					<div className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm text-xs px-2 py-1 rounded">
-						{presentation.slides.length} slide
-						{presentation.slides.length !== 1 ? "s" : ""}
+						{presentation.slidesCount} slide
+						{presentation.slidesCount !== 1 ? "s" : ""}
 					</div>
 				</div>
 				<CardHeader className="pb-3">
@@ -209,7 +209,7 @@ function SortableListItem({
 	formatDate,
 	isOverlay = false,
 }: {
-	presentation: any;
+	presentation: PresentationSummary;
 	handleDelete: (id: string, title?: string) => void;
 	formatDate: (date: Date) => string;
 	isOverlay?: boolean;
@@ -280,8 +280,8 @@ function SortableListItem({
 							<div className="flex items-center gap-4 text-xs text-muted-foreground">
 								<span className="flex items-center gap-1">
 									<Grid3x3 className="w-3 h-3" />
-									{presentation.slides.length} slide
-									{presentation.slides.length !== 1 ? "s" : ""}
+									{presentation.slidesCount} slide
+									{presentation.slidesCount !== 1 ? "s" : ""}
 								</span>
 								<span className="flex items-center gap-1">
 									<Calendar className="w-3 h-3" />
@@ -325,9 +325,9 @@ export default function Home() {
 		createPresentation,
 		deletePresentation,
 		restorePresentation,
-		permanentlyDeletePresentation,
 		reorderPresentationsByIds,
 		presentationOrder,
+		hasLoadedFromStorage,
 	} = usePresentationStore();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -336,10 +336,9 @@ export default function Home() {
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [localOrder, setLocalOrder] = useState<string[]>([]);
-	const [isSearching, setIsSearching] = useState(false);
 
 	const [showImportDialog, setShowImportDialog] = useState(false);
-	const [importFiles, setImportFiles] = useState<any[]>([]);
+	const [importFiles, setImportFiles] = useState<FilePondFile[]>([]);
 
 	// Analysis state
 	const [showAnalysisDialog, setShowAnalysisDialog] = useState(false);
@@ -350,12 +349,12 @@ export default function Home() {
 	const [newTitle, setNewTitle] = useState("");
 	const [newDescription, setNewDescription] = useState("");
 
-	const handleFilePondImport = async (fileItem: any) => {
+	const handleFilePondImport = async (fileItem: FilePondFile) => {
 		const file = fileItem.file;
 		if (!file) return;
 
 		try {
-			toast.loading("Načítavam prezentáciu...", { id: "import-file" });
+			toast.loading("Loading presentation...", { id: "import-file" });
 			let parsedData;
 
 			if (
@@ -363,16 +362,15 @@ export default function Home() {
 				file.type === "application/vnd.oasis.opendocument.presentation"
 			) {
 				const { importODP } = await import("@/lib/utils/odpImport");
-				parsedData = await importODP(file);
+				parsedData = await importODP(file as any);
 			} else {
 				const { importPPTX } = await import("@/lib/utils/pptxImport");
-				parsedData = await importPPTX(file);
+				parsedData = await importPPTX(file as any);
 			}
 
 			toast.dismiss("import-file");
 			setShowImportDialog(false);
 
-			// Open the analysis dialog instead of importing instantly
 			setImportedData(parsedData);
 			setShowAnalysisDialog(true);
 		} catch (error) {
@@ -381,14 +379,14 @@ export default function Home() {
 		}
 	};
 
-	const handleConfirmImport = () => {
+	const handleConfirmImport = async () => {
 		if (!importedData) return;
 		try {
 			toast.loading("Importing Presentation...", { id: "confirm-import-pptx" });
 
 			const newPresentationId = createPresentation(
 				importedData.title || "Imported Presentation",
-				"Imported from PowerPoint",
+				importedData.description || "Imported from PowerPoint",
 			);
 
 			const store = usePresentationStore.getState();
@@ -403,7 +401,7 @@ export default function Home() {
 				id: "confirm-import-pptx",
 			});
 			setShowAnalysisDialog(false);
-			setImportFiles([]); // clear original form
+			setImportFiles([]);
 			setImportedData(null);
 		} catch (error) {
 			console.error("Failed to import PPTX:", error);
@@ -415,11 +413,12 @@ export default function Home() {
 
 	// Load presentations
 	useEffect(() => {
-		setIsLoading(true);
-		loadPresentations();
-		const timer = setTimeout(() => setIsLoading(false), 100);
-		return () => clearTimeout(timer);
-	}, [loadPresentations]);
+		if (!hasLoadedFromStorage) {
+			loadPresentations();
+		} else {
+			setIsLoading(false);
+		}
+	}, [loadPresentations, hasLoadedFromStorage]);
 
 	// Sync local order with store
 	useEffect(() => {
@@ -459,14 +458,14 @@ export default function Home() {
 			(p) =>
 				!p.deletedAt &&
 				(p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-					p.description?.toLowerCase().includes(searchQuery.toLowerCase())),
+					(p.description || "").toLowerCase().includes(searchQuery.toLowerCase())),
 		);
 
 		if (sortBy === "custom") {
 			return filtered;
 		}
 
-		filtered.sort((a, b) => {
+		const sorted = [...filtered].sort((a, b) => {
 			switch (sortBy) {
 				case "recent":
 					return (
@@ -479,13 +478,13 @@ export default function Home() {
 				case "name":
 					return a.title.localeCompare(b.title);
 				case "slides":
-					return b.slides.length - a.slides.length;
+					return b.slidesCount - a.slidesCount;
 				default:
 					return 0;
 			}
 		});
 
-		return filtered;
+		return sorted;
 	}, [orderedPresentations, searchQuery, sortBy]);
 
 	const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -497,43 +496,37 @@ export default function Home() {
 			const { active, over } = event;
 
 			if (over && active.id !== over.id) {
-				const activeIndex = filteredAndSorted.findIndex(
-					(item) => item.id === active.id,
-				);
-				const overIndex = filteredAndSorted.findIndex(
-					(item) => item.id === over.id,
-				);
+				const activeIdStr = active.id as string;
+				const overIdStr = over.id as string;
 
-				if (activeIndex !== -1 && overIndex !== -1) {
-					const newLocalOrder = [...localOrder];
+				const newLocalOrder = [...localOrder];
+				const oldIndex = newLocalOrder.indexOf(activeIdStr);
+				const newIndex = newLocalOrder.indexOf(overIdStr);
 
-					const oldGlobalIndex = newLocalOrder.indexOf(active.id as string);
-					const newGlobalIndex = newLocalOrder.indexOf(over.id as string);
+				if (oldIndex !== -1 && newIndex !== -1) {
+					const [movedItem] = newLocalOrder.splice(oldIndex, 1);
+					newLocalOrder.splice(newIndex, 0, movedItem);
 
-					if (oldGlobalIndex !== -1 && newGlobalIndex !== -1) {
-						const [movedItem] = newLocalOrder.splice(oldGlobalIndex, 1);
-						newLocalOrder.splice(newGlobalIndex, 0, movedItem);
-
-						setLocalOrder(newLocalOrder);
-						reorderPresentationsByIds(newLocalOrder);
-						setSortBy("custom");
-					}
+					setLocalOrder(newLocalOrder);
+					reorderPresentationsByIds(newLocalOrder);
+					setSortBy("custom");
 				}
 			}
 
 			setActiveId(null);
 		},
-		[filteredAndSorted, localOrder, reorderPresentationsByIds],
+		[localOrder, reorderPresentationsByIds],
 	);
 
 	const stats = useMemo(() => {
 		const totalSlides = presentations.reduce(
-			(sum, p) => sum + p.slides.length,
+			(sum, p) => sum + (p.slidesCount || 0),
 			0,
 		);
 		const recentCount = presentations.filter((p) => {
+			const updatedAt = p.updatedAt instanceof Date ? p.updatedAt : new Date(p.updatedAt);
 			const daysSinceUpdate =
-				(Date.now() - new Date(p.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
+				(Date.now() - updatedAt.getTime()) / (1000 * 60 * 60 * 24);
 			return daysSinceUpdate <= 7;
 		}).length;
 		return {
@@ -587,7 +580,7 @@ export default function Home() {
 	);
 
 	const formatDate = useCallback((date: Date) => {
-		const d = new Date(date);
+		const d = date instanceof Date ? date : new Date(date);
 		const now = new Date();
 		const diffTime = Math.abs(now.getTime() - d.getTime());
 		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -600,23 +593,6 @@ export default function Home() {
 			month: "short",
 			year: "numeric",
 		});
-	}, []);
-
-	const handleSearchChange = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => {
-			setSearchQuery(e.target.value);
-			if (e.target.value.trim() !== "") {
-				setIsSearching(true);
-			} else {
-				setIsSearching(false);
-			}
-		},
-		[],
-	);
-
-	const handleClearSearch = useCallback(() => {
-		setSearchQuery("");
-		setIsSearching(false);
 	}, []);
 
 	const activePresentation = activeId
@@ -744,14 +720,14 @@ export default function Home() {
 												type="text"
 												placeholder="Search presentations..."
 												value={searchQuery}
-												onChange={handleSearchChange}
+												onChange={(e) => setSearchQuery(e.target.value)}
 												className="pl-10 pr-10 rounded-lg transition-all duration-300"
 											/>
 											{searchQuery && (
 												<Button
 													variant="ghost"
 													size="icon"
-													onClick={handleClearSearch}
+													onClick={() => setSearchQuery("")}
 													className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-transparent"
 												>
 													<X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
@@ -927,14 +903,14 @@ export default function Home() {
 										{activeId && activePresentation ? (
 											viewMode === "grid" ? (
 												<SortableGridItem
-													presentation={activePresentation}
+													presentation={activePresentation as any}
 													handleDelete={handleDelete}
 													formatDate={formatDate}
 													isOverlay={true}
 												/>
 											) : (
 												<SortableListItem
-													presentation={activePresentation}
+													presentation={activePresentation as any}
 													handleDelete={handleDelete}
 													formatDate={formatDate}
 													isOverlay={true}
@@ -1024,8 +1000,8 @@ export default function Home() {
 					</DialogHeader>
 					<div className="py-4">
 						<FilePond
-							files={importFiles}
-							onupdatefiles={setImportFiles}
+							files={importFiles as any}
+							onupdatefiles={(fileItems) => setImportFiles(fileItems)}
 							allowMultiple={false}
 							maxFiles={1}
 							acceptedFileTypes={[
@@ -1035,7 +1011,7 @@ export default function Home() {
 							]}
 							labelIdle='Drag & Drop your .pptx or .odp file or <span class="filepond--label-action">Browse</span>'
 							fileValidateTypeDetectType={(source, type) =>
-								new Promise((resolve, reject) => {
+								new Promise((resolve) => {
 									if (source.name.toLowerCase().endsWith(".pptx")) {
 										resolve(
 											"application/vnd.openxmlformats-officedocument.presentationml.presentation",
@@ -1083,7 +1059,7 @@ export default function Home() {
 					setShowAnalysisDialog(open);
 					if (!open) {
 						setImportedData(null);
-						setImportFiles([]); // reset pond
+						setImportFiles([]);
 					}
 				}}
 			>
@@ -1120,7 +1096,7 @@ export default function Home() {
 									</span>
 									<span className="font-medium">
 										{importedData.slides?.reduce(
-											(count: number, slide: { elements: string | number[]; }) =>
+											(count: number, slide: { elements: any[]; }) =>
 												count + (slide.elements?.length || 0),
 											0,
 										) || 0}
