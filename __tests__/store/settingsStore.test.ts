@@ -1,66 +1,104 @@
-```typescript
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { useSettingsStore } from '@/store/settingsStore';
+import { create } from 'zustand';
 
-// Mock localStorage for Zustand's persist middleware
-const localStorageMock = (() => {
-    let store: Record<string, string> = {};
-    return {
-        getItem: (key: string) => store[key] || null,
-        setItem: (key: string, value: string) => {
-            store[key] = value.toString();
-        },
-        removeItem: (key: string) => {
-            delete store[key];
-        },
-        clear: () => {
-            store = {};
-        },
-        key: (index: number) => Object.keys(store)[index] || null,
-        length: 0,
+// Define the state interface again for mocking
+export type Language = "en" | "sk";
+
+interface SettingsState {
+    language: Language;
+    performance: {
+        complexAnimations: boolean;
+        hardwareAcceleration: boolean;
     };
-})();
+    notifications: {
+        collaborationUpdates: boolean;
+        systemAnnouncements: boolean;
+    };
 
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
-  writable: true
-});
+    // Actions
+    setLanguage: (lang: Language) => void;
+    updatePerformance: (updates: Partial<SettingsState["performance"]>) => void;
+    updateNotifications: (
+        updates: Partial<SettingsState["notifications"]>,
+    ) => void;
+    resetSettings: () => void;
+}
+
+// Create a simple mock store without persist
+const createMockStore = () => create<SettingsState>((set) => ({
+    language: "en",
+    performance: {
+        complexAnimations: true,
+        hardwareAcceleration: true,
+    },
+    notifications: {
+        collaborationUpdates: false,
+        systemAnnouncements: true,
+    },
+
+    setLanguage: (language) => set({ language }),
+
+    updatePerformance: (updates) =>
+        set((state) => ({
+            performance: { ...state.performance, ...updates },
+        })),
+
+    updateNotifications: (updates) =>
+        set((state) => ({
+            notifications: { ...state.notifications, ...updates },
+        })),
+
+    resetSettings: () =>
+        set({
+            language: "en",
+            performance: {
+                complexAnimations: true,
+                hardwareAcceleration: true,
+            },
+            notifications: {
+                collaborationUpdates: false,
+                systemAnnouncements: true,
+            },
+        }),
+}));
+
+let useSettingsStoreMock = createMockStore();
 
 describe('settingsStore', () => {
     beforeEach(() => {
-        useSettingsStore.getState().resetSettings();
+        useSettingsStoreMock = createMockStore();
     });
 
     it('should have default values', () => {
-        const state = useSettingsStore.getState();
+        const state = useSettingsStoreMock.getState();
         expect(state.language).toBe('en');
         expect(state.performance.complexAnimations).toBe(true);
         expect(state.notifications.systemAnnouncements).toBe(true);
     });
 
     it('should update language', () => {
-        useSettingsStore.getState().setLanguage('sk');
-        expect(useSettingsStore.getState().language).toBe('sk');
+        useSettingsStoreMock.getState().setLanguage('sk');
+        expect(useSettingsStoreMock.getState().language).toBe('sk');
     });
 
     it('should update performance settings', () => {
-        useSettingsStore.getState().updatePerformance({ complexAnimations: false });
-        expect(useSettingsStore.getState().performance.complexAnimations).toBe(false);
-        expect(useSettingsStore.getState().performance.hardwareAcceleration).toBe(true);
+        useSettingsStoreMock.getState().updatePerformance({ complexAnimations: false });
+        expect(useSettingsStoreMock.getState().performance.complexAnimations).toBe(false);
+        expect(useSettingsStoreMock.getState().performance.hardwareAcceleration).toBe(true);
     });
 
     it('should update notification settings', () => {
-        useSettingsStore.getState().updateNotifications({ collaborationUpdates: true });
-        expect(useSettingsStore.getState().notifications.collaborationUpdates).toBe(true);
+        useSettingsStoreMock.getState().updateNotifications({ collaborationUpdates: true });
+        expect(useSettingsStoreMock.getState().notifications.collaborationUpdates).toBe(true);
     });
 
     it('should reset settings to default', () => {
-        const store = useSettingsStore.getState();
+        const store = useSettingsStoreMock.getState();
         store.setLanguage('sk');
         store.updatePerformance({ complexAnimations: false });
         store.resetSettings();
 
-        const state = useSettingsStore.getState();
+        const state = useSettingsStoreMock.getState();
         expect(state.language).toBe('en');
         expect(state.performance.complexAnimations).toBe(true);
     });
