@@ -1,7 +1,11 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import { Button } from './button';
+import { render, screen, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { Button } from '@/components/ui/button';
 import * as React from 'react';
+
+afterEach(() => {
+    cleanup();
+});
 
 describe('Button', () => {
     it('renders correctly with default props', () => {

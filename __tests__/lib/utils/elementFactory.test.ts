@@ -3,7 +3,7 @@ import {
     createTextElement,
     createShapeElement,
     createTableElement,
-} from './elementFactory';
+} from '@/lib/utils/elementFactory';
 
 describe('elementFactory', () => {
     describe('createTextElement', () => {
@@ -19,8 +19,8 @@ describe('elementFactory', () => {
             const element = createTextElement('title');
             expect(element.content).toBe('Presentation Title');
             expect(element.size).toEqual({ width: 800, height: 120 });
-            expect(element.style.fontSize).toBe(64);
-            expect(element.style.fontWeight).toBe('bold');
+            expect(element.style?.fontSize).toBe(64);
+            expect(element.style?.fontWeight).toBe('bold');
         });
 
         it('should apply custom options', () => {
@@ -29,7 +29,7 @@ describe('elementFactory', () => {
                 textColor: '#ff0000'
             });
             expect(element.position).toEqual({ x: 50, y: 50 });
-            expect(element.style.color).toBe('#ff0000');
+            expect(element.style?.color).toBe('#ff0000');
         });
     });
 
@@ -39,7 +39,7 @@ describe('elementFactory', () => {
             expect(element.type).toBe('shape');
             expect(element.content).toBe('square');
             expect(element.size).toEqual({ width: 200, height: 200 });
-            expect(element.style.backgroundColor).toBe('#3b82f6');
+            expect(element.style?.backgroundColor).toBe('#3b82f6');
         });
 
         it('should create a circle shape element', () => {
@@ -47,7 +47,7 @@ describe('elementFactory', () => {
             expect(element.type).toBe('shape');
             expect(element.content).toBe('circle');
             expect(element.size).toEqual({ width: 200, height: 200 });
-            expect(element.style.backgroundColor).toBe('#10b981');
+            expect(element.style?.backgroundColor).toBe('#10b981');
         });
     });
 
@@ -55,18 +55,18 @@ describe('elementFactory', () => {
         it('should create a table element with default rows and cols', () => {
             const element = createTableElement();
             expect(element.type).toBe('table');
-            expect(element.style.rows).toBe(3);
-            expect(element.style.cols).toBe(3);
-            expect(element.style.tableData).toHaveLength(3);
-            expect(element.style.tableData[0]).toHaveLength(3);
+            expect(element.style?.rows).toBe(3);
+            expect(element.style?.cols).toBe(3);
+            expect(element.style?.tableData).toHaveLength(3);
+            expect(element.style?.tableData?.[0]).toHaveLength(3);
         });
 
         it('should create a table element with specific rows and cols', () => {
             const element = createTableElement(4, 5);
-            expect(element.style.rows).toBe(4);
-            expect(element.style.cols).toBe(5);
-            expect(element.style.tableData).toHaveLength(4);
-            expect(element.style.tableData[0]).toHaveLength(5);
+            expect(element.style?.rows).toBe(4);
+            expect(element.style?.cols).toBe(5);
+            expect(element.style?.tableData).toHaveLength(4);
+            expect(element.style?.tableData?.[0]).toHaveLength(5);
         });
     });
 });
