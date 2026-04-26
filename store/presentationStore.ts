@@ -65,7 +65,7 @@ interface PresentationStore {
 	// Element actions
 	addElement: (element: Omit<SlideElement, "id">) => void;
 	addElementToSlide: (slideId: string, element: SlideElement) => void;
-	updateElement: (elementId: string, updates: DeepPartial<SlideElement>) => void;
+	updateElement: (elementId: string, updates: any) => void;
 	deleteElement: (elementId: string) => void;
 	selectElement: (elementId: string | null) => void;
 	clearLastAddedElementId: () => void;
@@ -97,6 +97,9 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 	selectedElementId: null,
 	lastAddedElementId: null,
 	presentationOrder: [],
+	clearLastAddedElementId() {
+		set({ lastAddedElementId: null });
+	},
 	isLoading: false,
 	hasLoadedFromStorage: false,
 	zoomLevel: 1,
@@ -161,6 +164,10 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 					updatedAt: presentation.updatedAt,
 					createdAt: presentation.createdAt,
 					slidesCount: (presentation.slides || []).length,
+					elementsCount: (presentation.slides || []).reduce(
+						(acc, s) => acc + (s.elements || []).length,
+						0,
+					),
 					deletedAt: presentation.deletedAt,
 					visibility: presentation.visibility,
 				},
@@ -186,6 +193,12 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 						...updates,
 						updatedAt: new Date(),
 						slidesCount: updates.slides ? updates.slides.length : p.slidesCount,
+						elementsCount: updates.slides
+							? updates.slides.reduce(
+								(acc, s) => acc + (s.elements || []).length,
+								0,
+							)
+							: p.elementsCount || 0,
 					} as PresentationSummary;
 					return updatedSummary;
 				}
@@ -306,6 +319,8 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 					createdAt: new Date(p.createdAt),
 					updatedAt: new Date(p.updatedAt),
 					deletedAt: p.deletedAt ? new Date(p.deletedAt) : undefined,
+					slidesCount: p.slidesCount || 0,
+					elementsCount: p.elementsCount || 0,
 				}));
 			} else {
 				// Migration path
@@ -325,6 +340,10 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 						updatedAt: p.updatedAt,
 						createdAt: p.createdAt,
 						slidesCount: (p.slides || []).length,
+						elementsCount: (p.slides || []).reduce(
+							(acc, s) => acc + (s.elements || []).length,
+							0,
+						),
 						deletedAt: p.deletedAt,
 						visibility: p.visibility,
 					}));
@@ -381,18 +400,39 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 			try {
 				const currentState = get();
 
-				const metadata: PresentationSummary[] = currentState.presentations.map(p => ({
-					id: p.id,
-					title: p.title,
-					description: p.description,
-					updatedAt: p.updatedAt,
-					createdAt: p.createdAt,
-					slidesCount: p.slidesCount || 0,
-					deletedAt: p.deletedAt,
-					visibility: p.visibility,
-				}));
+				const metadata: PresentationSummary[] = currentState.presentations.map(p => {
+					// If this is the current presentation, make sure we use its actual counts
+					if (currentState.currentPresentation?.id === p.id) {
+						return {
+							id: p.id,
+							title: currentState.currentPresentation.title,
+							description: currentState.currentPresentation.description,
+							updatedAt: currentState.currentPresentation.updatedAt,
+							createdAt: currentState.currentPresentation.createdAt,
+							slidesCount: currentState.currentPresentation.slides.length,
+							elementsCount: currentState.currentPresentation.slides.reduce(
+								(acc, s) => acc + (s.elements || []).length,
+								0,
+							),
+							deletedAt: currentState.currentPresentation.deletedAt,
+							visibility: currentState.currentPresentation.visibility,
+						};
+					}
+					return {
+						id: p.id,
+						title: p.title,
+						description: p.description,
+						updatedAt: p.updatedAt,
+						createdAt: p.createdAt,
+						slidesCount: p.slidesCount || 0,
+						elementsCount: p.elementsCount || 0,
+						deletedAt: p.deletedAt,
+						visibility: p.visibility,
+					};
+				});
 
 				await localforage.setItem("presentation_metadata", JSON.stringify(metadata));
+				set({ presentations: metadata });
 
 				if (currentState.currentPresentation) {
 					await localforage.setItem(

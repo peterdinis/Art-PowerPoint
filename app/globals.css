@@ -532,14 +532,7 @@ body.hide-page-scrollbar::-webkit-scrollbar {
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
-  /* Smooth transitions for theme changes */
-  *,
-  *::before,
-  *::after {
-    transition-property: background-color, border-color, color, fill, stroke;
-    transition-duration: 0.2s;
-    transition-timing-function: ease-in-out;
-  }
+  /* Removed global transitions on all elements as they cause unwanted color shifts and performance issues */
 
   /* Preserve animation and transform transitions */
   *[class*="animate-"],

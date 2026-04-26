@@ -27,7 +27,7 @@ export default function PresentationPage() {
 	const [isMounted, setIsMounted] = useState(false);
 	const params = useParams();
 	const router = useRouter();
-	const { presentations, loadPresentations } = usePresentationStore();
+	const { presentations, currentPresentation, selectPresentation, loadPresentations } = usePresentationStore();
 	const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [showControls, setShowControls] = useState(true);
@@ -45,26 +45,33 @@ export default function PresentationPage() {
 
 	const presentationId =
 		typeof params.id === "string" ? params.id : params.id?.[0];
-	const presentation = presentations.find((p) => p.id === presentationId);
+	const presentation = currentPresentation;
 
 	useEffect(() => {
 		loadPresentations();
 	}, [loadPresentations]);
 
 	useEffect(() => {
-		if (presentations.length > 0) {
-			setIsLoading(false);
-			if (!presentation && presentationId) {
+		if (presentations.length > 0 && presentationId) {
+			const found = presentations.find((p) => p.id === presentationId);
+			
+			if (found) {
+				if (currentPresentation?.id !== presentationId) {
+					selectPresentation(presentationId);
+				} else {
+					setIsLoading(false);
+				}
+			} else {
 				const timer = setTimeout(() => {
-					const found = presentations.find((p) => p.id === presentationId);
-					if (!found) {
+					const stillNotFound = !presentations.find((p) => p.id === presentationId);
+					if (stillNotFound) {
 						router.push("/");
 					}
-				}, 500);
+				}, 2000);
 				return () => clearTimeout(timer);
 			}
 		}
-	}, [presentations, presentation, presentationId, router]);
+	}, [presentations, currentPresentation, presentationId, selectPresentation, router]);
 
 	const stopPlaying = useCallback(() => {
 		setIsPlaying(false);
@@ -272,7 +279,7 @@ export default function PresentationPage() {
 					style={{
 						transitionDuration: `${transitionDuration}ms`,
 						backgroundColor:
-							currentSlide.background?.color || "var(--background)",
+							currentSlide.background?.color || "#ffffff",
 						backgroundImage: (() => {
 							const stops =
 								currentSlide.background?.gradientStops &&
@@ -328,7 +335,7 @@ export default function PresentationPage() {
 							className="absolute top-0 left-0 right-0 h-1 bg-white/20 pointer-events-auto"
 						>
 							<motion.div
-								className="h-full bg-primary"
+								className="h-full bg-white"
 								initial={{ width: "0%" }}
 								animate={{ width: "100%" }}
 								transition={{
@@ -348,7 +355,7 @@ export default function PresentationPage() {
 							initial={{ opacity: 0, y: -20 }}
 							animate={{ opacity: 1, y: 0 }}
 							exit={{ opacity: 0, y: -20 }}
-							className="absolute top-4 left-4 bg-primary/90 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2 pointer-events-auto"
+							className="absolute top-4 left-4 bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-sm flex items-center gap-2 pointer-events-auto border border-white/30"
 						>
 							<Play className="w-3 h-3 fill-white" />
 							<span>Auto-play</span>
@@ -754,7 +761,7 @@ function PresentationElement({
 							height: "100%",
 							padding: element.style?.padding || "8px",
 							fontSize: element.style?.fontSize || 24,
-							color: element.style?.color || "var(--foreground)",
+							color: element.style?.color || "#000000",
 							fontFamily: element.style?.fontFamily || "Arial",
 							fontWeight: element.style?.fontWeight || "normal",
 							fontStyle: element.style?.fontStyle || "normal",
