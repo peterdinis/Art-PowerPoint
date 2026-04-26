@@ -213,4 +213,5 @@ export interface Presentation {
 
 export interface PresentationSummary extends Omit<Presentation, "slides"> {
 	slidesCount: number;
+	elementsCount: number;
 }

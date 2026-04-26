@@ -161,6 +161,10 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 					updatedAt: presentation.updatedAt,
 					createdAt: presentation.createdAt,
 					slidesCount: (presentation.slides || []).length,
+					elementsCount: (presentation.slides || []).reduce(
+						(acc, s) => acc + (s.elements || []).length,
+						0,
+					),
 					deletedAt: presentation.deletedAt,
 					visibility: presentation.visibility,
 				},
@@ -186,6 +190,12 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 						...updates,
 						updatedAt: new Date(),
 						slidesCount: updates.slides ? updates.slides.length : p.slidesCount,
+						elementsCount: updates.slides
+							? updates.slides.reduce(
+								(acc, s) => acc + (s.elements || []).length,
+								0,
+							)
+							: p.elementsCount || 0,
 					} as PresentationSummary;
 					return updatedSummary;
 				}
@@ -306,6 +316,8 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 					createdAt: new Date(p.createdAt),
 					updatedAt: new Date(p.updatedAt),
 					deletedAt: p.deletedAt ? new Date(p.deletedAt) : undefined,
+					slidesCount: p.slidesCount || 0,
+					elementsCount: p.elementsCount || 0,
 				}));
 			} else {
 				// Migration path
@@ -325,6 +337,10 @@ export const usePresentationStore = create<PresentationStore>((set, get) => ({
 						updatedAt: p.updatedAt,
 						createdAt: p.createdAt,
 						slidesCount: (p.slides || []).length,
+						elementsCount: (p.slides || []).reduce(
+							(acc, s) => acc + (s.elements || []).length,
+							0,
+						),
 						deletedAt: p.deletedAt,
 						visibility: p.visibility,
 					}));

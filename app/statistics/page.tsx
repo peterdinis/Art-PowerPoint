@@ -25,16 +25,11 @@ export default function StatisticsPage() {
 
 	const stats = useMemo(() => {
 		const totalSlides = presentations.reduce(
-			(sum, p) => sum + p.slides.length,
+			(sum, p) => sum + (p.slidesCount || 0),
 			0,
 		);
 		const totalElements = presentations.reduce(
-			(sum, p) =>
-				sum +
-				p.slides.reduce(
-					(slideSum, slide) => slideSum + slide.elements.length,
-					0,
-				),
+			(sum, p) => sum + (p.elementsCount || 0),
 			0,
 		);
 		const recentCount = presentations.filter((p) => {
