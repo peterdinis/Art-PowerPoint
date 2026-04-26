@@ -27,7 +27,7 @@ export default function PresentationPage() {
 	const [isMounted, setIsMounted] = useState(false);
 	const params = useParams();
 	const router = useRouter();
-	const { presentations, loadPresentations } = usePresentationStore();
+	const { presentations, currentPresentation, selectPresentation, loadPresentations } = usePresentationStore();
 	const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [showControls, setShowControls] = useState(true);
@@ -45,7 +45,13 @@ export default function PresentationPage() {
 
 	const presentationId =
 		typeof params.id === "string" ? params.id : params.id?.[0];
-	const presentation = presentations.find((p) => p.id === presentationId);
+	const presentation = currentPresentation;
+
+	useEffect(() => {
+		if (presentationId) {
+			selectPresentation(presentationId);
+		}
+	}, [presentationId, selectPresentation]);
 
 	useEffect(() => {
 		loadPresentations();
@@ -53,18 +59,23 @@ export default function PresentationPage() {
 
 	useEffect(() => {
 		if (presentations.length > 0) {
-			setIsLoading(false);
-			if (!presentation && presentationId) {
+			const found = presentations.find((p) => p.id === presentationId);
+			
+			if (!found && presentationId) {
 				const timer = setTimeout(() => {
-					const found = presentations.find((p) => p.id === presentationId);
-					if (!found) {
+					const stillNotFound = !presentations.find((p) => p.id === presentationId);
+					if (stillNotFound) {
 						router.push("/");
 					}
-				}, 500);
+				}, 1000);
 				return () => clearTimeout(timer);
 			}
+
+			if (currentPresentation?.id === presentationId) {
+				setIsLoading(false);
+			}
 		}
-	}, [presentations, presentation, presentationId, router]);
+	}, [presentations, currentPresentation, presentationId, router]);
 
 	const stopPlaying = useCallback(() => {
 		setIsPlaying(false);
