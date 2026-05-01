@@ -45,7 +45,19 @@ export const translations = {
             descriptionOptional: "Description (optional)",
             slides: "slides",
             slide: "slide",
+            noSearchFound: "No presentations found",
+            tryChangingSearch: "Try changing your search query",
+            noPresentationsYet: "You don't have any presentations yet",
+            startByCreating: "Start by creating your first presentation. It's simple and fast!",
+            createFirstBtn: "Create First Presentation",
+            confirmImport: "Confirm & Import",
+            analysisComplete: "Analysis Complete",
+            reviewExtracted: "Review the extracted information before importing.",
+            totalElements: "Total Elements",
+            titleLabel: "Title",
+            convertSuccess: "Click Confirm below to convert this file into a fully editable presentation.",
         },
+
         editor: {
             saveChanges: "Save Changes",
             discardChanges: "Discard Changes",
@@ -56,7 +68,19 @@ export const translations = {
             addImage: "Add Image",
             addShape: "Add Shape",
             addTable: "Add Table",
+            presentation: "Presentation",
+            share: "Share",
+            history: "History",
+            uploadChart: "Upload Chart",
+            zoomIn: "Zoom In",
+            zoomOut: "Zoom Out",
+            showGrid: "Show Grid",
+            play: "Play",
+            export: "Export",
+            playPresentation: "Play Presentation",
+            theme: "Theme",
         },
+
         settings: {
             appearance: "Appearance",
             appearanceDesc: "Customize the look of the application to your preference",
@@ -85,7 +109,10 @@ export const translations = {
             clearData: "Clear All Data",
             allDataCleared: "All data has been cleared.",
             allDataClearedDesc: "All presentations and settings have been reset.",
+            manageSubtitle: "Manage application settings and preferences",
+            clearAllDataConfirm: "Are you sure you want to clear all data? This will delete all presentations and reset all settings. This cannot be undone.",
         }
+
     },
     sk: {
         common: {
@@ -133,7 +160,19 @@ export const translations = {
             descriptionOptional: "Popis (voliteľné)",
             slides: "snímky",
             slide: "snímka",
+            noSearchFound: "Nenašli sa žiadne prezentácie",
+            tryChangingSearch: "Skúste zmeniť vyhľadávací dopyt",
+            noPresentationsYet: "Ešte nemáte žiadne prezentácie",
+            startByCreating: "Začnite vytvorením svojej prvej prezentácie. Je to jednoduché a rýchle!",
+            createFirstBtn: "Vytvoriť prvú prezentáciu",
+            confirmImport: "Potvrdiť a importovať",
+            analysisComplete: "Analýza dokončená",
+            reviewExtracted: "Pred importom si skontrolujte extrahované informácie.",
+            totalElements: "Celkom prvkov",
+            titleLabel: "Názov",
+            convertSuccess: "Kliknutím na tlačidlo Potvrdiť nižšie skonvertujete tento súbor na plne editovateľnú prezentáciu.",
         },
+
         editor: {
             saveChanges: "Uložiť zmeny",
             discardChanges: "Zahodiť zmeny",
@@ -144,7 +183,19 @@ export const translations = {
             addImage: "Pridať obrázok",
             addShape: "Pridať tvar",
             addTable: "Pridať tabuľku",
+            presentation: "Prezentácia",
+            share: "Zdieľať",
+            history: "História",
+            uploadChart: "Nahrať graf",
+            zoomIn: "Priblížiť",
+            zoomOut: "Oddialiť",
+            showGrid: "Zobraziť mriežku",
+            play: "Prehrať",
+            export: "Exportovať",
+            playPresentation: "Prehrať prezentáciu",
+            theme: "Téma",
         },
+
         settings: {
             appearance: "Vzhľad",
             appearanceDesc: "Prispôsobte si vzhľad aplikácie podľa svojich preferencií",
@@ -173,7 +224,10 @@ export const translations = {
             clearData: "Vymazať všetky údaje",
             allDataCleared: "Všetky údaje boli vymazané.",
             allDataClearedDesc: "Všetky prezentácie a nastavenia boli resetované.",
+            manageSubtitle: "Spravujte nastavenia a predvoľby aplikácie",
+            clearAllDataConfirm: "Ste si istý, že chcete vymazať všetky údaje? Toto vymaže všetky prezentácie a resetuje všetky nastavenia. Túto akciu nie je možné vrátiť späť.",
         }
+
     }
 };
 

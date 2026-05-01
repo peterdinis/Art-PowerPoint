@@ -4,6 +4,9 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Suspense } from "react";
 import Loading from "./loading";
+import { Toaster } from "sonner";
+import NotificationManager from "@/components/NotificationManager";
+
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -84,9 +87,12 @@ export default function RootLayout({
 						storageKey="presentation-builder-theme"
 					>
 						{children}
+						<Toaster position="top-right" richColors />
+						<NotificationManager />
 					</ThemeProvider>
 				</Suspense>
 			</body>
 		</html>
 	);
 }
+
