@@ -125,7 +125,7 @@ export default function DashboardSidebar() {
 						className="w-full justify-start gap-3 px-4 py-6 text-foreground hover:text-accent-foreground"
 					>
 						<Plus className="w-5 h-5" />
-						<span className="text-base font-normal">Create New</span>
+						<span className="text-base font-normal">{t("dashboard.createNew")}</span>
 					</Button>
 					<Link
 						href="/favorites"
@@ -219,14 +219,14 @@ export default function DashboardSidebar() {
 			<Dialog open={showNameDialog} onOpenChange={setShowNameDialog}>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>Create new presentation</DialogTitle>
+						<DialogTitle>{t("dashboard.createTitle")}</DialogTitle>
 						<DialogDescription>
-							Enter the name and description for your presentation
+							{t("dashboard.createDesc")}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 py-4">
 						<div className="space-y-2">
-							<Label htmlFor="title">Presentation name *</Label>
+							<Label htmlFor="title">{t("dashboard.presentationName")}</Label>
 							<Input
 								id="title"
 								value={title}
@@ -241,7 +241,7 @@ export default function DashboardSidebar() {
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="description">Description (optional)</Label>
+							<Label htmlFor="description">{t("dashboard.descriptionOptional")}</Label>
 							<Input
 								id="description"
 								value={description}
@@ -252,10 +252,10 @@ export default function DashboardSidebar() {
 					</div>
 					<div className="flex justify-end gap-2">
 						<Button variant="outline" onClick={() => setShowNameDialog(false)}>
-							Cancel
+							{t("common.cancel")}
 						</Button>
 						<Button onClick={handleCreateFromTemplate} disabled={!title.trim()}>
-							Create
+							{t("common.create")}
 						</Button>
 					</div>
 				</DialogContent>
