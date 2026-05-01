@@ -111,7 +111,28 @@ export const translations = {
             allDataClearedDesc: "All presentations and settings have been reset.",
             manageSubtitle: "Manage application settings and preferences",
             clearAllDataConfirm: "Are you sure you want to clear all data? This will delete all presentations and reset all settings. This cannot be undone.",
-        }
+        },
+        recent: {
+            title: "Recent",
+            subtitle: "Recently edited presentations",
+            noRecent: "No recent presentations",
+            noRecentDesc: "You haven't edited any presentations yet",
+            goToDashboard: "Go to dashboard",
+        },
+        statistics: {
+            title: "Statistics",
+            subtitle: "Overview of your presentations and activity",
+            allPresentations: "All your presentations",
+            last7Days: "Last 7 days",
+            activity: "Activity",
+            thisWeek: "This Week",
+            thisMonth: "This Month",
+            overview: "Overview",
+            modifiedRecently: "Recently Modified",
+            averagePerPresentation: "Average per presentation",
+        },
+
+
 
     },
     sk: {
@@ -190,13 +211,7 @@ export const translations = {
             zoomIn: "Priblížiť",
             zoomOut: "Oddialiť",
             showGrid: "Zobraziť mriežku",
-            play: "Prehrať",
-            export: "Exportovať",
-            playPresentation: "Prehrať prezentáciu",
-            theme: "Téma",
-        },
-
-        settings: {
+            play: "Prehra",
             appearance: "Vzhľad",
             appearanceDesc: "Prispôsobte si vzhľad aplikácie podľa svojich preferencií",
             theme: "Téma",
@@ -226,6 +241,25 @@ export const translations = {
             allDataClearedDesc: "Všetky prezentácie a nastavenia boli resetované.",
             manageSubtitle: "Spravujte nastavenia a predvoľby aplikácie",
             clearAllDataConfirm: "Ste si istý, že chcete vymazať všetky údaje? Toto vymaže všetky prezentácie a resetuje všetky nastavenia. Túto akciu nie je možné vrátiť späť.",
+        },
+        recent: {
+            title: "Nedávne",
+            subtitle: "Nedávno upravené prezentácie",
+            noRecent: "Žiadne nedávne prezentácie",
+            noRecentDesc: "Ešte ste neupravili žiadne prezentácie",
+            goToDashboard: "Prejsť na nástenku",
+        },
+        statistics: {
+            title: "Štatistiky",
+            subtitle: "Prehľad vašich prezentácií a aktivity",
+            allPresentations: "Všetky vaše prezentácie",
+            last7Days: "Posledných 7 dní",
+            activity: "Aktivita",
+            thisWeek: "Tento týždeň",
+            thisMonth: "Tento mesiac",
+            overview: "Prehľad",
+            modifiedRecently: "Nedávno upravené",
+            averagePerPresentation: "Priemer na prezentáciu",
         }
 
     }
