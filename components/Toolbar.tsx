@@ -74,7 +74,7 @@ export default function Toolbar() {
 			</div>
 
 			<div className="flex items-center gap-2">
-				<Button variant="outline" size="sm" onClick={addSlide} className="gap-1">
+				<Button variant="outline" size="sm" onClick={() => addSlide(currentPresentation.id)} className="gap-1">
 					<Plus className="h-4 w-4" />
 					<span className="hidden sm:inline">Add Slide</span>
 				</Button>
