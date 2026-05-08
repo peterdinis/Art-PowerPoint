@@ -24,50 +24,74 @@ export default function StatisticsPage() {
 	}, [loadPresentations]);
 
 	const stats = useMemo(() => {
-		const totalSlides = presentations.reduce(
-			(sum, p) => sum + (p.slidesCount || 0),
+		const DAY_MS = 24 * 60 * 60 * 1000;
+		const now = Date.now();
+		const activePresentations = presentations.filter((p) => !p.deletedAt);
+
+		const inLastNDays = (updatedAt: Date, days: number) =>
+			now - new Date(updatedAt).getTime() <= days * DAY_MS;
+
+		const inRangeDaysAgo = (updatedAt: Date, fromDays: number, toDays: number) => {
+			const diffDays = (now - new Date(updatedAt).getTime()) / DAY_MS;
+			return diffDays > fromDays && diffDays <= toDays;
+		};
+
+		const totalSlides = activePresentations.reduce(
+			(sum, p) => sum + Math.max(0, p.slidesCount || 0),
 			0,
 		);
-		const totalElements = presentations.reduce(
-			(sum, p) => sum + (p.elementsCount || 0),
+		const totalElements = activePresentations.reduce(
+			(sum, p) => sum + Math.max(0, p.elementsCount || 0),
 			0,
 		);
-		const recentCount = presentations.filter((p) => {
-			const daysSinceUpdate =
-				(Date.now() - new Date(p.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
-			return daysSinceUpdate <= 7;
-		}).length;
+		const recentCount = activePresentations.filter((p) =>
+			inLastNDays(p.updatedAt, 7),
+		).length;
 
 		const avgSlides =
-			presentations.length > 0
-				? Math.round(totalSlides / presentations.length)
+			activePresentations.length > 0
+				? Math.round(totalSlides / activePresentations.length)
 				: 0;
 		const avgElements =
-			presentations.length > 0
-				? Math.round(totalElements / presentations.length)
+			activePresentations.length > 0
+				? Math.round(totalElements / activePresentations.length)
 				: 0;
+		const avgElementsPerSlide =
+			totalSlides > 0 ? Number((totalElements / totalSlides).toFixed(1)) : 0;
 
-		const thisWeek = presentations.filter((p) => {
-			const daysSinceUpdate =
-				(Date.now() - new Date(p.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
-			return daysSinceUpdate <= 7;
-		}).length;
+		const thisWeek = activePresentations.filter((p) =>
+			inLastNDays(p.updatedAt, 7),
+		).length;
+		const previousWeek = activePresentations.filter((p) =>
+			inRangeDaysAgo(p.updatedAt, 7, 14),
+		).length;
+		const weeklyTrend =
+			previousWeek === 0
+				? thisWeek > 0
+					? 100
+					: 0
+				: Math.round(((thisWeek - previousWeek) / previousWeek) * 100);
 
-		const thisMonth = presentations.filter((p) => {
-			const daysSinceUpdate =
-				(Date.now() - new Date(p.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
-			return daysSinceUpdate <= 30;
-		}).length;
+		const thisMonth = activePresentations.filter((p) =>
+			inLastNDays(p.updatedAt, 30),
+		).length;
+		const staleCount = activePresentations.filter(
+			(p) => !inLastNDays(p.updatedAt, 30),
+		).length;
 
 		return {
-			total: presentations.length,
+			total: activePresentations.length,
+			archived: presentations.length - activePresentations.length,
 			totalSlides,
 			totalElements,
 			recent: recentCount,
 			avgSlides,
 			avgElements,
+			avgElementsPerSlide,
 			thisWeek,
+			weeklyTrend,
 			thisMonth,
+			staleCount,
 		};
 	}, [presentations]);
 
@@ -104,7 +128,9 @@ export default function StatisticsPage() {
 								<CardContent>
 									<div className="text-2xl font-bold">{stats.total}</div>
 									<p className="text-xs text-muted-foreground mt-1">
-										All your presentations
+										{stats.archived > 0
+											? `${stats.archived} archived`
+											: "All active presentations"}
 									</p>
 								</CardContent>
 							</Card>
@@ -151,7 +177,8 @@ export default function StatisticsPage() {
 								<CardContent>
 									<div className="text-2xl font-bold">{stats.recent}</div>
 									<p className="text-xs text-muted-foreground mt-1">
-										Last 7 days
+										{stats.weeklyTrend >= 0 ? "+" : ""}
+										{stats.weeklyTrend}% vs previous week
 									</p>
 								</CardContent>
 							</Card>
@@ -182,6 +209,14 @@ export default function StatisticsPage() {
 											{stats.thisMonth} presentations
 										</span>
 									</div>
+									<div className="flex items-center justify-between">
+										<span className="text-sm text-muted-foreground">
+											Inactive 30+ days
+										</span>
+										<span className="font-semibold">
+											{stats.staleCount} presentations
+										</span>
+									</div>
 								</CardContent>
 							</Card>
 
@@ -201,6 +236,14 @@ export default function StatisticsPage() {
 											Average Elements
 										</span>
 										<span className="font-semibold">{stats.avgElements}</span>
+									</div>
+									<div className="flex items-center justify-between">
+										<span className="text-sm text-muted-foreground">
+											Elements per Slide
+										</span>
+										<span className="font-semibold">
+											{stats.avgElementsPerSlide}
+										</span>
 									</div>
 								</CardContent>
 							</Card>
