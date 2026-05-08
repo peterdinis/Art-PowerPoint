@@ -54,13 +54,7 @@ export default function SettingsPage() {
 	}, []);
 
 	const handleClearAllData = () => {
-		if (
-			confirm(
-				currentLang === "sk"
-					? "Ste si istý, že chcete vymazať všetky údaje? Toto vymaže všetky prezentácie a resetuje všetky nastavenia. Túto akciu nie je možné vrátiť späť."
-					: "Are you sure you want to clear all data? This will delete all presentations and reset all settings. This cannot be undone.",
-			)
-		) {
+		if (confirm(t("settings.clearAllDataConfirm"))) {
 			// Clear presentations
 			presentations.forEach((p: { id: string }) => permanentlyDeletePresentation(p.id));
 			// Reset settings
@@ -98,7 +92,7 @@ export default function SettingsPage() {
 							</Button>
 							<h1 className="text-3xl font-bold mb-2">{t("common.settings")}</h1>
 							<p className="text-muted-foreground">
-								{language === "sk" ? "Spravujte nastavenia a predvoľby aplikácie" : "Manage application settings and preferences"}
+								{t("settings.manageSubtitle")}
 							</p>
 						</div>
 

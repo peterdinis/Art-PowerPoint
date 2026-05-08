@@ -50,6 +50,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { cn } from "@/lib/utils";
+import { useTranslate } from "@/lib/useTranslate";
+
 import {
 	DndContext,
 	closestCenter,
@@ -93,6 +95,7 @@ function SortableGridItem({
 	formatDate: (date: Date) => string;
 	isOverlay?: boolean;
 }) {
+	const { t } = useTranslate();
 	const {
 		attributes,
 		listeners,
@@ -135,8 +138,7 @@ function SortableGridItem({
 						{presentation.slidesCount}
 					</div>
 					<div className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm text-xs px-2 py-1 rounded">
-						{presentation.slidesCount} slide
-						{presentation.slidesCount !== 1 ? "s" : ""}
+						{presentation.slidesCount} {presentation.slidesCount === 1 ? t("dashboard.slide") : t("dashboard.slides")}
 					</div>
 				</div>
 				<CardHeader className="pb-3">
@@ -158,6 +160,7 @@ function SortableGridItem({
 					</div>
 				</CardContent>
 			</Link>
+
 			{!isOverlay && (
 				<>
 					<div className="absolute top-2 left-2">
@@ -214,6 +217,7 @@ function SortableListItem({
 	formatDate: (date: Date) => string;
 	isOverlay?: boolean;
 }) {
+	const { t } = useTranslate();
 	const {
 		attributes,
 		listeners,
@@ -280,8 +284,7 @@ function SortableListItem({
 							<div className="flex items-center gap-4 text-xs text-muted-foreground">
 								<span className="flex items-center gap-1">
 									<Grid3x3 className="w-3 h-3" />
-									{presentation.slidesCount} slide
-									{presentation.slidesCount !== 1 ? "s" : ""}
+									{presentation.slidesCount} {presentation.slidesCount === 1 ? t("dashboard.slide") : t("dashboard.slides")}
 								</span>
 								<span className="flex items-center gap-1">
 									<Calendar className="w-3 h-3" />
@@ -305,7 +308,7 @@ function SortableListItem({
 										className="text-destructive focus:text-destructive rounded-md"
 									>
 										<Trash2 className="w-4 h-4 mr-2" />
-										Delete
+										{t("common.delete")}
 									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>
@@ -317,7 +320,9 @@ function SortableListItem({
 	);
 }
 
+
 export default function Home() {
+	const { t } = useTranslate();
 	const router = useRouter();
 	const {
 		presentations,
@@ -565,8 +570,8 @@ export default function Home() {
 			deletePresentation(id);
 			setLocalOrder((prev) => prev.filter((itemId) => itemId !== id));
 
-			toast.success("Presentation moved to trash", {
-				description: title ? `"${title}" has been moved to trash` : undefined,
+			toast.success(t("dashboard.movedToTrash"), {
+				description: title ? `"${title}"` : undefined,
 				action: {
 					label: "Undo",
 					onClick: () => {
@@ -576,7 +581,7 @@ export default function Home() {
 				},
 			});
 		},
-		[deletePresentation, restorePresentation],
+		[deletePresentation, restorePresentation, t],
 	);
 
 	const formatDate = useCallback((date: Date) => {
@@ -585,19 +590,20 @@ export default function Home() {
 		const diffTime = Math.abs(now.getTime() - d.getTime());
 		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-		if (diffDays === 0) return "Today";
-		if (diffDays === 1) return "Yesterday";
-		if (diffDays < 7) return `${diffDays} days ago`;
+		if (diffDays === 0) return t("common.today");
+		if (diffDays === 1) return t("common.yesterday");
+		if (diffDays < 7) return `${diffDays} ${t("common.daysAgo")}`;
 		return d.toLocaleDateString("en-US", {
 			day: "numeric",
 			month: "short",
 			year: "numeric",
 		});
-	}, []);
+	}, [t]);
 
 	const activePresentation = activeId
 		? presentations.find((p) => p.id === activeId)
 		: null;
+
 
 	const sortableItems = useMemo(
 		() => filteredAndSorted.map((p) => p.id),
@@ -633,10 +639,10 @@ export default function Home() {
 							<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
 								<div>
 									<h1 className="text-3xl lg:text-4xl font-bold mb-2">
-										Presentations
+										{t("dashboard.titlePlural")}
 									</h1>
 									<p className="text-muted-foreground">
-										Create and manage professional presentations
+										{t("dashboard.subtitle")}
 									</p>
 								</div>
 								<div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -647,7 +653,7 @@ export default function Home() {
 										className="rounded-lg shadow-sm hover:shadow-md transition-all border-primary/20 hover:border-primary/50 text-primary"
 									>
 										<FileUp className="w-4 h-4 mr-2" />
-										Import PowerPoint
+										{t("dashboard.importPptx")}
 									</Button>
 									<Button
 										onClick={handleCreateNew}
@@ -655,7 +661,7 @@ export default function Home() {
 										className="rounded-lg shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all bg-linear-to-r from-primary to-primary/90"
 									>
 										<Plus className="w-4 h-4 mr-2" />
-										New Presentation
+										{t("dashboard.newPresentation")}
 									</Button>
 								</div>
 							</div>
@@ -665,7 +671,7 @@ export default function Home() {
 								<Card className="rounded-lg">
 									<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 										<CardTitle className="text-sm font-medium">
-											Total Presentations
+											{t("dashboard.statsTotal")}
 										</CardTitle>
 										<FileText className="h-4 w-4 text-muted-foreground" />
 									</CardHeader>
@@ -676,7 +682,7 @@ export default function Home() {
 								<Card className="rounded-lg">
 									<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 										<CardTitle className="text-sm font-medium">
-											Total Slides
+											{t("dashboard.statsTotalSlides")}
 										</CardTitle>
 										<Grid3x3 className="h-4 w-4 text-muted-foreground" />
 									</CardHeader>
@@ -689,7 +695,7 @@ export default function Home() {
 								<Card className="rounded-lg">
 									<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 										<CardTitle className="text-sm font-medium">
-											Recently Updated
+											{t("dashboard.statsRecent")}
 										</CardTitle>
 										<Clock className="h-4 w-4 text-muted-foreground" />
 									</CardHeader>
@@ -700,7 +706,7 @@ export default function Home() {
 								<Card className="rounded-lg">
 									<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 										<CardTitle className="text-sm font-medium">
-											Average Slides
+											{t("dashboard.statsAvgSlides")}
 										</CardTitle>
 										<TrendingUp className="h-4 w-4 text-muted-foreground" />
 									</CardHeader>
@@ -718,7 +724,7 @@ export default function Home() {
 											<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
 											<Input
 												type="text"
-												placeholder="Search presentations..."
+												placeholder={t("dashboard.searchPlaceholder")}
 												value={searchQuery}
 												onChange={(e) => setSearchQuery(e.target.value)}
 												className="pl-10 pr-10 rounded-lg transition-all duration-300"
@@ -739,11 +745,11 @@ export default function Home() {
 											<DropdownMenu>
 												<DropdownMenuTrigger asChild>
 													<Button variant="outline" className="rounded-lg">
-														{sortBy === "recent" && "Most Recent"}
-														{sortBy === "oldest" && "Oldest"}
-														{sortBy === "name" && "By Name"}
-														{sortBy === "slides" && "By Slides"}
-														{sortBy === "custom" && "Custom Order"}
+														{sortBy === "recent" && t("dashboard.sortRecent")}
+														{sortBy === "oldest" && t("dashboard.sortOldest")}
+														{sortBy === "name" && t("dashboard.sortName")}
+														{sortBy === "slides" && t("dashboard.sortSlides")}
+														{sortBy === "custom" && t("dashboard.sortCustom")}
 													</Button>
 												</DropdownMenuTrigger>
 												<DropdownMenuContent className="rounded-lg">
@@ -751,31 +757,31 @@ export default function Home() {
 														onClick={() => setSortBy("recent")}
 														className="rounded-md"
 													>
-														Most Recent
+														{t("dashboard.sortRecent")}
 													</DropdownMenuItem>
 													<DropdownMenuItem
 														onClick={() => setSortBy("oldest")}
 														className="rounded-md"
 													>
-														Oldest
+														{t("dashboard.sortOldest")}
 													</DropdownMenuItem>
 													<DropdownMenuItem
 														onClick={() => setSortBy("name")}
 														className="rounded-md"
 													>
-														By Name
+														{t("dashboard.sortName")}
 													</DropdownMenuItem>
 													<DropdownMenuItem
 														onClick={() => setSortBy("slides")}
 														className="rounded-md"
 													>
-														By Slide Count
+														{t("dashboard.sortSlides")}
 													</DropdownMenuItem>
 													<DropdownMenuItem
 														onClick={() => setSortBy("custom")}
 														className="rounded-md"
 													>
-														Custom Order (drag & drop)
+														{t("dashboard.sortCustom")}
 													</DropdownMenuItem>
 												</DropdownMenuContent>
 											</DropdownMenu>
@@ -810,10 +816,10 @@ export default function Home() {
 									<div className="text-center py-12">
 										<Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
 										<p className="text-muted-foreground text-lg mb-2">
-											No presentations found
+											{t("dashboard.noSearchFound")}
 										</p>
 										<p className="text-sm text-muted-foreground">
-											Try changing your search query
+											{t("dashboard.tryChangingSearch")}
 										</p>
 									</div>
 								</CardContent>
@@ -826,11 +832,10 @@ export default function Home() {
 											<FileText className="w-12 h-12 text-muted-foreground" />
 										</div>
 										<h3 className="text-2xl font-semibold mb-2">
-											You don't have any presentations yet
+											{t("dashboard.noPresentationsYet")}
 										</h3>
 										<p className="text-muted-foreground mb-6 max-w-md mx-auto">
-											Start by creating your first presentation. It's simple and
-											fast!
+											{t("dashboard.startByCreating")}
 										</p>
 										<Button
 											onClick={handleCreateNew}
@@ -838,7 +843,7 @@ export default function Home() {
 											className="rounded-lg"
 										>
 											<Plus className="w-4 h-4 mr-2" />
-											Create First Presentation
+											{t("dashboard.createFirstBtn")}
 										</Button>
 									</div>
 								</CardContent>
@@ -870,7 +875,7 @@ export default function Home() {
 														<Plus className="w-8 h-8 text-muted-foreground" />
 													</div>
 													<p className="font-semibold text-center">
-														Create New Presentation
+														{t("dashboard.createNew")}
 													</p>
 												</CardContent>
 											</Card>
@@ -930,21 +935,20 @@ export default function Home() {
 				<DialogContent className="sm:max-w-md rounded-lg">
 					<DialogHeader>
 						<DialogTitle className="text-xl">
-							Create New Presentation
+							{t("dashboard.createTitle")}
 						</DialogTitle>
 						<DialogDescription>
-							Enter the details for your new presentation. You can always change
-							them later.
+							{t("dashboard.createDesc")}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 py-4">
 						<div className="space-y-2">
 							<Label htmlFor="title" className="text-sm font-medium">
-								Title <span className="text-destructive">*</span>
+								{t("dashboard.presentationName")}
 							</Label>
 							<Input
 								id="title"
-								placeholder="Enter presentation title"
+								placeholder={t("dashboard.presentationName")}
 								value={newTitle}
 								onChange={(e) => setNewTitle(e.target.value)}
 								autoFocus
@@ -953,11 +957,11 @@ export default function Home() {
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="description" className="text-sm font-medium">
-								Description (optional)
+								{t("dashboard.descriptionOptional")}
 							</Label>
 							<Textarea
 								id="description"
-								placeholder="Enter a brief description"
+								placeholder={t("dashboard.descriptionOptional")}
 								value={newDescription}
 								onChange={(e) => setNewDescription(e.target.value)}
 								className="min-h-25 rounded-lg"
@@ -970,14 +974,14 @@ export default function Home() {
 							onClick={() => setIsDialogOpen(false)}
 							className="rounded-lg"
 						>
-							Cancel
+							{t("common.cancel")}
 						</Button>
 						<Button
 							onClick={handleCreateSubmit}
 							disabled={!newTitle.trim()}
 							className="rounded-lg"
 						>
-							Create Presentation
+							{t("common.create")}
 						</Button>
 					</DialogFooter>
 				</DialogContent>
@@ -993,7 +997,7 @@ export default function Home() {
 			>
 				<DialogContent className="sm:max-w-md rounded-lg">
 					<DialogHeader>
-						<DialogTitle className="text-xl">Import PowerPoint</DialogTitle>
+						<DialogTitle className="text-xl">{t("dashboard.importPptx")}</DialogTitle>
 						<DialogDescription>
 							Upload a .pptx file to convert it into a Presentation.
 						</DialogDescription>
@@ -1119,10 +1123,10 @@ export default function Home() {
 							}}
 							className="rounded-lg"
 						>
-							Cancel
+							{t("common.cancel")}
 						</Button>
 						<Button onClick={handleConfirmImport} className="rounded-lg">
-							Confirm & Import
+							{t("dashboard.confirmImport")}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

@@ -48,6 +48,28 @@ pnpm dev
 
 The application will be available at [http://localhost:3000](http://localhost:3000).
 
+## ⚡ Caching Setup
+
+This project is configured with practical caching defaults:
+
+- `/_next/static/*` is served as immutable (1 year) for maximum client-side caching.
+- Next Image optimizer route (`/_next/image`) has short revalidation caching.
+- Public static assets (images/fonts/icons) are cached for 7 days with stale-while-revalidate.
+
+### Local Development
+
+- Next.js build cache is stored in `.next/cache` automatically.
+- Keep `.next/` between runs to speed up rebuilds.
+
+### CI / Build Pipelines
+
+To avoid `No build cache found` on every build, persist `.next/cache` between CI runs.
+
+Example cache paths:
+
+- `.next/cache`
+- `node_modules/.cache` (if present in your CI)
+
 ## 📝 License
 
 This project is licensed under the MIT License.
