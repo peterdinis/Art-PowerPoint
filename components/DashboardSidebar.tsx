@@ -125,7 +125,9 @@ export default function DashboardSidebar() {
 						className="w-full justify-start gap-3 px-4 py-6 text-foreground hover:text-accent-foreground"
 					>
 						<Plus className="w-5 h-5" />
-						<span className="text-base font-normal">{t("dashboard.createNew")}</span>
+						<span className="text-base font-normal">
+							{t("dashboard.createNew")}
+						</span>
 					</Button>
 					<Link
 						href="/favorites"
@@ -220,9 +222,7 @@ export default function DashboardSidebar() {
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>{t("dashboard.createTitle")}</DialogTitle>
-						<DialogDescription>
-							{t("dashboard.createDesc")}
-						</DialogDescription>
+						<DialogDescription>{t("dashboard.createDesc")}</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 py-4">
 						<div className="space-y-2">
@@ -241,7 +241,9 @@ export default function DashboardSidebar() {
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="description">{t("dashboard.descriptionOptional")}</Label>
+							<Label htmlFor="description">
+								{t("dashboard.descriptionOptional")}
+							</Label>
 							<Input
 								id="description"
 								value={description}

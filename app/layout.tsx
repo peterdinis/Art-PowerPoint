@@ -8,7 +8,6 @@ import Loading from "./loading";
 import { Toaster } from "sonner";
 import NotificationManager from "@/components/NotificationManager";
 
-
 const geistSans = Geist({
 	variable: "--font-geist-sans",
 	subsets: ["latin"],
@@ -106,4 +105,3 @@ export default function RootLayout({
 		</html>
 	);
 }
-

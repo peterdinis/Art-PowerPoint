@@ -20,12 +20,12 @@ interface PptxGenJS {
 }
 
 interface WindowWithPptxGen extends Window {
-	pptxgen?: { new(): PptxGenJS };
-	PptxGenJS?: { new(): PptxGenJS };
+	pptxgen?: { new (): PptxGenJS };
+	PptxGenJS?: { new (): PptxGenJS };
 }
 
 export const exportToPPTX = async (presentation: Presentation) => {
-	let pptxgen: { new(): PptxGenJS } | undefined;
+	let pptxgen: { new (): PptxGenJS } | undefined;
 	try {
 		// @ts-ignore
 		const module = await import("pptxgenjs");

@@ -85,7 +85,10 @@ export default function EditorMenu({
 											{currentPresentation?.title || t("editor.presentation")}
 										</h1>
 										<p className="text-xs text-muted-foreground">
-											{currentPresentation?.slides.length || 0} {currentPresentation?.slides.length === 1 ? t("dashboard.slide") : t("dashboard.slides")}
+											{currentPresentation?.slides.length || 0}{" "}
+											{currentPresentation?.slides.length === 1
+												? t("dashboard.slide")
+												: t("dashboard.slides")}
 										</p>
 									</div>
 								</div>
@@ -124,7 +127,9 @@ export default function EditorMenu({
 								className="gap-2"
 							>
 								<BarChart3 className="w-4 h-4" />
-								<span className="hidden lg:inline">{t("editor.uploadChart")}</span>
+								<span className="hidden lg:inline">
+									{t("editor.uploadChart")}
+								</span>
 							</Button>
 
 							<DropdownMenu>
@@ -226,10 +231,14 @@ export default function EditorMenu({
 											</div>
 											<div>
 												<h2 className="font-semibold text-lg">
-													{currentPresentation?.title || t("editor.presentation")}
+													{currentPresentation?.title ||
+														t("editor.presentation")}
 												</h2>
 												<p className="text-sm text-muted-foreground">
-													{currentPresentation?.slides.length || 0} {currentPresentation?.slides.length === 1 ? t("dashboard.slide") : t("dashboard.slides")}
+													{currentPresentation?.slides.length || 0}{" "}
+													{currentPresentation?.slides.length === 1
+														? t("dashboard.slide")
+														: t("dashboard.slides")}
 												</p>
 											</div>
 										</div>
@@ -333,7 +342,9 @@ export default function EditorMenu({
 											</Link>
 										</Button>
 										<div className="flex items-center justify-between px-3 py-2 rounded-md bg-muted/50">
-											<span className="text-sm font-medium">{t("editor.theme")}</span>
+											<span className="text-sm font-medium">
+												{t("editor.theme")}
+											</span>
 											<ThemeToggle />
 										</div>
 									</div>

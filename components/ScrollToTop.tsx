@@ -6,15 +6,15 @@ import { ArrowUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
-type Position = 
-	| "top-left" 
-	| "top-center" 
-	| "top-right" 
-	| "center-left" 
-	| "center" 
-	| "center-right" 
-	| "bottom-left" 
-	| "bottom-center" 
+type Position =
+	| "top-left"
+	| "top-center"
+	| "top-right"
+	| "center-left"
+	| "center"
+	| "center-right"
+	| "bottom-left"
+	| "bottom-center"
 	| "bottom-right";
 
 type AxisPosition = {
@@ -37,39 +37,42 @@ interface ScrollToTopProps {
 }
 
 // Helper funkcia na konverziu pozície na CSS triedy
-const getPositionClasses = (position: Position | AxisPosition, offset?: { x?: number; y?: number }) => {
+const getPositionClasses = (
+	position: Position | AxisPosition,
+	offset?: { x?: number; y?: number },
+) => {
 	const defaultOffset = { x: 6, y: 6 }; // 1.5rem (6 * 0.25rem = 1.5rem)
-	
-	if (typeof position === 'object') {
+
+	if (typeof position === "object") {
 		// Custom pozícia s osami
 		const verticalClasses = {
 			top: `top-${position.offsetY ?? offset?.y ?? defaultOffset.y}`,
-			center: 'top-1/2 -translate-y-1/2',
+			center: "top-1/2 -translate-y-1/2",
 			bottom: `bottom-${position.offsetY ?? offset?.y ?? defaultOffset.y}`,
 		};
-		
+
 		const horizontalClasses = {
 			left: `left-${position.offsetX ?? offset?.x ?? defaultOffset.x}`,
-			center: 'left-1/2 -translate-x-1/2',
+			center: "left-1/2 -translate-x-1/2",
 			right: `right-${position.offsetX ?? offset?.x ?? defaultOffset.x}`,
 		};
-		
+
 		return `${verticalClasses[position.vertical]} ${horizontalClasses[position.horizontal]}`;
 	}
-	
+
 	// Predefinované pozície
 	const positions: Record<Position, string> = {
-		'top-left': `top-${offset?.y ?? defaultOffset.y} left-${offset?.x ?? defaultOffset.x}`,
-		'top-center': `top-${offset?.y ?? defaultOffset.y} left-1/2 -translate-x-1/2`,
-		'top-right': `top-${offset?.y ?? defaultOffset.y} right-${offset?.x ?? defaultOffset.x}`,
-		'center-left': 'top-1/2 -translate-y-1/2 left-6',
-		'center': 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
-		'center-right': 'top-1/2 -translate-y-1/2 right-6',
-		'bottom-left': `bottom-${offset?.y ?? defaultOffset.y} left-${offset?.x ?? defaultOffset.x}`,
-		'bottom-center': `bottom-${offset?.y ?? defaultOffset.y} left-1/2 -translate-x-1/2`,
-		'bottom-right': `bottom-${offset?.y ?? defaultOffset.y} right-${offset?.x ?? defaultOffset.x}`,
+		"top-left": `top-${offset?.y ?? defaultOffset.y} left-${offset?.x ?? defaultOffset.x}`,
+		"top-center": `top-${offset?.y ?? defaultOffset.y} left-1/2 -translate-x-1/2`,
+		"top-right": `top-${offset?.y ?? defaultOffset.y} right-${offset?.x ?? defaultOffset.x}`,
+		"center-left": "top-1/2 -translate-y-1/2 left-6",
+		center: "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+		"center-right": "top-1/2 -translate-y-1/2 right-6",
+		"bottom-left": `bottom-${offset?.y ?? defaultOffset.y} left-${offset?.x ?? defaultOffset.x}`,
+		"bottom-center": `bottom-${offset?.y ?? defaultOffset.y} left-1/2 -translate-x-1/2`,
+		"bottom-right": `bottom-${offset?.y ?? defaultOffset.y} right-${offset?.x ?? defaultOffset.x}`,
 	};
-	
+
 	return positions[position];
 };
 
@@ -125,11 +128,7 @@ export function ScrollToTop({
 					animate={{ opacity: 1, scale: 1 }}
 					exit={{ opacity: 0, scale: 0.5 }}
 					transition={{ duration: 0.2 }}
-					className={cn(
-						"fixed z-50",
-						positionClasses,
-						className,
-					)}
+					className={cn("fixed z-50", positionClasses, className)}
 				>
 					<Button
 						onClick={scrollToTop}
@@ -189,7 +188,7 @@ export function ScrollToTopWithProgress({
 	};
 
 	const positionClasses = getPositionClasses(position, customOffset);
-	const radius = (progressSize / 2) - 4;
+	const radius = progressSize / 2 - 4;
 	const circumference = 2 * Math.PI * radius;
 
 	return (
@@ -238,7 +237,9 @@ export function ScrollToTopWithProgress({
 							size="icon"
 							className={cn(
 								"rounded-full shadow-lg hover:shadow-xl transition-shadow relative z-10",
-								progressSize === 48 ? "h-12 w-12" : `h-${progressSize/4} w-${progressSize/4}`
+								progressSize === 48
+									? "h-12 w-12"
+									: `h-${progressSize / 4} w-${progressSize / 4}`,
 							)}
 							title="Scroll to top"
 						>
@@ -349,34 +350,34 @@ export function ScrollToTopWithBottom({
 
 	// Pre komponenty s dvoma tlačidlami použijeme špeciálne pozicovanie
 	const getContainerPosition = () => {
-		if (typeof position === 'object') {
+		if (typeof position === "object") {
 			const verticalClass = {
 				top: `top-${position.offsetY ?? customOffset?.y ?? 6}`,
-				center: 'top-1/2 -translate-y-1/2',
+				center: "top-1/2 -translate-y-1/2",
 				bottom: `bottom-${position.offsetY ?? customOffset?.y ?? 6}`,
 			}[position.vertical];
-			
+
 			const horizontalClass = {
 				left: `left-${position.offsetX ?? customOffset?.x ?? 6}`,
-				center: 'left-1/2 -translate-x-1/2',
+				center: "left-1/2 -translate-x-1/2",
 				right: `right-${position.offsetX ?? customOffset?.x ?? 6}`,
 			}[position.horizontal];
-			
+
 			return `${verticalClass} ${horizontalClass}`;
 		}
-		
+
 		const positions: Record<Position, string> = {
-			'top-left': `top-${customOffset?.y ?? 6} left-${customOffset?.x ?? 6}`,
-			'top-center': `top-${customOffset?.y ?? 6} left-1/2 -translate-x-1/2`,
-			'top-right': `top-${customOffset?.y ?? 6} right-${customOffset?.x ?? 6}`,
-			'center-left': 'top-1/2 -translate-y-1/2 left-6',
-			'center': 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
-			'center-right': 'top-1/2 -translate-y-1/2 right-6',
-			'bottom-left': `bottom-${customOffset?.y ?? 6} left-${customOffset?.x ?? 6}`,
-			'bottom-center': `bottom-${customOffset?.y ?? 6} left-1/2 -translate-x-1/2`,
-			'bottom-right': `bottom-${customOffset?.y ?? 6} right-${customOffset?.x ?? 6}`,
+			"top-left": `top-${customOffset?.y ?? 6} left-${customOffset?.x ?? 6}`,
+			"top-center": `top-${customOffset?.y ?? 6} left-1/2 -translate-x-1/2`,
+			"top-right": `top-${customOffset?.y ?? 6} right-${customOffset?.x ?? 6}`,
+			"center-left": "top-1/2 -translate-y-1/2 left-6",
+			center: "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+			"center-right": "top-1/2 -translate-y-1/2 right-6",
+			"bottom-left": `bottom-${customOffset?.y ?? 6} left-${customOffset?.x ?? 6}`,
+			"bottom-center": `bottom-${customOffset?.y ?? 6} left-1/2 -translate-x-1/2`,
+			"bottom-right": `bottom-${customOffset?.y ?? 6} right-${customOffset?.x ?? 6}`,
 		};
-		
+
 		return positions[position as Position];
 	};
 

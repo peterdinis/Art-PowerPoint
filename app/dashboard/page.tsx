@@ -138,7 +138,10 @@ function SortableGridItem({
 						{presentation.slidesCount}
 					</div>
 					<div className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm text-xs px-2 py-1 rounded">
-						{presentation.slidesCount} {presentation.slidesCount === 1 ? t("dashboard.slide") : t("dashboard.slides")}
+						{presentation.slidesCount}{" "}
+						{presentation.slidesCount === 1
+							? t("dashboard.slide")
+							: t("dashboard.slides")}
 					</div>
 				</div>
 				<CardHeader className="pb-3">
@@ -284,7 +287,10 @@ function SortableListItem({
 							<div className="flex items-center gap-4 text-xs text-muted-foreground">
 								<span className="flex items-center gap-1">
 									<Grid3x3 className="w-3 h-3" />
-									{presentation.slidesCount} {presentation.slidesCount === 1 ? t("dashboard.slide") : t("dashboard.slides")}
+									{presentation.slidesCount}{" "}
+									{presentation.slidesCount === 1
+										? t("dashboard.slide")
+										: t("dashboard.slides")}
 								</span>
 								<span className="flex items-center gap-1">
 									<Calendar className="w-3 h-3" />
@@ -319,7 +325,6 @@ function SortableListItem({
 		</Card>
 	);
 }
-
 
 export default function Home() {
 	const { t } = useTranslate();
@@ -463,7 +468,9 @@ export default function Home() {
 			(p) =>
 				!p.deletedAt &&
 				(p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-					(p.description || "").toLowerCase().includes(searchQuery.toLowerCase())),
+					(p.description || "")
+						.toLowerCase()
+						.includes(searchQuery.toLowerCase())),
 		);
 
 		if (sortBy === "custom") {
@@ -529,7 +536,8 @@ export default function Home() {
 			0,
 		);
 		const recentCount = presentations.filter((p) => {
-			const updatedAt = p.updatedAt instanceof Date ? p.updatedAt : new Date(p.updatedAt);
+			const updatedAt =
+				p.updatedAt instanceof Date ? p.updatedAt : new Date(p.updatedAt);
 			const daysSinceUpdate =
 				(Date.now() - updatedAt.getTime()) / (1000 * 60 * 60 * 24);
 			return daysSinceUpdate <= 7;
@@ -584,26 +592,28 @@ export default function Home() {
 		[deletePresentation, restorePresentation, t],
 	);
 
-	const formatDate = useCallback((date: Date) => {
-		const d = date instanceof Date ? date : new Date(date);
-		const now = new Date();
-		const diffTime = Math.abs(now.getTime() - d.getTime());
-		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+	const formatDate = useCallback(
+		(date: Date) => {
+			const d = date instanceof Date ? date : new Date(date);
+			const now = new Date();
+			const diffTime = Math.abs(now.getTime() - d.getTime());
+			const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-		if (diffDays === 0) return t("common.today");
-		if (diffDays === 1) return t("common.yesterday");
-		if (diffDays < 7) return `${diffDays} ${t("common.daysAgo")}`;
-		return d.toLocaleDateString("en-US", {
-			day: "numeric",
-			month: "short",
-			year: "numeric",
-		});
-	}, [t]);
+			if (diffDays === 0) return t("common.today");
+			if (diffDays === 1) return t("common.yesterday");
+			if (diffDays < 7) return `${diffDays} ${t("common.daysAgo")}`;
+			return d.toLocaleDateString("en-US", {
+				day: "numeric",
+				month: "short",
+				year: "numeric",
+			});
+		},
+		[t],
+	);
 
 	const activePresentation = activeId
 		? presentations.find((p) => p.id === activeId)
 		: null;
-
 
 	const sortableItems = useMemo(
 		() => filteredAndSorted.map((p) => p.id),
@@ -937,9 +947,7 @@ export default function Home() {
 						<DialogTitle className="text-xl">
 							{t("dashboard.createTitle")}
 						</DialogTitle>
-						<DialogDescription>
-							{t("dashboard.createDesc")}
-						</DialogDescription>
+						<DialogDescription>{t("dashboard.createDesc")}</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 py-4">
 						<div className="space-y-2">
@@ -997,7 +1005,9 @@ export default function Home() {
 			>
 				<DialogContent className="sm:max-w-md rounded-lg">
 					<DialogHeader>
-						<DialogTitle className="text-xl">{t("dashboard.importPptx")}</DialogTitle>
+						<DialogTitle className="text-xl">
+							{t("dashboard.importPptx")}
+						</DialogTitle>
 						<DialogDescription>
 							Upload a .pptx file to convert it into a Presentation.
 						</DialogDescription>
@@ -1100,7 +1110,7 @@ export default function Home() {
 									</span>
 									<span className="font-medium">
 										{importedData.slides?.reduce(
-											(count: number, slide: { elements: any[]; }) =>
+											(count: number, slide: { elements: any[] }) =>
 												count + (slide.elements?.length || 0),
 											0,
 										) || 0}

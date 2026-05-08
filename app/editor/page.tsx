@@ -16,12 +16,23 @@ import { toast } from "sonner";
 // Dynamic imports for performance
 const EditorCanvas = dynamic(() => import("@/components/EditorCanvas"), {
 	ssr: false,
-	loading: () => <div className="flex-1 flex items-center justify-center bg-muted/20">Loading Canvas...</div>
+	loading: () => (
+		<div className="flex-1 flex items-center justify-center bg-muted/20">
+			Loading Canvas...
+		</div>
+	),
 });
-const SlidePanel = dynamic(() => import("@/components/SlidePanel"), { ssr: false });
+const SlidePanel = dynamic(() => import("@/components/SlidePanel"), {
+	ssr: false,
+});
 const Toolbar = dynamic(() => import("@/components/Toolbar"), { ssr: false });
-const PropertiesPanel = dynamic(() => import("@/components/PropertiesPanel"), { ssr: false });
-const AdvancedChartDialog = dynamic(() => import("@/components/editor/AdvancedChartDialog"), { ssr: false });
+const PropertiesPanel = dynamic(() => import("@/components/PropertiesPanel"), {
+	ssr: false,
+});
+const AdvancedChartDialog = dynamic(
+	() => import("@/components/editor/AdvancedChartDialog"),
+	{ ssr: false },
+);
 
 function EditorContent() {
 	const searchParams = useSearchParams();
@@ -114,7 +125,9 @@ function EditorContent() {
 		return (
 			<div className="min-h-screen flex items-center justify-center bg-background">
 				<div className="text-center">
-					<p className="text-muted-foreground mb-4">No presentations found. Please create one from the dashboard.</p>
+					<p className="text-muted-foreground mb-4">
+						No presentations found. Please create one from the dashboard.
+					</p>
 					<Button asChild>
 						<Link href="/">Go to Dashboard</Link>
 					</Button>

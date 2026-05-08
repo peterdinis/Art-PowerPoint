@@ -31,7 +31,11 @@ export default function StatisticsPage() {
 		const inLastNDays = (updatedAt: Date, days: number) =>
 			now - new Date(updatedAt).getTime() <= days * DAY_MS;
 
-		const inRangeDaysAgo = (updatedAt: Date, fromDays: number, toDays: number) => {
+		const inRangeDaysAgo = (
+			updatedAt: Date,
+			fromDays: number,
+			toDays: number,
+		) => {
 			const diffDays = (now - new Date(updatedAt).getTime()) / DAY_MS;
 			return diffDays > fromDays && diffDays <= toDays;
 		};
